@@ -121,8 +121,8 @@ export const DEFAULT_PARAMS = {
   planes: {
     stackAxis: "cardZ" as "cardX" | "cardY" | "cardZ",
     flowDirection: "down" as "up" | "down",
-    flowSpeed: 400, // px/s for layer streaming
-    layerTravel: 1.0, // max distance as cardSize multiplier
+    flowSpeed: 122, // px/s for layer streaming
+    layerTravel: 1.82, // max distance as cardSize multiplier
   },
   faces: {
     shapeOpacity: 0.3,
