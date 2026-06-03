@@ -150,7 +150,7 @@ export const DEFAULT_PARAMS = {
   visual: {
     hoverLerp: 0.12,
     lineOpacity: 0.92,
-    hoverShellOpacity: 0.6,
+    hoverShellOpacity: 1,
   },
 } as const;
 

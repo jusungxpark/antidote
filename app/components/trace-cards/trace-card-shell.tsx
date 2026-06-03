@@ -26,23 +26,21 @@ export function TraceCardShell({
   useEffect(() => {
     const animate = () => {
       const state = stateRef.current;
-      if (shellRef.current) {
-        shellRef.current.style.opacity = String(state.shellOpacity);
-      }
 
       // Dynamic sheen — specular-like highlight from upper-left light
       if (sheenRef.current) {
         // Sheen position moves opposite to tilt (specular reflection)
-        const sheenX = 30 - state.tiltY * 1.2;
-        const sheenY = 25 + state.tiltX * 1.2;
+        const sheenX = 30 - state.tiltY * 1.5;
+        const sheenY = 25 + state.tiltX * 1.5;
 
         // Brighter when card faces upper-left light (tiltX>0=up, tiltY<0=left)
-        const lightFacing = (state.tiltX - state.tiltY) * 0.004;
-        const sheenOpacity = Math.max(0.04, Math.min(0.28, 0.1 + lightFacing));
+        const lightFacing = (state.tiltX - state.tiltY) * 0.008;
+        const sheenOpacity = Math.max(0.06, Math.min(0.45, 0.15 + lightFacing));
 
         sheenRef.current.style.background = [
-          `radial-gradient(ellipse 120% 100% at ${sheenX}% ${sheenY}%, rgba(255,255,255,${sheenOpacity}) 0%, transparent 65%)`,
-          `radial-gradient(ellipse 60% 50% at ${sheenX + 10}% ${sheenY - 5}%, rgba(255,255,255,${sheenOpacity * 0.4}) 0%, transparent 40%)`,
+          `radial-gradient(ellipse 140% 120% at ${sheenX}% ${sheenY}%, rgba(255,255,255,${sheenOpacity}) 0%, transparent 60%)`,
+          `radial-gradient(ellipse 80% 60% at ${sheenX + 10}% ${sheenY - 5}%, rgba(255,255,255,${sheenOpacity * 0.5}) 0%, transparent 45%)`,
+          `radial-gradient(ellipse 50% 40% at ${sheenX + 5}% ${sheenY + 5}%, rgba(255,255,255,${sheenOpacity * 0.25}) 0%, transparent 30%)`,
         ].join(", ");
       }
 

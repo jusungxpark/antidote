@@ -53,7 +53,6 @@ function DomCard({
     const animate = () => {
       const state = stateRef.current;
       if (shellWrapRef.current) {
-        shellWrapRef.current.style.opacity = String(state.shellOpacity);
         shellWrapRef.current.style.transform =
           `perspective(1200px) rotateX(${state.tiltX}deg) rotateY(${state.tiltY}deg)`;
       }
