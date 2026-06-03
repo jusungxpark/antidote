@@ -55,7 +55,7 @@ function DomCard({
       if (shellWrapRef.current) {
         shellWrapRef.current.style.opacity = String(state.shellOpacity);
         shellWrapRef.current.style.transform =
-          `perspective(1200px) rotateX(${-state.tiltX}deg) rotateY(${state.tiltY}deg)`;
+          `perspective(1200px) rotateX(${state.tiltX}deg) rotateY(${state.tiltY}deg)`;
       }
       rafRef.current = requestAnimationFrame(animate);
     };
