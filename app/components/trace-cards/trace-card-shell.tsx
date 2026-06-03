@@ -34,16 +34,16 @@ export function TraceCardShell({
         const sheenY = 20 + state.tiltX * 2.0;
 
         // Brighter when card faces upper-left light (tiltX>0=up, tiltY<0=left)
-        const lightFacing = (state.tiltX - state.tiltY) * 0.012;
-        const sheenOpacity = Math.max(0.04, Math.min(0.55, 0.18 + lightFacing));
+        const lightFacing = (state.tiltX - state.tiltY) * 0.015;
+        const sheenOpacity = Math.max(0.08, Math.min(0.7, 0.25 + lightFacing));
 
-        // Tight, bright primary specular (like chrome reflection)
-        // Wider secondary with cool steel-blue tint
-        // Soft ambient fill to lift the dark areas slightly
+        // Bright silver specular core
+        // Wide glossy wash with silver tint
+        // Ambient silver lift across the surface
         sheenRef.current.style.background = [
-          `radial-gradient(ellipse 90% 70% at ${sheenX}% ${sheenY}%, rgba(220,225,235,${sheenOpacity}) 0%, transparent 50%)`,
-          `radial-gradient(ellipse 50% 35% at ${sheenX + 5}% ${sheenY + 3}%, rgba(255,255,255,${sheenOpacity * 0.7}) 0%, transparent 30%)`,
-          `radial-gradient(ellipse 160% 140% at ${sheenX - 10}% ${sheenY + 15}%, rgba(160,175,200,${sheenOpacity * 0.2}) 0%, transparent 65%)`,
+          `radial-gradient(ellipse 70% 50% at ${sheenX}% ${sheenY}%, rgba(240,242,248,${sheenOpacity}) 0%, transparent 45%)`,
+          `radial-gradient(ellipse 120% 90% at ${sheenX}% ${sheenY}%, rgba(200,210,225,${sheenOpacity * 0.5}) 0%, transparent 60%)`,
+          `radial-gradient(ellipse 200% 180% at 50% 50%, rgba(180,190,210,${sheenOpacity * 0.15}) 0%, transparent 70%)`,
         ].join(", ");
       }
 
@@ -70,11 +70,11 @@ export function TraceCardShell({
         position: "relative",
         overflow: "hidden",
         background: `
-          radial-gradient(ellipse 80% 60% at 20% 5%, rgba(180,190,210,0.07) 0%, transparent 50%),
-          radial-gradient(ellipse 50% 40% at 85% 95%, rgba(140,155,180,0.03) 0%, transparent 40%),
-          linear-gradient(155deg, #1e2028 0%, #16181e 30%, #101218 65%, #0b0c10 100%)
+          radial-gradient(ellipse 80% 60% at 20% 5%, rgba(210,215,230,0.1) 0%, transparent 50%),
+          radial-gradient(ellipse 60% 50% at 80% 90%, rgba(180,190,210,0.05) 0%, transparent 45%),
+          linear-gradient(155deg, #282b34 0%, #1e2028 30%, #14161c 65%, #0e1014 100%)
         `,
-        border: "1px solid rgba(180,195,220,0.12)",
+        border: "1px solid rgba(200,210,230,0.18)",
         backdropFilter: "blur(12px)",
         fontFamily: "'JetBrains Mono', monospace",
         color: "#fff",
@@ -89,7 +89,7 @@ export function TraceCardShell({
           inset: 0,
           borderRadius: CARD_UI.cornerRadius,
           background:
-            "radial-gradient(ellipse 90% 70% at 30% 20%, rgba(200,210,225,0.12) 0%, transparent 55%)",
+            "radial-gradient(ellipse 90% 70% at 30% 20%, rgba(220,225,240,0.16) 0%, transparent 55%)",
           pointerEvents: "none",
         }}
       />
@@ -100,7 +100,7 @@ export function TraceCardShell({
           inset: 0,
           borderRadius: CARD_UI.cornerRadius,
           background:
-            "linear-gradient(165deg, rgba(200,210,230,0.08) 0%, transparent 25%, transparent 85%, rgba(120,135,160,0.04) 100%)",
+            "linear-gradient(165deg, rgba(220,225,240,0.12) 0%, transparent 30%, transparent 80%, rgba(160,170,195,0.06) 100%)",
           pointerEvents: "none",
         }}
       />
