@@ -48,12 +48,14 @@ function DomCard({
     [setPointer]
   );
 
-  // Animate shell opacity only (no CSS tilt — R3F handles visual tilt)
+  // Animate shell opacity + CSS tilt (synced with R3F formation tilt)
   useEffect(() => {
     const animate = () => {
       const state = stateRef.current;
       if (shellWrapRef.current) {
         shellWrapRef.current.style.opacity = String(state.shellOpacity);
+        shellWrapRef.current.style.transform =
+          `perspective(1200px) rotateX(${-state.tiltX}deg) rotateY(${state.tiltY}deg)`;
       }
       rafRef.current = requestAnimationFrame(animate);
     };
@@ -73,7 +75,7 @@ function DomCard({
       onPointerLeave={handlePointerLeave}
       onPointerMove={handlePointerMove}
     >
-      <div ref={shellWrapRef} style={{ width: "100%", height: "100%" }}>
+      <div ref={shellWrapRef} style={{ width: "100%", height: "100%", transformStyle: "preserve-3d", willChange: "transform, opacity" }}>
         <TraceCardShell card={card} stateRef={stateRef} cardSize={w} />
       </div>
     </div>

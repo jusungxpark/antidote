@@ -85,10 +85,10 @@ export function stepSimulation(
   const shellTarget = isHovered ? p.visual.hoverShellOpacity : 1;
   state.shellOpacity += (shellTarget - state.shellOpacity) * 0.08;
 
-  // ── Pointer position (smoothed) ──
+  // ── Pointer position (direct — tiltLerp handles smoothing) ──
   if (isHovered) {
-    state.pointerX += (pointerX - state.pointerX) * 0.35;
-    state.pointerY += (pointerY - state.pointerY) * 0.35;
+    state.pointerX = pointerX;
+    state.pointerY = pointerY;
   }
 
   // ── Tilt (pointer-based) ──

@@ -114,8 +114,8 @@ export const DEFAULT_PARAMS = {
     formationSpin: 60, // deg/s after sculpt completes
   },
   tilt: {
-    tiltLerp: 0.18,
-    pointerTilt: 14, // max degrees from pointer
+    tiltLerp: 0.22,
+    pointerTilt: 22, // max degrees from pointer
     hitPadRatio: 0.88, // extra hit area padding ratio
   },
   planes: {
