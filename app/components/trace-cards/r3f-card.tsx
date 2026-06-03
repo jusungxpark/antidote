@@ -145,14 +145,12 @@ function ShapeFill({
 
   return (
     <mesh ref={meshRef} geometry={geo} renderOrder={5} castShadow>
-      <meshStandardMaterial
+      <meshBasicMaterial
         color={color}
         transparent
         opacity={opacity}
         depthWrite={false}
         side={THREE.DoubleSide}
-        roughness={0.8}
-        metalness={0}
       />
     </mesh>
   );
@@ -473,7 +471,7 @@ function PerCardScene({
   const p = DEFAULT_PARAMS.lighting;
   return (
     <>
-      <ambientLight color={p.ambientColor} intensity={p.ambientIntensity} />
+      <ambientLight color={p.ambientColor} intensity={0.6} />
       <directionalLight
         color={p.keyColor}
         intensity={p.keyIntensity}
