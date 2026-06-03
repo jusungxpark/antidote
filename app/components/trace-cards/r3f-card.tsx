@@ -4,7 +4,7 @@ import { useRef, useMemo, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { CardDefinition, CardState, DuplicatePlane, Entity } from "./config";
-import { DEFAULT_PARAMS, UNIT } from "./config";
+import { DEFAULT_PARAMS, UNIT, CARD_ASPECT } from "./config";
 import { cardPosToWorld, getFormationRotation, getStackOffset } from "./simulation";
 import type { SimHandle } from "./use-trace-simulation";
 
@@ -147,13 +147,15 @@ function ShapeFill({
   });
 
   return (
-    <mesh ref={meshRef} geometry={geo} renderOrder={5}>
-      <meshBasicMaterial
+    <mesh ref={meshRef} geometry={geo} renderOrder={5} castShadow>
+      <meshStandardMaterial
         color={color}
         transparent
         opacity={opacity}
         depthWrite={false}
         side={THREE.DoubleSide}
+        roughness={0.8}
+        metalness={0}
       />
     </mesh>
   );
@@ -258,12 +260,14 @@ function SculptFaces({
 
   return (
     <mesh ref={meshRef} geometry={geo} renderOrder={4} castShadow>
-      <meshBasicMaterial
+      <meshStandardMaterial
         color={color}
         transparent
         opacity={opacity}
         depthWrite={false}
         side={THREE.DoubleSide}
+        roughness={0.8}
+        metalness={0}
       />
     </mesh>
   );
@@ -450,6 +454,34 @@ function TraceCardFormation({
   );
 }
 
+// ── Card Surface (shadow receiver plane) ──
+
+function CardSurface() {
+  const p = DEFAULT_PARAMS.lighting;
+  const w = DEFAULT_PARAMS.layout.cardSize / UNIT;
+  const h = (DEFAULT_PARAMS.layout.cardSize * CARD_ASPECT) / UNIT;
+
+  return (
+    <mesh
+      receiveShadow
+      renderOrder={1}
+      position={[0, 0, -0.01]}
+    >
+      <planeGeometry args={[w, h]} />
+      <meshPhysicalMaterial
+        color={p.cardSurfaceColor}
+        roughness={p.cardRoughness}
+        metalness={0.1}
+        clearcoat={p.cardClearcoat}
+        clearcoatRoughness={p.cardClearcoatRoughness}
+        transparent
+        opacity={0.85}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
 // ── Main Export ──
 
 interface R3fFormationProps {
@@ -476,13 +508,14 @@ export function R3fFormation({
     if (!groupRef.current) return;
     const state = stateRef.current;
     groupRef.current.rotation.x = state.tiltX * DEG;
-    groupRef.current.rotation.y = -state.tiltY * DEG; // negated: CSS Y-up vs Three.js Y-up have opposite rotateY
+    groupRef.current.rotation.y = state.tiltY * DEG;
     groupRef.current.rotation.z = state.tiltZ * DEG;
   });
 
   return (
     <group position={[worldX, worldY, 0]} scale={worldScale}>
       <group ref={groupRef}>
+        <CardSurface />
         <TraceCardFormation card={card} stateRef={stateRef} />
       </group>
     </group>
