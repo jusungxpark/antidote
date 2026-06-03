@@ -10,6 +10,25 @@ import type { SimHandle } from "./use-trace-simulation";
 
 const DEG = Math.PI / 180;
 
+// ── Buffer helpers — reuse typed arrays to avoid GC stutter ──
+
+function updatePositionAttr(
+  geo: THREE.BufferGeometry,
+  data: number[],
+  computeNormals = false
+) {
+  const arr = new Float32Array(data);
+  const existing = geo.getAttribute("position") as THREE.BufferAttribute | undefined;
+  if (existing && existing.count === arr.length / 3) {
+    existing.set(arr);
+    existing.needsUpdate = true;
+  } else {
+    geo.setAttribute("position", new THREE.BufferAttribute(arr, 3));
+  }
+  if (computeNormals) geo.computeVertexNormals();
+  geo.computeBoundingSphere();
+}
+
 // ── Formation Dots + Lines ──
 
 interface FormationLayerProps {
@@ -29,20 +48,18 @@ function FormationLayer({
 }: FormationLayerProps) {
   const dotsRef = useRef<THREE.Points>(null);
   const linesRef = useRef<THREE.LineLoop>(null);
-
-  const dotsGeo = useMemo(
-    () => new THREE.BufferGeometry(),
-    []
-  );
-  const linesGeo = useMemo(
-    () => new THREE.BufferGeometry(),
-    []
-  );
+  const dotsGeo = useMemo(() => new THREE.BufferGeometry(), []);
+  const linesGeo = useMemo(() => new THREE.BufferGeometry(), []);
+  const buf = useRef<Float32Array | null>(null);
 
   useFrame(() => {
     if (!dotsRef.current || entities.length === 0) return;
 
-    const positions = new Float32Array(entities.length * 3);
+    const len = entities.length * 3;
+    if (!buf.current || buf.current.length !== len) {
+      buf.current = new Float32Array(len);
+    }
+    const positions = buf.current;
     for (let i = 0; i < entities.length; i++) {
       const [x, y, z] = cardPosToWorld(entities[i].pos, rotationRad);
       positions[i * 3] = x;
@@ -50,17 +67,23 @@ function FormationLayer({
       positions[i * 3 + 2] = z;
     }
 
-    dotsGeo.setAttribute(
-      "position",
-      new THREE.BufferAttribute(positions, 3)
-    );
+    const dotsAttr = dotsGeo.getAttribute("position") as THREE.BufferAttribute | undefined;
+    if (dotsAttr && dotsAttr.count === entities.length) {
+      dotsAttr.set(positions);
+      dotsAttr.needsUpdate = true;
+    } else {
+      dotsGeo.setAttribute("position", new THREE.BufferAttribute(positions.slice(), 3));
+    }
     dotsGeo.computeBoundingSphere();
 
     if (linesRef.current && showLines) {
-      linesGeo.setAttribute(
-        "position",
-        new THREE.BufferAttribute(positions.slice(), 3)
-      );
+      const linesAttr = linesGeo.getAttribute("position") as THREE.BufferAttribute | undefined;
+      if (linesAttr && linesAttr.count === entities.length) {
+        linesAttr.set(positions);
+        linesAttr.needsUpdate = true;
+      } else {
+        linesGeo.setAttribute("position", new THREE.BufferAttribute(positions.slice(), 3));
+      }
       linesGeo.computeBoundingSphere();
     }
   });
@@ -110,24 +133,17 @@ function ShapeFill({
   useFrame(() => {
     if (!meshRef.current || entities.length < 3) return;
 
-    // Fan triangulation from center
     const verts: number[] = [];
-    const center = [0, 0, 0];
     for (let i = 0; i < entities.length; i++) {
       const [x1, y1, z1] = cardPosToWorld(entities[i].pos, rotationRad);
       const next = (i + 1) % entities.length;
       const [x2, y2, z2] = cardPosToWorld(entities[next].pos, rotationRad);
-      verts.push(center[0], center[1], center[2]);
+      verts.push(0, 0, 0);
       verts.push(x1, y1, z1);
       verts.push(x2, y2, z2);
     }
 
-    geo.setAttribute(
-      "position",
-      new THREE.BufferAttribute(new Float32Array(verts), 3)
-    );
-    geo.computeVertexNormals();
-    geo.computeBoundingSphere();
+    updatePositionAttr(geo, verts, true);
   });
 
   return (
@@ -170,7 +186,6 @@ function SculptFaces({
     const verts: number[] = [];
 
     if (pattern === "pyramidTrace") {
-      // Connect live base corners to duplicate tip
       const dup = planes[0];
       if (!dup) return;
 
@@ -178,12 +193,8 @@ function SculptFaces({
       for (let i = 0; i < liveEntities.length; i++) {
         const [lx, ly, lz] = cardPosToWorld(liveEntities[i].pos, rotationRad);
         const next = (i + 1) % liveEntities.length;
-        const [lxn, lyn, lzn] = cardPosToWorld(
-          liveEntities[next].pos,
-          rotationRad
-        );
+        const [lxn, lyn, lzn] = cardPosToWorld(liveEntities[next].pos, rotationRad);
 
-        // Tip point on the duplicate (all dots at center)
         const tipSnap = dup.snapshot[0];
         if (!tipSnap) continue;
         const [tx, ty, tz] = cardPosToWorld(tipSnap.pos, rotationRad);
@@ -191,13 +202,11 @@ function SculptFaces({
         const tipY = ty + stackOff[1];
         const tipZ = tz + stackOff[2];
 
-        // Triangle: live corner i → live corner i+1 → tip
         verts.push(lx, ly, lz);
         verts.push(lxn, lyn, lzn);
         verts.push(tipX, tipY, tipZ);
       }
     } else if (pattern === "diamondTrace") {
-      // Connect tiers: live (tip) → girdle dup → table dup
       const sortedPlanes = [...planes].sort(
         (a, b) => Math.abs(a.offsetY) - Math.abs(b.offsetY)
       );
@@ -216,7 +225,6 @@ function SculptFaces({
         });
       }
 
-      // Connect consecutive layers with quads (2 triangles each)
       for (let li = 0; li < layers.length - 1; li++) {
         const layerA = layers[li];
         const layerB = layers[li + 1];
@@ -225,27 +233,14 @@ function SculptFaces({
         for (let i = 0; i < count; i++) {
           const next = (i + 1) % count;
 
-          const [ax, ay, az] = cardPosToWorld(
-            layerA.entities[i].pos,
-            rotationRad
-          );
-          const [axn, ayn, azn] = cardPosToWorld(
-            layerA.entities[next].pos,
-            rotationRad
-          );
-          const [bx, by, bz] = cardPosToWorld(
-            layerB.entities[i].pos,
-            rotationRad
-          );
-          const [bxn, byn, bzn] = cardPosToWorld(
-            layerB.entities[next].pos,
-            rotationRad
-          );
+          const [ax, ay, az] = cardPosToWorld(layerA.entities[i].pos, rotationRad);
+          const [axn, ayn, azn] = cardPosToWorld(layerA.entities[next].pos, rotationRad);
+          const [bx, by, bz] = cardPosToWorld(layerB.entities[i].pos, rotationRad);
+          const [bxn, byn, bzn] = cardPosToWorld(layerB.entities[next].pos, rotationRad);
 
           const a = layerA.stackOff;
           const b = layerB.stackOff;
 
-          // Quad as two triangles
           verts.push(ax + a[0], ay + a[1], az + a[2]);
           verts.push(axn + a[0], ayn + a[1], azn + a[2]);
           verts.push(bx + b[0], by + b[1], bz + b[2]);
@@ -258,13 +253,7 @@ function SculptFaces({
     }
 
     if (verts.length === 0) return;
-
-    geo.setAttribute(
-      "position",
-      new THREE.BufferAttribute(new Float32Array(verts), 3)
-    );
-    geo.computeVertexNormals();
-    geo.computeBoundingSphere();
+    updatePositionAttr(geo, verts, true);
   });
 
   return (
@@ -318,21 +307,14 @@ function SculptWireLines({
       });
     }
 
-    // Connect matching dots between consecutive layers
     for (let li = 0; li < layers.length - 1; li++) {
       const layerA = layers[li];
       const layerB = layers[li + 1];
       const count = Math.min(layerA.entities.length, layerB.entities.length);
 
       for (let i = 0; i < count; i++) {
-        const [ax, ay, az] = cardPosToWorld(
-          layerA.entities[i].pos,
-          rotationRad
-        );
-        const [bx, by, bz] = cardPosToWorld(
-          layerB.entities[i].pos,
-          rotationRad
-        );
+        const [ax, ay, az] = cardPosToWorld(layerA.entities[i].pos, rotationRad);
+        const [bx, by, bz] = cardPosToWorld(layerB.entities[i].pos, rotationRad);
         const a = layerA.stackOff;
         const b = layerB.stackOff;
 
@@ -342,12 +324,7 @@ function SculptWireLines({
     }
 
     if (positions.length === 0) return;
-
-    geo.setAttribute(
-      "position",
-      new THREE.BufferAttribute(new Float32Array(positions), 3)
-    );
-    geo.computeBoundingSphere();
+    updatePositionAttr(geo, positions);
   });
 
   return (
@@ -407,10 +384,9 @@ function TraceCardFormation({
   stateRef: React.RefObject<CardState>;
 }) {
   const formationRef = useRef<THREE.Group>(null);
-  const [planeCount, setPlaneCount] = useState(0);
+  const [, setPlaneCount] = useState(0);
   const lastPlaneCountRef = useRef(0);
 
-  // Force re-render when planes change (so duplicates appear/disappear)
   useFrame(() => {
     const state = stateRef.current;
     if (state.planes.length !== lastPlaneCountRef.current) {
@@ -425,14 +401,12 @@ function TraceCardFormation({
 
   return (
     <group ref={formationRef}>
-      {/* Live layer */}
       <FormationLayer
         entities={state.entities}
         rotationRad={rotRad}
         opacity={lineOpacity}
       />
 
-      {/* Live shape fill */}
       <ShapeFill
         entities={state.entities}
         rotationRad={rotRad}
@@ -440,7 +414,6 @@ function TraceCardFormation({
         opacity={DEFAULT_PARAMS.faces.shapeOpacity}
       />
 
-      {/* Duplicate layers */}
       {state.planes.map((plane) => (
         <DuplicateLayer
           key={plane.id}
@@ -449,7 +422,6 @@ function TraceCardFormation({
         />
       ))}
 
-      {/* Sculpt faces (side fills between layers) */}
       {state.planes.length > 0 && (
         <SculptFaces
           liveEntities={state.entities}
@@ -461,7 +433,6 @@ function TraceCardFormation({
         />
       )}
 
-      {/* Sculpt wire lines (connecting structural edges) */}
       {state.planes.length > 0 && (
         <SculptWireLines
           liveEntities={state.entities}
@@ -474,9 +445,7 @@ function TraceCardFormation({
   );
 }
 
-// ── Main Export: Formation-only R3F component ──
-// Positioned at world coordinates, scaled to match DOM card size.
-// Tilt is applied from simulation state to match the DOM CSS tilt.
+// ── Main Export ──
 
 interface R3fFormationProps {
   card: CardDefinition;
@@ -498,7 +467,6 @@ export function R3fFormation({
   const groupRef = useRef<THREE.Group>(null);
   const { stateRef } = simHandle;
 
-  // Apply tilt rotation each frame to match DOM CSS tilt
   useFrame(() => {
     if (!groupRef.current) return;
     const state = stateRef.current;
