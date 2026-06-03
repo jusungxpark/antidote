@@ -16,6 +16,7 @@ export function TraceCardShell({
   cardSize,
 }: TraceCardShellProps) {
   const shellRef = useRef<HTMLDivElement>(null);
+  const sheenRef = useRef<HTMLDivElement>(null);
   const liveDotRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
 
@@ -27,6 +28,22 @@ export function TraceCardShell({
       const state = stateRef.current;
       if (shellRef.current) {
         shellRef.current.style.opacity = String(state.shellOpacity);
+      }
+
+      // Dynamic sheen — specular-like highlight from upper-left light
+      if (sheenRef.current) {
+        // Sheen position moves opposite to tilt (specular reflection)
+        const sheenX = 30 - state.tiltY * 1.2;
+        const sheenY = 25 + state.tiltX * 1.2;
+
+        // Brighter when card faces upper-left light (tiltX>0=up, tiltY<0=left)
+        const lightFacing = (state.tiltX - state.tiltY) * 0.004;
+        const sheenOpacity = Math.max(0.04, Math.min(0.28, 0.1 + lightFacing));
+
+        sheenRef.current.style.background = [
+          `radial-gradient(ellipse 120% 100% at ${sheenX}% ${sheenY}%, rgba(255,255,255,${sheenOpacity}) 0%, transparent 65%)`,
+          `radial-gradient(ellipse 60% 50% at ${sheenX + 10}% ${sheenY - 5}%, rgba(255,255,255,${sheenOpacity * 0.4}) 0%, transparent 40%)`,
+        ].join(", ");
       }
 
       // Live badge pulse
@@ -52,25 +69,26 @@ export function TraceCardShell({
         position: "relative",
         overflow: "hidden",
         background: `
-          radial-gradient(ellipse 80% 60% at 30% 10%, rgba(255,255,255,0.07) 0%, transparent 60%),
-          radial-gradient(ellipse 50% 40% at 70% 80%, rgba(255,255,255,0.03) 0%, transparent 50%),
-          linear-gradient(160deg, #1e1e1e 0%, #141414 40%, #0e0e0e 100%)
+          radial-gradient(ellipse 90% 70% at 25% 5%, rgba(255,255,255,0.06) 0%, transparent 55%),
+          radial-gradient(ellipse 60% 50% at 80% 90%, rgba(255,255,255,0.02) 0%, transparent 45%),
+          linear-gradient(155deg, #252830 0%, #1a1c22 35%, #111318 70%, #0d0e12 100%)
         `,
-        border: "1px solid rgba(255,255,255,0.08)",
+        border: "1px solid rgba(255,255,255,0.1)",
         backdropFilter: "blur(12px)",
         fontFamily: "'JetBrains Mono', monospace",
         color: "#fff",
         userSelect: "none",
       }}
     >
-      {/* Sheen overlay — subtle top-edge highlight */}
+      {/* Dynamic sheen overlay — moves with tilt, lit from upper-left */}
       <div
+        ref={sheenRef}
         style={{
           position: "absolute",
           inset: 0,
           borderRadius: CARD_UI.cornerRadius,
           background:
-            "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 40%)",
+            "radial-gradient(ellipse 120% 100% at 30% 25%, rgba(255,255,255,0.1) 0%, transparent 65%)",
           pointerEvents: "none",
         }}
       />

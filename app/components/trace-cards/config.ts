@@ -115,7 +115,7 @@ export const DEFAULT_PARAMS = {
   },
   tilt: {
     tiltLerp: 0.22,
-    pointerTilt: 22, // max degrees from pointer
+    pointerTilt: 30, // max degrees from pointer
     hitPadRatio: 0.88, // extra hit area padding ratio
   },
   planes: {

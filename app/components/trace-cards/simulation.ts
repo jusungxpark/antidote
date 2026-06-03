@@ -94,7 +94,7 @@ export function stepSimulation(
   // ── Tilt (pointer-based) ──
   if (isHovered) {
     state.targetTiltX = -state.pointerY * p.tilt.pointerTilt;
-    state.targetTiltY = -state.pointerX * p.tilt.pointerTilt;
+    state.targetTiltY = state.pointerX * p.tilt.pointerTilt;
     state.targetTiltZ = 0;
   } else {
     // On dehover: tilt and layers rewind simultaneously

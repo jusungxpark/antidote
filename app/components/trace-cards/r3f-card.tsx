@@ -476,7 +476,7 @@ export function R3fFormation({
     if (!groupRef.current) return;
     const state = stateRef.current;
     groupRef.current.rotation.x = state.tiltX * DEG;
-    groupRef.current.rotation.y = state.tiltY * DEG;
+    groupRef.current.rotation.y = -state.tiltY * DEG; // negated: CSS Y-up vs Three.js Y-up have opposite rotateY
     groupRef.current.rotation.z = state.tiltZ * DEG;
   });
 
