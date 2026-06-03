@@ -291,7 +291,7 @@ export function TraceCardsScene() {
         style={{
           position: "absolute",
           inset: 0,
-          zIndex: 2,
+          zIndex: 5,
           pointerEvents: "none",
         }}
       >
