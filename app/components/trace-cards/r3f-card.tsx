@@ -255,14 +255,12 @@ function SculptFaces({
 
   return (
     <mesh ref={meshRef} geometry={geo} renderOrder={4} castShadow>
-      <meshStandardMaterial
+      <meshBasicMaterial
         color={color}
         transparent
         opacity={opacity}
         depthWrite={false}
         side={THREE.DoubleSide}
-        roughness={0.8}
-        metalness={0}
       />
     </mesh>
   );
@@ -471,11 +469,11 @@ function PerCardScene({
   const p = DEFAULT_PARAMS.lighting;
   return (
     <>
-      <ambientLight color={p.ambientColor} intensity={0.6} />
+      <ambientLight color={p.ambientColor} intensity={0.4} />
       <directionalLight
         color={p.keyColor}
         intensity={p.keyIntensity}
-        position={[3, 8, 15]}
+        position={[2, 5, 6]}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
@@ -483,17 +481,17 @@ function PerCardScene({
         shadow-normalBias={0.03}
         shadow-radius={18}
         shadow-blurSamples={24}
-        shadow-camera-left={-5}
-        shadow-camera-right={5}
-        shadow-camera-top={5}
-        shadow-camera-bottom={-5}
-        shadow-camera-near={1}
-        shadow-camera-far={30}
+        shadow-camera-left={-3}
+        shadow-camera-right={3}
+        shadow-camera-top={3}
+        shadow-camera-bottom={-3}
+        shadow-camera-near={0.5}
+        shadow-camera-far={15}
       />
       <directionalLight
         color={p.fillColor}
         intensity={p.fillIntensity * 0.5}
-        position={[-3, 3, 4]}
+        position={[-2, 2, 3]}
       />
       <CardShadowReceiver />
       <TraceCardFormation card={card} stateRef={stateRef} />
@@ -522,7 +520,7 @@ export function PerCardCanvas({
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 1,
       }}
-      camera={{ position: [0, 0, 12], fov: 20, near: 0.1, far: 30 }}
+      camera={{ position: [0, 0, 5], fov: 45, near: 0.1, far: 20 }}
       onCreated={({ gl }) => {
         gl.setClearColor(0x000000, 0);
         gl.shadowMap.type = THREE.VSMShadowMap;
@@ -532,6 +530,7 @@ export function PerCardCanvas({
         position: "absolute",
         inset: 0,
         pointerEvents: "none",
+        transform: "translateZ(1px)",
       }}
     >
       <PerCardScene card={card} stateRef={stateRef} />
