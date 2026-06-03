@@ -387,8 +387,14 @@ function TraceCardFormation({
   const [, setPlaneCount] = useState(0);
   const lastPlaneCountRef = useRef(0);
 
+  // Apply formation spin as group rotation — updated every frame for smooth motion.
+  // Previously rotRad was computed during render and passed as a prop, which only
+  // updated on React re-renders (plane count changes), causing the spin to "jump."
   useFrame(() => {
     const state = stateRef.current;
+    if (formationRef.current) {
+      formationRef.current.rotation.z = getFormationRotation(state);
+    }
     if (state.planes.length !== lastPlaneCountRef.current) {
       lastPlaneCountRef.current = state.planes.length;
       setPlaneCount(state.planes.length);
@@ -396,20 +402,19 @@ function TraceCardFormation({
   });
 
   const state = stateRef.current;
-  const rotRad = getFormationRotation(state);
   const lineOpacity = DEFAULT_PARAMS.visual.lineOpacity;
 
   return (
     <group ref={formationRef}>
       <FormationLayer
         entities={state.entities}
-        rotationRad={rotRad}
+        rotationRad={0}
         opacity={lineOpacity}
       />
 
       <ShapeFill
         entities={state.entities}
-        rotationRad={rotRad}
+        rotationRad={0}
         color={card.shapeColor}
         opacity={DEFAULT_PARAMS.faces.shapeOpacity}
       />
@@ -418,7 +423,7 @@ function TraceCardFormation({
         <DuplicateLayer
           key={plane.id}
           plane={plane}
-          rotationRad={rotRad}
+          rotationRad={0}
         />
       ))}
 
@@ -426,7 +431,7 @@ function TraceCardFormation({
         <SculptFaces
           liveEntities={state.entities}
           planes={state.planes}
-          rotationRad={rotRad}
+          rotationRad={0}
           color={card.sculptColor}
           opacity={DEFAULT_PARAMS.faces.sculptOpacity}
           pattern={card.movementPattern}
@@ -437,7 +442,7 @@ function TraceCardFormation({
         <SculptWireLines
           liveEntities={state.entities}
           planes={state.planes}
-          rotationRad={rotRad}
+          rotationRad={0}
           opacity={lineOpacity * 0.6}
         />
       )}
