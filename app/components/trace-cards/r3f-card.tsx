@@ -1,14 +1,11 @@
 "use client";
 
 import { useRef, useMemo, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { CardDefinition, CardState, DuplicatePlane, Entity } from "./config";
 import { DEFAULT_PARAMS, UNIT, CARD_ASPECT } from "./config";
 import { cardPosToWorld, getFormationRotation, getStackOffset } from "./simulation";
-import type { SimHandle } from "./use-trace-simulation";
-
-const DEG = Math.PI / 180;
 
 // ── Buffer helpers — reuse typed arrays to avoid GC stutter ──
 
@@ -391,9 +388,6 @@ function TraceCardFormation({
   const [, setPlaneCount] = useState(0);
   const lastPlaneCountRef = useRef(0);
 
-  // Apply formation spin as group rotation — updated every frame for smooth motion.
-  // Previously rotRad was computed during render and passed as a prop, which only
-  // updated on React re-renders (plane count changes), causing the spin to "jump."
   useFrame(() => {
     const state = stateRef.current;
     if (formationRef.current) {
@@ -454,70 +448,95 @@ function TraceCardFormation({
   );
 }
 
-// ── Card Surface (shadow receiver plane) ──
+// ── Shadow Receiver (transparent except where shadows land) ──
 
-function CardSurface() {
-  const p = DEFAULT_PARAMS.lighting;
+function CardShadowReceiver() {
   const w = DEFAULT_PARAMS.layout.cardSize / UNIT;
   const h = (DEFAULT_PARAMS.layout.cardSize * CARD_ASPECT) / UNIT;
-
   return (
-    <mesh
-      receiveShadow
-      renderOrder={1}
-      position={[0, 0, -0.01]}
-    >
+    <mesh receiveShadow renderOrder={0} position={[0, 0, -0.02]}>
       <planeGeometry args={[w, h]} />
-      <meshPhysicalMaterial
-        color={p.cardSurfaceColor}
-        roughness={p.cardRoughness}
-        metalness={0.1}
-        clearcoat={p.cardClearcoat}
-        clearcoatRoughness={p.cardClearcoatRoughness}
-        transparent
-        opacity={0.85}
-        depthWrite={false}
-      />
+      <shadowMaterial transparent opacity={0.55} />
     </mesh>
   );
 }
 
-// ── Main Export ──
+// ── Per-Card Canvas Scene ──
 
-interface R3fFormationProps {
+function PerCardScene({
+  card,
+  stateRef,
+}: {
   card: CardDefinition;
-  simHandle: SimHandle;
-  worldX: number;
-  worldY: number;
-  worldScale: number;
-  cardWorldW: number;
-  cardWorldH: number;
+  stateRef: React.RefObject<CardState>;
+}) {
+  const p = DEFAULT_PARAMS.lighting;
+  return (
+    <>
+      <ambientLight color={p.ambientColor} intensity={p.ambientIntensity} />
+      <directionalLight
+        color={p.keyColor}
+        intensity={p.keyIntensity}
+        position={[3, 8, 15]}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-bias={-0.003}
+        shadow-normalBias={0.03}
+        shadow-radius={18}
+        shadow-blurSamples={24}
+        shadow-camera-left={-5}
+        shadow-camera-right={5}
+        shadow-camera-top={5}
+        shadow-camera-bottom={-5}
+        shadow-camera-near={1}
+        shadow-camera-far={30}
+      />
+      <directionalLight
+        color={p.fillColor}
+        intensity={p.fillIntensity * 0.5}
+        position={[-3, 3, 4]}
+      />
+      <CardShadowReceiver />
+      <TraceCardFormation card={card} stateRef={stateRef} />
+    </>
+  );
 }
 
-export function R3fFormation({
+// ── Per-Card Canvas (renders formation attached to card via CSS 3D transform) ──
+// The Canvas lives inside the card's CSS-transformed wrapper, so CSS perspective
+// and rotateX/Y automatically apply to it. No R3F rotation needed — shapes
+// naturally tilt with the card and protrude toward the viewer in +Z.
+
+export function PerCardCanvas({
   card,
-  simHandle,
-  worldX,
-  worldY,
-  worldScale,
-}: R3fFormationProps) {
-  const groupRef = useRef<THREE.Group>(null);
-  const { stateRef } = simHandle;
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    const state = stateRef.current;
-    groupRef.current.rotation.x = state.tiltX * DEG;
-    groupRef.current.rotation.y = state.tiltY * DEG;
-    groupRef.current.rotation.z = state.tiltZ * DEG;
-  });
-
+  stateRef,
+}: {
+  card: CardDefinition;
+  stateRef: React.RefObject<CardState>;
+}) {
   return (
-    <group position={[worldX, worldY, 0]} scale={worldScale}>
-      <group ref={groupRef}>
-        <CardSurface />
-        <TraceCardFormation card={card} stateRef={stateRef} />
-      </group>
-    </group>
+    <Canvas
+      shadows
+      gl={{
+        alpha: true,
+        antialias: true,
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1,
+      }}
+      camera={{ position: [0, 0, 12], fov: 20, near: 0.1, far: 30 }}
+      onCreated={({ gl }) => {
+        gl.setClearColor(0x000000, 0);
+        gl.shadowMap.type = THREE.VSMShadowMap;
+        gl.shadowMap.autoUpdate = true;
+      }}
+      style={{
+        position: "absolute",
+        inset: 0,
+        pointerEvents: "none",
+      }}
+    >
+      <PerCardScene card={card} stateRef={stateRef} />
+    </Canvas>
   );
 }

@@ -4,11 +4,11 @@ import { useRef, useEffect, useCallback, useState, Suspense } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import * as THREE from "three";
-import { CARDS, DEFAULT_PARAMS, CARD_ASPECT, UNIT } from "./config";
+import { CARDS, DEFAULT_PARAMS, CARD_ASPECT } from "./config";
 import { TraceCardShell } from "./trace-card-shell";
 import { TraceSceneLighting } from "./trace-scene-lighting";
 import { useTraceSimulation, type SimHandle } from "./use-trace-simulation";
-import { R3fFormation } from "./r3f-card";
+import { PerCardCanvas } from "./r3f-card";
 import { MetallicCaduceus } from "./metallic-caduceus";
 import type { CardDefinition } from "./config";
 
@@ -48,7 +48,7 @@ function DomCard({
     [setPointer]
   );
 
-  // Animate shell opacity + CSS tilt (synced with R3F formation tilt)
+  // Animate CSS tilt
   useEffect(() => {
     const animate = () => {
       const state = stateRef.current;
@@ -74,14 +74,23 @@ function DomCard({
       onPointerLeave={handlePointerLeave}
       onPointerMove={handlePointerMove}
     >
-      <div ref={shellWrapRef} style={{ width: "100%", height: "100%", transformStyle: "preserve-3d", willChange: "transform, opacity" }}>
+      <div
+        ref={shellWrapRef}
+        style={{
+          width: "100%",
+          height: "100%",
+          transformStyle: "preserve-3d",
+          willChange: "transform",
+        }}
+      >
         <TraceCardShell card={card} stateRef={stateRef} cardSize={w} />
+        <PerCardCanvas card={card} stateRef={stateRef} />
       </div>
     </div>
   );
 }
 
-// ── R3F Scene ──
+// ── R3F Scene (caduceus only) ──
 
 function SceneCamera() {
   const { camera } = useThree();
@@ -100,61 +109,19 @@ function SceneCamera() {
   return null;
 }
 
-function FormationScene({
-  sims,
-  cardRects,
+function CaduceusScene({
   caduceusHovered,
 }: {
-  sims: SimHandle[];
-  cardRects: DOMRect[];
   caduceusHovered: boolean;
 }) {
-  const { camera, size } = useThree();
-
   return (
     <>
       <SceneCamera />
       <TraceSceneLighting />
-
       <Suspense fallback={null}>
         <MetallicCaduceus hovered={caduceusHovered} />
         <Environment preset="studio" />
       </Suspense>
-
-      {CARDS.map((card, idx) => {
-        const sim = sims[idx];
-        const rect = cardRects[idx];
-        if (!sim || !rect) return null;
-
-        const cx = ((rect.left + rect.width / 2) / size.width) * 2 - 1;
-        const cy = -((rect.top + rect.height / 2) / size.height) * 2 + 1;
-
-        const vec = new THREE.Vector3(cx, cy, 0.5);
-        vec.unproject(camera as THREE.PerspectiveCamera);
-        const dir = vec.sub(camera.position).normalize();
-        const dist = -camera.position.z / dir.z;
-        const worldPos = camera.position.clone().add(dir.multiplyScalar(dist));
-
-        const cam = camera as THREE.PerspectiveCamera;
-        const vFov = (cam.fov * Math.PI) / 180;
-        const worldHeight = 2 * Math.tan(vFov / 2) * cam.position.z;
-        const worldPerPx = worldHeight / size.height;
-        const cardWorldW = rect.width * worldPerPx;
-        const cardWorldH = rect.height * worldPerPx;
-
-        return (
-          <R3fFormation
-            key={idx}
-            card={card}
-            simHandle={sim}
-            worldX={worldPos.x}
-            worldY={worldPos.y}
-            worldScale={cardWorldW / (DEFAULT_PARAMS.layout.cardSize / UNIT)}
-            cardWorldW={cardWorldW}
-            cardWorldH={cardWorldH}
-          />
-        );
-      })}
     </>
   );
 }
@@ -162,16 +129,11 @@ function FormationScene({
 // ── Main Scene Export ──
 
 export function TraceCardsScene() {
-  const p = DEFAULT_PARAMS;
-  const shadowsOn = p.lighting.enabled && p.lighting.shadowsEnabled;
-
   const sim0 = useTraceSimulation(CARDS[0]);
   const sim1 = useTraceSimulation(CARDS[1]);
   const sims = [sim0, sim1];
 
   const [caduceusHovered, setCaduceusHovered] = useState(false);
-  const cardContainerRef = useRef<HTMLDivElement>(null);
-  const [cardRects, setCardRects] = useState<DOMRect[]>([]);
 
   // Load fonts
   useEffect(() => {
@@ -182,26 +144,6 @@ export function TraceCardsScene() {
     document.head.appendChild(link);
     return () => {
       document.head.removeChild(link);
-    };
-  }, []);
-
-  // Measure card DOM positions
-  useEffect(() => {
-    const measure = () => {
-      if (!cardContainerRef.current) return;
-      const cards =
-        cardContainerRef.current.querySelectorAll("[data-trace-card]");
-      const rects: DOMRect[] = [];
-      cards.forEach((el) => rects.push(el.getBoundingClientRect()));
-      setCardRects(rects);
-    };
-
-    measure();
-    window.addEventListener("resize", measure);
-    const interval = setInterval(measure, 500);
-    return () => {
-      window.removeEventListener("resize", measure);
-      clearInterval(interval);
     };
   }, []);
 
@@ -251,9 +193,8 @@ export function TraceCardsScene() {
         }}
       />
 
-      {/* DOM cards — bottom, one on each side */}
+      {/* DOM cards with per-card R3F canvases — bottom, one on each side */}
       <div
-        ref={cardContainerRef}
         style={{
           position: "absolute",
           bottom: 40,
@@ -266,15 +207,15 @@ export function TraceCardsScene() {
         }}
       >
         {CARDS.map((card, idx) => (
-          <div key={idx} data-trace-card>
+          <div key={idx}>
             <DomCard card={card} simHandle={sims[idx]} />
           </div>
         ))}
       </div>
 
-      {/* R3F canvas — fills entire viewport */}
+      {/* Main R3F canvas — caduceus only */}
       <Canvas
-        shadows={shadowsOn}
+        shadows
         gl={{
           alpha: true,
           antialias: true,
@@ -283,23 +224,17 @@ export function TraceCardsScene() {
         }}
         onCreated={({ gl }) => {
           gl.setClearColor(0x000000, 0);
-          if (shadowsOn) {
-            gl.shadowMap.type = THREE.VSMShadowMap;
-            gl.shadowMap.autoUpdate = true;
-          }
+          gl.shadowMap.type = THREE.VSMShadowMap;
+          gl.shadowMap.autoUpdate = true;
         }}
         style={{
           position: "absolute",
           inset: 0,
-          zIndex: 5,
+          zIndex: 2,
           pointerEvents: "none",
         }}
       >
-        <FormationScene
-          sims={sims}
-          cardRects={cardRects}
-          caduceusHovered={caduceusHovered}
-        />
+        <CaduceusScene caduceusHovered={caduceusHovered} />
       </Canvas>
     </div>
   );
