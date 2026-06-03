@@ -26,6 +26,37 @@ function updatePositionAttr(
   geo.computeBoundingSphere();
 }
 
+// ── Depth-proportional lateral offset for 3D parallax ──
+// Shifts Z-displaced layers in XY based on card tilt, so shapes appear
+// to protrude. Points at z=0 get zero shift (base stays on card surface).
+
+const DEPTH_AMPLIFY = 2.0;
+const _DEG = Math.PI / 180;
+
+function getDepthOffset(
+  offsetY: number,
+  tiltXDeg: number,
+  tiltYDeg: number,
+  spinAngleRad: number
+): [number, number, number] {
+  const [bx, by, bz] = getStackOffset(offsetY);
+  let dx = bx + bz * Math.sin(tiltYDeg * _DEG * DEPTH_AMPLIFY);
+  let dy = by + bz * Math.sin(tiltXDeg * _DEG * DEPTH_AMPLIFY);
+
+  // Counter-rotate lateral offset by -spin so the group's +spin cancels it.
+  // Result: protrusion stays world-aligned (toward cursor) while base spins.
+  if (spinAngleRad !== 0) {
+    const cos = Math.cos(spinAngleRad);
+    const sin = Math.sin(spinAngleRad);
+    const rx = dx * cos + dy * sin;
+    const ry = -dx * sin + dy * cos;
+    dx = rx;
+    dy = ry;
+  }
+
+  return [dx, dy, bz];
+}
+
 // ── Formation Dots + Lines ──
 
 interface FormationLayerProps {
@@ -165,6 +196,7 @@ function SculptFaces({
   color,
   opacity,
   pattern,
+  stateRef,
 }: {
   liveEntities: Entity[];
   planes: DuplicatePlane[];
@@ -172,6 +204,7 @@ function SculptFaces({
   color: string;
   opacity: number;
   pattern: string;
+  stateRef: React.RefObject<CardState>;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const geo = useMemo(() => new THREE.BufferGeometry(), []);
@@ -180,13 +213,15 @@ function SculptFaces({
     if (!meshRef.current || planes.length === 0 || liveEntities.length < 2)
       return;
 
+    const state = stateRef.current;
+    const spin = getFormationRotation(state);
     const verts: number[] = [];
 
     if (pattern === "pyramidTrace") {
       const dup = planes[0];
       if (!dup) return;
 
-      const stackOff = getStackOffset(dup.offsetY);
+      const stackOff = getDepthOffset(dup.offsetY, state.tiltX, state.tiltY, spin);
       for (let i = 0; i < liveEntities.length; i++) {
         const [lx, ly, lz] = cardPosToWorld(liveEntities[i].pos, rotationRad);
         const next = (i + 1) % liveEntities.length;
@@ -218,7 +253,7 @@ function SculptFaces({
       for (const pl of sortedPlanes) {
         layers.push({
           entities: pl.snapshot,
-          stackOff: getStackOffset(pl.offsetY),
+          stackOff: getDepthOffset(pl.offsetY, state.tiltX, state.tiltY, spin),
         });
       }
 
@@ -273,11 +308,13 @@ function SculptWireLines({
   planes,
   rotationRad,
   opacity,
+  stateRef,
 }: {
   liveEntities: Entity[];
   planes: DuplicatePlane[];
   rotationRad: number;
   opacity: number;
+  stateRef: React.RefObject<CardState>;
 }) {
   const linesRef = useRef<THREE.LineSegments>(null);
   const geo = useMemo(() => new THREE.BufferGeometry(), []);
@@ -285,6 +322,8 @@ function SculptWireLines({
   useFrame(() => {
     if (!linesRef.current || planes.length === 0) return;
 
+    const state = stateRef.current;
+    const spin = getFormationRotation(state);
     const positions: number[] = [];
 
     interface LayerData {
@@ -300,7 +339,7 @@ function SculptWireLines({
     for (const pl of sortedPlanes) {
       layers.push({
         entities: pl.snapshot,
-        stackOff: getStackOffset(pl.offsetY),
+        stackOff: getDepthOffset(pl.offsetY, state.tiltX, state.tiltY, spin),
       });
     }
 
@@ -341,15 +380,19 @@ function SculptWireLines({
 function DuplicateLayer({
   plane,
   rotationRad,
+  stateRef,
 }: {
   plane: DuplicatePlane;
   rotationRad: number;
+  stateRef: React.RefObject<CardState>;
 }) {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame(() => {
     if (!groupRef.current) return;
-    const stackOff = getStackOffset(plane.offsetY);
+    const state = stateRef.current;
+    const spin = getFormationRotation(state);
+    const stackOff = getDepthOffset(plane.offsetY, state.tiltX, state.tiltY, spin);
     groupRef.current.position.set(stackOff[0], stackOff[1], stackOff[2]);
   });
 
@@ -387,6 +430,8 @@ function TraceCardFormation({
   useFrame(() => {
     const state = stateRef.current;
     if (formationRef.current) {
+      // Only spin — tilt-based depth parallax is handled per-vertex via
+      // getDepthOffset so the base layer stays aligned with the card surface.
       formationRef.current.rotation.z = getFormationRotation(state);
     }
     if (state.planes.length !== lastPlaneCountRef.current) {
@@ -418,6 +463,7 @@ function TraceCardFormation({
           key={plane.id}
           plane={plane}
           rotationRad={0}
+          stateRef={stateRef}
         />
       ))}
 
@@ -429,6 +475,7 @@ function TraceCardFormation({
           color={card.sculptColor}
           opacity={DEFAULT_PARAMS.faces.sculptOpacity}
           pattern={card.movementPattern}
+          stateRef={stateRef}
         />
       )}
 
@@ -438,6 +485,7 @@ function TraceCardFormation({
           planes={state.planes}
           rotationRad={0}
           opacity={lineOpacity * 0.6}
+          stateRef={stateRef}
         />
       )}
     </group>
