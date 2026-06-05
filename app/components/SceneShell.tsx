@@ -272,20 +272,17 @@ export function SceneShell({ children }: { children: ReactNode }) {
     const vh = windowSize.h;
     const isMobile = vw <= 768;
 
-    const padding = isMobile ? 24 : Math.max(40, Math.min(vw * 0.05, 80));
     const fontSize = isMobile
       ? Math.max(24, Math.min(vw * 0.065, 32))
       : Math.max(36, Math.min(vw * 0.05, 64));
 
-    let targetX: number;
-    let targetY: number;
+    let targetX: number | undefined;
+    let targetY: number | undefined;
+    let transform = "translate(0, 0) scale(1)";
+    let isAnimating = false;
 
-    if (isMobile) {
-      const mobileCadTop = Math.max(60, Math.min(vh * 0.08, 100));
-      const mobileCadHeight = Math.min(300, vh * 0.4);
-      targetY = mobileCadTop + mobileCadHeight + 16;
-      targetX = padding;
-    } else {
+    if (!isMobile) {
+      const padding = Math.max(40, Math.min(vw * 0.05, 80));
       const cadTop = vh * 0.05;
       const cadHeight = Math.max(220, Math.min(vh * 0.35, 460));
       targetY = cadTop + cadHeight / 2 - fontSize / 2;
@@ -296,24 +293,25 @@ export function SceneShell({ children }: { children: ReactNode }) {
       } else {
         targetX = padding;
       }
-    }
 
-    let transform = "translate(0, 0) scale(1)";
-    if (transition && phase === 0) {
-      const scaleRatio = 28 / fontSize;
-      const offsetX = transition.titleStart.x - targetX;
-      const offsetY = transition.titleStart.y - targetY;
-      transform = `translate(${offsetX}px, ${offsetY}px) scale(${scaleRatio})`;
-    }
+      if (transition && phase === 0) {
+        const scaleRatio = 28 / fontSize;
+        const offsetX = transition.titleStart.x - targetX;
+        const offsetY = transition.titleStart.y - targetY;
+        transform = `translate(${offsetX}px, ${offsetY}px) scale(${scaleRatio})`;
+      }
 
-    const isAnimating = transition !== null;
+      isAnimating = transition !== null;
+    }
 
     titleNode = (
       <div
+        className="scene-title"
         style={{
-          position: "fixed",
+          position: isMobile ? "relative" : "fixed",
           left: targetX,
           top: targetY,
+          padding: isMobile ? "16px 24px" : undefined,
           fontSize,
           fontFamily: 'Georgia, "Times New Roman", serif',
           fontWeight: 400,
@@ -322,7 +320,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
           pointerEvents: "none",
           zIndex: 100,
           transformOrigin: "left top",
-          transform,
+          transform: isMobile ? undefined : transform,
           opacity: returningHome ? 0 : 1,
           willChange: isAnimating || returningHome ? "transform, opacity" : "auto",
           transition: isAnimating
@@ -358,6 +356,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
       value={{ startTransition, transitioning: transition !== null, returningHome }}
     >
       <div
+        className="scene-shell"
         style={{
           position: "relative",
           width: "100%",
@@ -368,6 +367,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
       >
         {/* Top bar */}
         <div
+          className="scene-topbar"
           style={{
             position: "absolute",
             top: 0,
