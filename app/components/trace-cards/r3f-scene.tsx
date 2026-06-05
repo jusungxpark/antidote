@@ -1,15 +1,11 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState, Suspense } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { Environment } from "@react-three/drei";
-import * as THREE from "three";
-import { CARDS, DEFAULT_PARAMS, CARD_ASPECT } from "./config";
+import { useRef, useEffect, useCallback } from "react";
+import { CARDS, CARD_ASPECT } from "./config";
 import { TraceCardShell } from "./trace-card-shell";
-import { TraceSceneLighting } from "./trace-scene-lighting";
 import { useTraceSimulation, type SimHandle } from "./use-trace-simulation";
 import { PerCardCanvas } from "./r3f-card";
-import { MetallicCaduceus } from "./metallic-caduceus";
+import { AsciiSTL } from "../AsciiSTL";
 import type { CardDefinition } from "./config";
 
 // ── Card size ──
@@ -91,50 +87,12 @@ function DomCard({
   );
 }
 
-// ── R3F Scene (caduceus only) ──
-
-function SceneCamera() {
-  const { camera } = useThree();
-  const p = DEFAULT_PARAMS.camera;
-
-  useEffect(() => {
-    if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = p.fov;
-      camera.position.set(0, 0, p.distance);
-      camera.near = 0.1;
-      camera.far = 100;
-      camera.updateProjectionMatrix();
-    }
-  }, [camera, p.fov, p.distance]);
-
-  return null;
-}
-
-function CaduceusScene({
-  caduceusHovered,
-}: {
-  caduceusHovered: boolean;
-}) {
-  return (
-    <>
-      <SceneCamera />
-      <TraceSceneLighting />
-      <Suspense fallback={null}>
-        <MetallicCaduceus hovered={caduceusHovered} />
-        <Environment preset="studio" />
-      </Suspense>
-    </>
-  );
-}
-
 // ── Main Scene Export ──
 
 export function TraceCardsScene() {
   const sim0 = useTraceSimulation(CARDS[0]);
   const sim1 = useTraceSimulation(CARDS[1]);
   const sims = [sim0, sim1];
-
-  const [caduceusHovered, setCaduceusHovered] = useState(false);
 
   // Load fonts
   useEffect(() => {
@@ -158,14 +116,16 @@ export function TraceCardsScene() {
         overflow: "hidden",
       }}
     >
-      {/* Brand text — top left */}
+      {/* Brand text — centered above caduceus */}
       <div
         style={{
           position: "absolute",
           top: 0,
           left: 0,
+          right: 0,
           zIndex: 10,
           padding: "clamp(18px, 2.5vh, 32px) clamp(24px, 3vw, 48px)",
+          textAlign: "center",
         }}
       >
         <span
@@ -179,20 +139,19 @@ export function TraceCardsScene() {
         </span>
       </div>
 
-      {/* Caduceus hover zone — center of viewport */}
+      {/* ASCII caduceus — center of viewport */}
       <div
-        onPointerEnter={() => setCaduceusHovered(true)}
-        onPointerLeave={() => setCaduceusHovered(false)}
         style={{
           position: "absolute",
           top: 0,
           left: "25%",
           width: "50%",
           height: "70%",
-          zIndex: 3,
-          cursor: "pointer",
+          zIndex: 2,
         }}
-      />
+      >
+        <AsciiSTL />
+      </div>
 
       {/* DOM cards with per-card R3F canvases — bottom, one on each side */}
       <div
@@ -213,30 +172,6 @@ export function TraceCardsScene() {
           </div>
         ))}
       </div>
-
-      {/* Main R3F canvas — caduceus only */}
-      <Canvas
-        shadows
-        gl={{
-          alpha: true,
-          antialias: true,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1,
-        }}
-        onCreated={({ gl }) => {
-          gl.setClearColor(0x000000, 0);
-          gl.shadowMap.type = THREE.VSMShadowMap;
-          gl.shadowMap.autoUpdate = true;
-        }}
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 2,
-          pointerEvents: "none",
-        }}
-      >
-        <CaduceusScene caduceusHovered={caduceusHovered} />
-      </Canvas>
     </div>
   );
 }
