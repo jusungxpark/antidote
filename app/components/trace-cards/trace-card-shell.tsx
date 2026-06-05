@@ -17,7 +17,6 @@ export function TraceCardShell({
 }: TraceCardShellProps) {
   const shellRef = useRef<HTMLDivElement>(null);
   const scanlineRef = useRef<HTMLDivElement>(null);
-  const liveDotRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
 
   const w = cardSize;
@@ -33,12 +32,6 @@ export function TraceCardShell({
         const glowOpacity = Math.max(0.02, Math.min(0.08, 0.04 + (state.tiltX - state.tiltY) * 0.004));
         scanlineRef.current.style.background =
           `radial-gradient(ellipse 100% 8% at 50% ${glowY}%, rgba(255,255,255,${glowOpacity}) 0%, transparent 100%)`;
-      }
-
-      // Live badge pulse
-      if (liveDotRef.current) {
-        const brightness = state.hover > 0.5 ? 0.9 : 0.35;
-        liveDotRef.current.style.opacity = String(brightness);
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -126,34 +119,6 @@ export function TraceCardShell({
           </div>
         </div>
 
-        {/* Live badge — hollow outline style */}
-        <div
-          ref={liveDotRef}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            padding: "3px 8px",
-            border: "1px solid rgba(255,255,255,0.15)",
-            borderRadius: 1,
-            fontSize: 9,
-            letterSpacing: "0.08em",
-            opacity: CARD_UI.liveBadgeIdleOpacity,
-            transition: "opacity 200ms",
-            fontFamily: "Georgia, 'Times New Roman', serif",
-          }}
-        >
-          <span
-            style={{
-              width: 5,
-              height: 5,
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.6)",
-              display: "inline-block",
-            }}
-          />
-          Live
-        </div>
       </div>
 
       {/* Bottom section */}
@@ -170,7 +135,7 @@ export function TraceCardShell({
             fontSize: 28,
             fontFamily: "Georgia, 'Times New Roman', serif",
             fontWeight: 400,
-            fontStyle: "italic",
+            fontStyle: "normal",
             lineHeight: 1,
             marginBottom: 6,
             color: "rgba(255,255,255,0.9)",
