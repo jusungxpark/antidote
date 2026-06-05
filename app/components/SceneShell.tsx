@@ -54,6 +54,75 @@ function getPageInfo(pathname: string): { title: string; mirror: boolean } | nul
   }
 }
 
+type NavPage = "about" | "blog";
+
+const ABOUT_CONTENT = (
+  <div
+    style={{
+      maxWidth: 780,
+      padding: "0 clamp(24px, 4vw, 48px)",
+      fontFamily: 'Georgia, "Times New Roman", serif',
+      textAlign: "center",
+    }}
+  >
+    <p
+      style={{
+        fontSize: "clamp(18px, 2.2vw, 28px)",
+        lineHeight: 1.5,
+        color: "rgba(255, 248, 240, 0.9)",
+        margin: "0 0 28px",
+      }}
+    >
+      We are building the next generation of AI-native service businesses.
+    </p>
+    <p
+      style={{
+        fontSize: "clamp(13px, 1.2vw, 17px)",
+        lineHeight: 1.7,
+        color: "rgba(255, 248, 240, 0.62)",
+        margin: 0,
+      }}
+    >
+      Our team spans private equity, strategy consulting, and software
+      engineering.
+      <br />
+      Ex-CD&R, ex-BCG, ex-AngelList, ex-Dartmouth, ex-MIT.
+    </p>
+  </div>
+);
+
+const BLOG_CONTENT = (
+  <p
+    style={{
+      fontFamily: 'Georgia, "Times New Roman", serif',
+      fontSize: "clamp(18px, 2.2vw, 28px)",
+      lineHeight: 1.5,
+      color: "rgba(10, 10, 10, 0.6)",
+      margin: 0,
+    }}
+  >
+    Coming soon.
+  </p>
+);
+
+const OVERLAY_STYLES: Record<NavPage, React.CSSProperties> = {
+  about: {
+    background: "rgba(18, 18, 18, 0.97)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+  },
+  blog: {
+    background: "rgba(255, 248, 240, 0.97)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+  },
+};
+
+function getOverlayClass(page: NavPage, leaving: boolean): string {
+  if (page === "about") return leaving ? "shimmer-up" : "shimmer-down";
+  return leaving ? "shimmer-right-out" : "shimmer-right-in";
+}
+
 export function SceneShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -62,6 +131,11 @@ export function SceneShell({ children }: { children: ReactNode }) {
   const transitionLock = useRef(false);
   const [returningHome, setReturningHome] = useState(false);
   const returnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Nav overlay state
+  const [navOverlay, setNavOverlay] = useState<NavPage | null>(null);
+  const [navOverlayLeaving, setNavOverlayLeaving] = useState(false);
+  const navReturnHomeRef = useRef(false);
 
   // Track viewport size (null until mounted — avoids SSR hydration mismatch)
   const [windowSize, setWindowSize] = useState<{ w: number; h: number } | null>(
@@ -129,9 +203,44 @@ export function SceneShell({ children }: { children: ReactNode }) {
     }
   }, [isHome]);
 
+  // Nav overlay handlers
+  const handleNavPage = useCallback(
+    (page: NavPage) => {
+      if (navOverlayLeaving) return;
+      if (navOverlay === page) {
+        // Toggle same page off
+        setNavOverlayLeaving(true);
+      } else {
+        // Open new page directly (swaps if another is open)
+        setNavOverlayLeaving(false);
+        setNavOverlay(page);
+      }
+    },
+    [navOverlay, navOverlayLeaving]
+  );
+
+  const handleNavAnimEnd = useCallback(() => {
+    if (navOverlayLeaving) {
+      setNavOverlayLeaving(false);
+      setNavOverlay(null);
+      if (navReturnHomeRef.current) {
+        navReturnHomeRef.current = false;
+        if (pathname !== "/") {
+          router.push("/");
+        }
+      }
+    }
+  }, [navOverlayLeaving, pathname, router]);
+
   // Handle return-to-home navigation
   const handleReturnHome = useCallback(
     (e: React.MouseEvent) => {
+      if (navOverlay) {
+        e.preventDefault();
+        navReturnHomeRef.current = !isHome;
+        setNavOverlayLeaving(true);
+        return;
+      }
       if (isHome || returningHome) return;
       e.preventDefault();
       setReturningHome(true);
@@ -139,7 +248,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
         router.push("/");
       }, 450);
     },
-    [isHome, returningHome, router]
+    [isHome, returningHome, router, navOverlay]
   );
 
   // Caduceus: subpage position when animating (phase 1) or on a subpage
@@ -161,19 +270,32 @@ export function SceneShell({ children }: { children: ReactNode }) {
   if (showTitle) {
     const vw = windowSize.w;
     const vh = windowSize.h;
-    const padding = Math.max(40, Math.min(vw * 0.05, 80));
-    const fontSize = Math.max(36, Math.min(vw * 0.05, 64));
+    const isMobile = vw <= 768;
 
-    const cadTop = vh * 0.05;
-    const cadHeight = Math.max(220, Math.min(vh * 0.35, 460));
-    const targetY = cadTop + cadHeight / 2 - fontSize / 2;
+    const padding = isMobile ? 24 : Math.max(40, Math.min(vw * 0.05, 80));
+    const fontSize = isMobile
+      ? Math.max(24, Math.min(vw * 0.065, 32))
+      : Math.max(36, Math.min(vw * 0.05, 64));
 
     let targetX: number;
-    if (mirror) {
-      const titleW = title.length * fontSize * 0.58;
-      targetX = vw - padding - titleW;
-    } else {
+    let targetY: number;
+
+    if (isMobile) {
+      const mobileCadTop = Math.max(60, Math.min(vh * 0.08, 100));
+      const mobileCadHeight = Math.min(300, vh * 0.4);
+      targetY = mobileCadTop + mobileCadHeight + 16;
       targetX = padding;
+    } else {
+      const cadTop = vh * 0.05;
+      const cadHeight = Math.max(220, Math.min(vh * 0.35, 460));
+      targetY = cadTop + cadHeight / 2 - fontSize / 2;
+
+      if (mirror) {
+        const titleW = title.length * fontSize * 0.58;
+        targetX = vw - padding - titleW;
+      } else {
+        targetX = padding;
+      }
     }
 
     let transform = "translate(0, 0) scale(1)";
@@ -216,6 +338,21 @@ export function SceneShell({ children }: { children: ReactNode }) {
     );
   }
 
+  const navLinkStyle = (page: NavPage): React.CSSProperties => ({
+    background: "none",
+    border: "none",
+    padding: "12px 8px",
+    margin: "-12px -8px",
+    cursor: "pointer",
+    color:
+      navOverlay === page && !navOverlayLeaving
+        ? "rgba(255, 248, 240, 0.92)"
+        : "rgba(255, 248, 240, 0.68)",
+    font: '400 clamp(11px, 1.1vw, 14px)/1 Georgia, "Times New Roman", serif',
+    textTransform: "lowercase",
+    transition: "color 200ms ease",
+  });
+
   return (
     <SceneContext.Provider
       value={{ startTransition, transitioning: transition !== null, returningHome }}
@@ -229,7 +366,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
           overflow: "hidden",
         }}
       >
-        {/* Brand logo */}
+        {/* Top bar */}
         <div
           style={{
             position: "absolute",
@@ -237,26 +374,49 @@ export function SceneShell({ children }: { children: ReactNode }) {
             left: 0,
             right: 0,
             zIndex: 10,
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "center",
+            gap: "clamp(28px, 4vw, 56px)",
             padding: "clamp(18px, 2.5vh, 32px) clamp(24px, 3vw, 48px)",
-            textAlign: "center",
+            background: "#000",
           }}
         >
+          <button
+            onClick={() => handleNavPage("about")}
+            style={navLinkStyle("about")}
+          >
+            about us
+          </button>
+
           <Link
             href="/"
             onClick={handleReturnHome}
             style={{
               color: "rgba(255, 248, 240, 0.9)",
-              font: '400 clamp(16px, 1.6vw, 22px)/1 Georgia, "Times New Roman", serif',
+              font: '400 clamp(20px, 2vw, 28px)/1 Georgia, "Times New Roman", serif',
               whiteSpace: "nowrap",
               textDecoration: "none",
+              padding: "8px 4px",
+              margin: "-8px -4px",
             }}
           >
             Antid<span style={{ fontStyle: "italic" }}>o</span>te.
           </Link>
+
+          <button
+            onClick={() => handleNavPage("blog")}
+            style={navLinkStyle("blog")}
+          >
+            blog
+          </button>
         </div>
 
         {/* Caduceus — persists across routes */}
-        <div className={caduceusClass}>
+        <div
+          className={caduceusClass}
+          style={{ userSelect: "none", WebkitUserSelect: "none", pointerEvents: "none" }}
+        >
           <AsciiSTL />
         </div>
 
@@ -265,6 +425,26 @@ export function SceneShell({ children }: { children: ReactNode }) {
 
         {/* Page content */}
         {children}
+
+        {/* Nav page overlay */}
+        {navOverlay && (
+          <div
+            key={navOverlay}
+            className={getOverlayClass(navOverlay, navOverlayLeaving)}
+            onAnimationEnd={handleNavAnimEnd}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              ...OVERLAY_STYLES[navOverlay],
+            }}
+          >
+            {navOverlay === "about" ? ABOUT_CONTENT : BLOG_CONTENT}
+          </div>
+        )}
       </div>
     </SceneContext.Provider>
   );

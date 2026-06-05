@@ -14,6 +14,7 @@ export function SubpageLayout({ children, mirror = false }: SubpageLayoutProps) 
   if (!children) return null;
   return (
     <div
+      className="subpage-content"
       style={{
         position: "absolute",
         top: "calc(5vh + clamp(220px, 35vh, 460px) / 2 + clamp(36px, 5vw, 64px) / 2 + 56px)",

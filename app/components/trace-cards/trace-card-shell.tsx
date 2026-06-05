@@ -100,6 +100,7 @@ export function TraceCardShell({
               opacity: 0.4,
               marginBottom: 5,
               textTransform: "uppercase",
+              visibility: "hidden",
             }}
           >
             Focus:

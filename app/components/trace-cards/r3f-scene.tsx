@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { CARDS, CARD_ASPECT } from "./config";
 import { TraceCardShell } from "./trace-card-shell";
 import { useTraceSimulation, type SimHandle } from "./use-trace-simulation";
@@ -17,18 +17,20 @@ function DomCard({
   card,
   simHandle,
   onClick,
+  cardSize,
 }: {
   card: CardDefinition;
   simHandle: SimHandle;
   onClick?: () => void;
+  cardSize: number;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const shellWrapRef = useRef<HTMLDivElement>(null);
   const { stateRef, setHover, setPointer } = simHandle;
   const rafRef = useRef(0);
 
-  const w = CARD_PX;
-  const h = CARD_PX * CARD_ASPECT;
+  const w = cardSize;
+  const h = cardSize * CARD_ASPECT;
 
   const handlePointerEnter = useCallback(() => setHover(true), [setHover]);
   const handlePointerLeave = useCallback(() => setHover(false), [setHover]);
@@ -112,6 +114,18 @@ export function TraceCardsScene() {
     [startTransition]
   );
 
+  const [cardPx, setCardPx] = useState(CARD_PX);
+
+  useEffect(() => {
+    const update = () => {
+      const vw = window.innerWidth;
+      setCardPx(vw <= 768 ? Math.floor(vw - 48) : CARD_PX);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   const sim0 = useTraceSimulation(CARDS[0]);
   const sim1 = useTraceSimulation(CARDS[1]);
   const sims = [sim0, sim1];
@@ -130,6 +144,7 @@ export function TraceCardsScene() {
 
   return (
     <div
+      className="trace-cards-container"
       style={{
         position: "absolute",
         bottom: 40,
@@ -153,6 +168,7 @@ export function TraceCardsScene() {
             card={card}
             simHandle={sims[idx]}
             onClick={() => handleCardClick(idx)}
+            cardSize={cardPx}
           />
         </div>
       ))}
