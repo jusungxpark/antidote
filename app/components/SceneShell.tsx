@@ -107,7 +107,7 @@ const BLOG_CONTENT = (
 
 const OVERLAY_STYLES: Record<NavPage, React.CSSProperties> = {
   about: {
-    background: "rgba(18, 18, 18, 0.97)",
+    background: "rgba(18, 18, 18, 0.70)",
     backdropFilter: "blur(12px)",
     WebkitBackdropFilter: "blur(12px)",
   },
@@ -318,7 +318,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
           lineHeight: 1,
           color: "rgba(255, 248, 240, 0.92)",
           pointerEvents: "none",
-          zIndex: 100,
+          zIndex: 7,
           transformOrigin: "left top",
           transform: isMobile ? undefined : transform,
           opacity: returningHome ? 0 : 1,
