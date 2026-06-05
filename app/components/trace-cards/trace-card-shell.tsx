@@ -16,7 +16,7 @@ export function TraceCardShell({
   cardSize,
 }: TraceCardShellProps) {
   const shellRef = useRef<HTMLDivElement>(null);
-  const sheenRef = useRef<HTMLDivElement>(null);
+  const scanlineRef = useRef<HTMLDivElement>(null);
   const liveDotRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
 
@@ -27,29 +27,17 @@ export function TraceCardShell({
     const animate = () => {
       const state = stateRef.current;
 
-      // Dynamic sheen — metallic specular highlight from upper-left light
-      if (sheenRef.current) {
-        // Sheen position moves opposite to tilt (specular reflection)
-        const sheenX = 30 - state.tiltY * 2.0;
-        const sheenY = 20 + state.tiltX * 2.0;
-
-        // Brighter when card faces upper-left light (tiltX>0=up, tiltY<0=left)
-        const lightFacing = (state.tiltX - state.tiltY) * 0.02;
-        const sheenOpacity = Math.max(0.12, Math.min(0.85, 0.35 + lightFacing));
-
-        sheenRef.current.style.background = [
-          // Hot specular core — near-white silver
-          `radial-gradient(ellipse 60% 40% at ${sheenX}% ${sheenY}%, rgba(250,252,255,${sheenOpacity}) 0%, transparent 40%)`,
-          // Mid-range silver wash
-          `radial-gradient(ellipse 130% 100% at ${sheenX}% ${sheenY}%, rgba(215,220,235,${sheenOpacity * 0.45}) 0%, transparent 55%)`,
-          // Full-surface silver ambient
-          `radial-gradient(ellipse 200% 200% at 50% 50%, rgba(195,205,220,${sheenOpacity * 0.2}) 0%, transparent 75%)`,
-        ].join(", ");
+      // Subtle scanline glow that shifts with tilt — very faint, terminal-like
+      if (scanlineRef.current) {
+        const glowY = 50 + state.tiltX * 1.5;
+        const glowOpacity = Math.max(0.02, Math.min(0.08, 0.04 + (state.tiltX - state.tiltY) * 0.004));
+        scanlineRef.current.style.background =
+          `radial-gradient(ellipse 100% 8% at 50% ${glowY}%, rgba(255,255,255,${glowOpacity}) 0%, transparent 100%)`;
       }
 
       // Live badge pulse
       if (liveDotRef.current) {
-        const brightness = state.hover > 0.5 ? 1 : 0.45;
+        const brightness = state.hover > 0.5 ? 0.9 : 0.35;
         liveDotRef.current.style.opacity = String(brightness);
       }
 
@@ -66,63 +54,58 @@ export function TraceCardShell({
       style={{
         width: w,
         height: h,
-        borderRadius: CARD_UI.cornerRadius,
+        borderRadius: 2,
         position: "relative",
         overflow: "hidden",
-        background: `
-          radial-gradient(ellipse 90% 70% at 25% 5%, rgba(225,230,245,0.14) 0%, transparent 50%),
-          radial-gradient(ellipse 70% 55% at 75% 85%, rgba(195,205,225,0.08) 0%, transparent 45%),
-          linear-gradient(155deg, #2e3140 0%, #232630 28%, #181a22 60%, #101218 100%)
-        `,
-        border: "1px solid rgba(215,225,245,0.22)",
-        backdropFilter: "blur(12px)",
-        fontFamily: "'JetBrains Mono', monospace",
-        color: "#fff",
+        background: "#000",
+        border: "1px solid rgba(255,255,255,0.13)",
+        fontFamily: "Georgia, 'Times New Roman', serif",
+        color: "rgba(255,255,255,0.85)",
         userSelect: "none",
       }}
     >
-      {/* Dynamic sheen overlay — metallic specular, moves with tilt */}
+      {/* Faint tilt-reactive scanline glow */}
       <div
-        ref={sheenRef}
+        ref={scanlineRef}
         style={{
           position: "absolute",
           inset: 0,
-          borderRadius: CARD_UI.cornerRadius,
-          background:
-            "radial-gradient(ellipse 90% 70% at 30% 20%, rgba(230,235,250,0.22) 0%, transparent 50%)",
           pointerEvents: "none",
         }}
       />
-      {/* Metallic edge highlight — subtle rim light along top/left edges */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          borderRadius: CARD_UI.cornerRadius,
-          background:
-            "linear-gradient(165deg, rgba(235,240,255,0.18) 0%, transparent 35%, transparent 75%, rgba(180,190,215,0.1) 100%)",
-          pointerEvents: "none",
-        }}
-      />
+
+      {/* Corner tick marks — wireframe/blueprint feel */}
+      {/* Top-left */}
+      <div style={{ position: "absolute", top: 6, left: 6, width: 12, height: 1, background: "rgba(255,255,255,0.2)" }} />
+      <div style={{ position: "absolute", top: 6, left: 6, width: 1, height: 12, background: "rgba(255,255,255,0.2)" }} />
+      {/* Top-right */}
+      <div style={{ position: "absolute", top: 6, right: 6, width: 12, height: 1, background: "rgba(255,255,255,0.2)" }} />
+      <div style={{ position: "absolute", top: 6, right: 6, width: 1, height: 12, background: "rgba(255,255,255,0.2)" }} />
+      {/* Bottom-left */}
+      <div style={{ position: "absolute", bottom: 6, left: 6, width: 12, height: 1, background: "rgba(255,255,255,0.2)" }} />
+      <div style={{ position: "absolute", bottom: 6, left: 6, width: 1, height: 12, background: "rgba(255,255,255,0.2)" }} />
+      {/* Bottom-right */}
+      <div style={{ position: "absolute", bottom: 6, right: 6, width: 12, height: 1, background: "rgba(255,255,255,0.2)" }} />
+      <div style={{ position: "absolute", bottom: 6, right: 6, width: 1, height: 12, background: "rgba(255,255,255,0.2)" }} />
 
       {/* Top section */}
       <div
         style={{
           position: "absolute",
           top: 20,
-          left: 24,
-          right: 24,
+          left: 22,
+          right: 22,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
         }}
       >
-        {/* Labels (replacing coordinates) */}
-        <div style={{ fontSize: 10, letterSpacing: "0.05em" }}>
+        {/* Labels */}
+        <div style={{ fontSize: 9, letterSpacing: "0.1em", fontFamily: "Georgia, 'Times New Roman', serif" }}>
           <div
             style={{
-              opacity: CARD_UI.coordsLabelOpacity,
-              marginBottom: 4,
+              opacity: 0.4,
+              marginBottom: 5,
               textTransform: "uppercase",
             }}
           >
@@ -130,11 +113,11 @@ export function TraceCardShell({
           </div>
           <div
             style={{
-              opacity: CARD_UI.coordsValueOpacity,
+              opacity: 0.3,
               display: "flex",
-              gap: 16,
+              gap: 14,
               textTransform: "uppercase",
-              letterSpacing: "0.06em",
+              letterSpacing: "0.08em",
             }}
           >
             {card.labels.map((label, i) => (
@@ -143,28 +126,29 @@ export function TraceCardShell({
           </div>
         </div>
 
-        {/* Live badge */}
+        {/* Live badge — hollow outline style */}
         <div
           ref={liveDotRef}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 6,
-            padding: "4px 10px",
-            background: "rgba(255,255,255,0.06)",
-            borderRadius: 12,
-            fontSize: 10,
-            letterSpacing: "0.04em",
+            gap: 5,
+            padding: "3px 8px",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: 1,
+            fontSize: 9,
+            letterSpacing: "0.08em",
             opacity: CARD_UI.liveBadgeIdleOpacity,
             transition: "opacity 200ms",
+            fontFamily: "Georgia, 'Times New Roman', serif",
           }}
         >
           <span
             style={{
-              width: 6,
-              height: 6,
+              width: 5,
+              height: 5,
               borderRadius: "50%",
-              background: "#ef4444",
+              background: "rgba(255,255,255,0.6)",
               display: "inline-block",
             }}
           />
@@ -177,27 +161,30 @@ export function TraceCardShell({
         style={{
           position: "absolute",
           bottom: 20,
-          left: 24,
-          right: 24,
+          left: 22,
+          right: 22,
         }}
       >
         <div
           style={{
-            fontSize: 32,
-            fontFamily: "'Geist', 'Inter', system-ui, sans-serif",
+            fontSize: 28,
+            fontFamily: "Georgia, 'Times New Roman', serif",
             fontWeight: 400,
+            fontStyle: "italic",
             lineHeight: 1,
             marginBottom: 6,
+            color: "rgba(255,255,255,0.9)",
           }}
         >
           {card.title}
         </div>
         <div
           style={{
-            fontSize: 10,
-            letterSpacing: "0.08em",
+            fontSize: 9,
+            letterSpacing: "0.12em",
             textTransform: "uppercase",
-            opacity: CARD_UI.descriptionOpacity,
+            opacity: 0.3,
+            fontFamily: "Georgia, 'Times New Roman', serif",
           }}
         >
           {card.description}

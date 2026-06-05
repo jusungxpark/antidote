@@ -81,8 +81,8 @@ export const CARDS: CardDefinition[] = [
     movementPattern: "pyramidTrace",
     elementCount: 4,
     structureLayers: 1,
-    shapeColor: "#00a8a5",
-    sculptColor: "#00a8a5",
+    shapeColor: "#ffffff",
+    sculptColor: "#ffffff",
   },
   {
     title: "Buyouts",
@@ -91,8 +91,8 @@ export const CARDS: CardDefinition[] = [
     movementPattern: "diamondTrace",
     elementCount: 4,
     structureLayers: 2,
-    shapeColor: "#0be0a0",
-    sculptColor: "#0be0a0",
+    shapeColor: "#ffffff",
+    sculptColor: "#ffffff",
   },
 ];
 
@@ -125,8 +125,8 @@ export const DEFAULT_PARAMS = {
     layerTravel: 1.82, // max distance as cardSize multiplier
   },
   faces: {
-    shapeOpacity: 0.3,
-    sculptOpacity: 0.3,
+    shapeOpacity: 0.06,
+    sculptOpacity: 0.04,
   },
   lighting: {
     enabled: true,
@@ -144,8 +144,8 @@ export const DEFAULT_PARAMS = {
     cardClearcoat: 1,
     cardClearcoatRoughness: 0.45,
     ambientColor: "#ffffff",
-    keyColor: "#fff5eb",
-    fillColor: "#c7e4ff",
+    keyColor: "#ffffff",
+    fillColor: "#ffffff",
   },
   visual: {
     hoverLerp: 0.12,
@@ -163,7 +163,7 @@ export const FORMATION_Y = 0.5;
 
 // Card UI layout (normalized)
 export const CARD_UI = {
-  cornerRadius: 25, // px at 564px width
+  cornerRadius: 2, // px — sharp wireframe aesthetic
   coordsLabelOpacity: 1.0,
   coordsValueOpacity: 0.6,
   descriptionOpacity: 0.6,
