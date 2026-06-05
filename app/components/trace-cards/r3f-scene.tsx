@@ -5,8 +5,8 @@ import { CARDS, CARD_ASPECT } from "./config";
 import { TraceCardShell } from "./trace-card-shell";
 import { useTraceSimulation, type SimHandle } from "./use-trace-simulation";
 import { PerCardCanvas } from "./r3f-card";
-import { AsciiSTL } from "../AsciiSTL";
 import type { CardDefinition } from "./config";
+import { useScene } from "../SceneShell";
 
 // ── Card size ──
 const CARD_PX = 380;
@@ -16,9 +16,11 @@ const CARD_PX = 380;
 function DomCard({
   card,
   simHandle,
+  onClick,
 }: {
   card: CardDefinition;
   simHandle: SimHandle;
+  onClick?: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const shellWrapRef = useRef<HTMLDivElement>(null);
@@ -66,6 +68,7 @@ function DomCard({
         height: h,
         cursor: "pointer",
       }}
+      onClick={onClick}
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
       onPointerMove={handlePointerMove}
@@ -90,6 +93,25 @@ function DomCard({
 // ── Main Scene Export ──
 
 export function TraceCardsScene() {
+  const { startTransition, transitioning } = useScene();
+  const cardWrapperRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const handleCardClick = useCallback(
+    (cardIdx: number) => {
+      const el = cardWrapperRefs.current[cardIdx];
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+
+      startTransition({
+        href: CARDS[cardIdx].href,
+        title: CARDS[cardIdx].title,
+        titleStart: { x: rect.left + 22, y: rect.bottom - 20 - 28 },
+        mirror: false,
+      });
+    },
+    [startTransition]
+  );
+
   const sim0 = useTraceSimulation(CARDS[0]);
   const sim1 = useTraceSimulation(CARDS[1]);
   const sims = [sim0, sim1];
@@ -109,69 +131,31 @@ export function TraceCardsScene() {
   return (
     <div
       style={{
-        position: "relative",
-        width: "100%",
-        height: "100vh",
-        background: "#000",
-        overflow: "hidden",
+        position: "absolute",
+        bottom: 40,
+        left: 60,
+        right: 60,
+        zIndex: 4,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
       }}
     >
-      {/* Brand text — centered above caduceus */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10,
-          padding: "clamp(18px, 2.5vh, 32px) clamp(24px, 3vw, 48px)",
-          textAlign: "center",
-        }}
-      >
-        <span
-          style={{
-            color: "rgba(255, 248, 240, 0.9)",
-            font: '400 clamp(16px, 1.6vw, 22px)/1 Georgia, "Times New Roman", serif',
-            whiteSpace: "nowrap",
+      {CARDS.map((card, idx) => (
+        <div
+          key={idx}
+          ref={(el) => {
+            cardWrapperRefs.current[idx] = el;
           }}
+          className={transitioning ? "card-exit" : "card-enter"}
         >
-          Antid<span style={{ fontStyle: "italic" }}>o</span>te.
-        </span>
-      </div>
-
-      {/* ASCII caduceus — center of viewport */}
-      <div
-        style={{
-          position: "absolute",
-          top: "5%",
-          left: "17.5%",
-          width: "65%",
-          height: "91%",
-          zIndex: 2,
-        }}
-      >
-        <AsciiSTL />
-      </div>
-
-      {/* DOM cards with per-card R3F canvases — bottom, one on each side */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 40,
-          left: 60,
-          right: 60,
-          zIndex: 4,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-        }}
-      >
-        {CARDS.map((card, idx) => (
-          <div key={idx}>
-            <DomCard card={card} simHandle={sims[idx]} />
-          </div>
-        ))}
-      </div>
+          <DomCard
+            card={card}
+            simHandle={sims[idx]}
+            onClick={() => handleCardClick(idx)}
+          />
+        </div>
+      ))}
     </div>
   );
 }

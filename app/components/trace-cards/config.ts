@@ -69,6 +69,7 @@ export interface CardDefinition {
   structureLayers: number; // how many duplicate layers for this shape
   shapeColor: string;
   sculptColor: string;
+  href: string;
 }
 
 // ── Card Definitions ──
@@ -83,6 +84,7 @@ export const CARDS: CardDefinition[] = [
     structureLayers: 1,
     shapeColor: "#ffffff",
     sculptColor: "#ffffff",
+    href: "/transformations",
   },
   {
     title: "Buyouts",
@@ -93,6 +95,7 @@ export const CARDS: CardDefinition[] = [
     structureLayers: 2,
     shapeColor: "#ffffff",
     sculptColor: "#ffffff",
+    href: "/buyouts",
   },
 ];
 
