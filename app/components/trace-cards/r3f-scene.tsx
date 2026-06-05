@@ -143,10 +143,10 @@ export function TraceCardsScene() {
       <div
         style={{
           position: "absolute",
-          top: 0,
-          left: "25%",
-          width: "50%",
-          height: "70%",
+          top: "5%",
+          left: "17.5%",
+          width: "65%",
+          height: "91%",
           zIndex: 2,
         }}
       >
