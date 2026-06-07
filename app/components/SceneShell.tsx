@@ -45,8 +45,8 @@ export function useScene() {
 
 function getPageInfo(pathname: string): { title: string; mirror: boolean } | null {
   switch (pathname) {
-    case "/transformations":
-      return { title: "Transformations", mirror: false };
+    case "/consulting":
+      return { title: "Consulting", mirror: false };
     case "/buyouts":
       return { title: "Buyouts", mirror: false };
     default:
@@ -77,17 +77,54 @@ const ABOUT_CONTENT = (
     </p>
     <p
       style={{
-        fontSize: "clamp(13px, 1.2vw, 17px)",
+        fontSize: "clamp(14px, 1.4vw, 18px)",
         lineHeight: 1.7,
         color: "rgba(255, 248, 240, 0.62)",
-        margin: 0,
+        margin: "0 0 28px",
       }}
     >
       Our team spans private equity, strategy consulting, and software
       engineering.
-      <br />
-      Ex-CD&R, ex-BCG, ex-AngelList, ex-Dartmouth, ex-MIT.
     </p>
+    <p
+      style={{
+        fontSize: "clamp(13px, 1.2vw, 17px)",
+        lineHeight: 1.7,
+        color: "rgba(255, 248, 240, 0.62)",
+        margin: "0 0 32px",
+      }}
+    >
+      Our team is from
+    </p>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: "clamp(24px, 3.5vw, 48px)",
+        flexWrap: "nowrap",
+      }}
+    >
+      {[
+        { src: "/logos/cdr.svg", alt: "CD&R", h: "clamp(40px, 5vw, 60px)" },
+        { src: "/logos/bcg.svg", alt: "BCG", h: "clamp(40px, 5vw, 60px)" },
+        { src: "/logos/mit.svg", alt: "MIT", h: "clamp(40px, 5vw, 60px)" },
+        { src: "/logos/dartmouth.svg", alt: "Dartmouth", h: "clamp(22px, 2.8vw, 34px)" },
+        { src: "/logos/angellist.svg", alt: "AngelList", h: "clamp(40px, 5vw, 60px)" },
+      ].map((logo) => (
+        <img
+          key={logo.alt}
+          src={logo.src}
+          alt={logo.alt}
+          style={{
+            height: logo.h,
+            width: "auto",
+            opacity: 0.5,
+            filter: "brightness(0) invert(1)",
+          }}
+        />
+      ))}
+    </div>
   </div>
 );
 
