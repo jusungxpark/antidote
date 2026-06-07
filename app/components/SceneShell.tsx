@@ -94,7 +94,7 @@ const ABOUT_CONTENT = (
         margin: "0 0 32px",
       }}
     >
-      Our team is from
+      From the world's leading institutions:
     </p>
     <div
       style={{
