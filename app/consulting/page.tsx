@@ -61,6 +61,20 @@ export default function ConsultingPage() {
             />
           ))}
         </div>
+        <p
+          style={{
+            margin: "20px 0 0",
+            color: "rgba(255, 248, 240, 0.62)",
+          }}
+        >
+          For inquiries, please reach out to{" "}
+          <a
+            href="mailto:founders@antidotetransform.com"
+            style={{ color: "inherit", textDecoration: "underline" }}
+          >
+            founders@antidotetransform.com
+          </a>
+        </p>
       </ToggleHeading>
       <ToggleHeading title="Work">
         <p style={{ margin: "0 0 8px" }}>
