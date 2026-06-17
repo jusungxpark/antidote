@@ -397,7 +397,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
         style={{
           position: "relative",
           width: "100%",
-          minHeight: "100vh",
+          height: "100vh",
           background: "#000",
           overflowX: "hidden",
           overflowY: isHome ? "hidden" : "auto",
