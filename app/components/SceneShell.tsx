@@ -397,9 +397,10 @@ export function SceneShell({ children }: { children: ReactNode }) {
         style={{
           position: "relative",
           width: "100%",
-          height: "100vh",
+          minHeight: "100vh",
           background: "#000",
-          overflow: "hidden",
+          overflowX: "hidden",
+          overflowY: isHome ? "hidden" : "auto",
         }}
       >
         {/* Top bar */}
