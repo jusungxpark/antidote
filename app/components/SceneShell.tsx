@@ -345,7 +345,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
       <div
         className="scene-title"
         style={{
-          position: isMobile ? "relative" : "fixed",
+          position: isMobile ? "relative" : isAnimating ? "fixed" : "absolute",
           left: targetX,
           top: targetY,
           padding: isMobile ? "16px 24px" : undefined,
