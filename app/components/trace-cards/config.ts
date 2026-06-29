@@ -76,8 +76,8 @@ export interface CardDefinition {
 
 export const CARDS: CardDefinition[] = [
   {
-    title: "Consulting",
-    description: "AI-NATIVE CONSULTING",
+    title: "AI Transformation",
+    description: "PROJECT BASED",
     labels: ["Diligence", "Strategy", "Implementation"],
     movementPattern: "pyramidTrace",
     elementCount: 4,

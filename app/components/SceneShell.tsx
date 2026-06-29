@@ -46,7 +46,7 @@ export function useScene() {
 function getPageInfo(pathname: string): { title: string; mirror: boolean } | null {
   switch (pathname) {
     case "/consulting":
-      return { title: "Consulting", mirror: false };
+      return { title: "AI Transformation", mirror: false };
     case "/buyouts":
       return { title: "Buyouts", mirror: false };
     default:
