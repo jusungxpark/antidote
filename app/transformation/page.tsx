@@ -4,9 +4,9 @@ import { ToggleHeading } from "../components/ToggleHeading";
 const introStyle = {
   margin: "0 0 28px",
   fontFamily: "var(--font-sans)",
-  fontSize: "clamp(14px, 1.4vw, 18px)",
+  fontSize: "var(--text-body-size)",
   color: "var(--text-muted)",
-  lineHeight: 1.6,
+  lineHeight: "var(--text-body-leading)",
 } as const;
 
 export default function TransformationPage() {

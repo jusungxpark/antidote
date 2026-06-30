@@ -113,8 +113,8 @@ const MANIFESTO_CONTENT = (
       <p
         key={paragraph.slice(0, 24)}
         style={{
-          fontSize: "clamp(14px, 1.4vw, 18px)",
-          lineHeight: 1.7,
+          fontSize: "var(--text-body-size)",
+          lineHeight: "var(--text-body-leading)",
           color: "var(--text-muted)",
           margin: "0 0 20px",
         }}
@@ -146,8 +146,8 @@ const TEAM_CONTENT = (
     </p>
     <p
       style={{
-        fontSize: "clamp(14px, 1.4vw, 18px)",
-        lineHeight: 1.7,
+        fontSize: "var(--text-body-size)",
+        lineHeight: "var(--text-body-leading)",
         color: "var(--text-muted)",
         margin: "0 0 28px",
       }}
@@ -157,8 +157,8 @@ const TEAM_CONTENT = (
     </p>
     <p
       style={{
-        fontSize: "clamp(13px, 1.2vw, 17px)",
-        lineHeight: 1.7,
+        fontSize: "var(--text-body-size-secondary)",
+        lineHeight: "var(--text-body-leading)",
         color: "var(--text-muted)",
         margin: "0 0 32px",
       }}
@@ -465,7 +465,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
       }}
     >
       <div
-        className={`scene-shell${!isHome && transition === null ? " scene-shell--subpage" : ""}`}
+        className={`scene-shell${!isHome && transition === null ? " scene-shell--subpage" : ""}${navOverlay === "blog" ? " scene-shell--blog-open" : ""}`}
         style={{
           position: "relative",
           width: "100%",

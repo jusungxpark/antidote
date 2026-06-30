@@ -9,8 +9,11 @@
   --overlay-light: rgba(244, 244, 247, 0.97);
   --card-bg: #0b0a09;
   --card-bg-hover: #22201d;
-  --font-sans: Georgia, "Times New Roman", serif;
   --font-logo: Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-ibm-plex-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --text-body-size: clamp(11px, 1.15vw, 14px);
+  --text-body-size-secondary: clamp(10px, 1.05vw, 12px);
+  --text-body-leading: 1.65;
   color-scheme: dark;
   background: var(--page-bg);
 }
@@ -103,7 +106,7 @@ a {
   color: var(--text);
   text-decoration: none;
   text-underline-offset: 4px;
-  transition: text-decoration 180ms ease;
+  transition: color 180ms ease, text-decoration 180ms ease;
 }
 
 .scene-nav-link:hover,
@@ -146,6 +149,35 @@ a {
   white-space: nowrap;
   text-decoration: none;
   padding: 4px 8px;
+  transition: color 180ms ease;
+}
+
+/* Blog panel slides in light — keep header chrome above it with dark text */
+.scene-shell--blog-open .scene-frame-tl,
+.scene-shell--blog-open .scene-frame-tr,
+.scene-shell--blog-open .scene-logo {
+  z-index: 12;
+}
+
+.scene-shell--blog-open .scene-email {
+  color: rgba(11, 10, 9, 0.52);
+}
+
+.scene-shell--blog-open .scene-email:hover {
+  color: rgba(11, 10, 9, 0.82);
+}
+
+.scene-shell--blog-open .scene-nav-link {
+  color: rgba(11, 10, 9, 0.78);
+}
+
+.scene-shell--blog-open .scene-nav-link:hover,
+.scene-shell--blog-open .scene-nav-link.is-active {
+  color: rgba(11, 10, 9, 0.95);
+}
+
+.scene-shell--blog-open .scene-logo {
+  color: rgba(11, 10, 9, 0.95);
 }
 
 .scene-shell--subpage .scene-frame,
@@ -259,6 +291,8 @@ a {
     clamp(32px, 4vw, 48px);
   text-align: left;
   font-family: var(--font-sans);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-leading);
 }
 
 .pillar-panel.is-open:not(.is-seamless) .pillar-panel-body {

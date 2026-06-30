@@ -67,9 +67,9 @@ export function ToggleHeading({
             paddingLeft: "clamp(24px, 3vw, 34px)",
             marginTop: 16,
             fontFamily: "var(--font-sans)",
-            fontSize: "clamp(14px, 1.4vw, 18px)",
+            fontSize: "var(--text-body-size)",
             color: "var(--text-muted)",
-            lineHeight: 1.6,
+            lineHeight: "var(--text-body-leading)",
           }}
         >
           {children ?? <>&nbsp;</>}
