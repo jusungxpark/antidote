@@ -38,7 +38,7 @@ export function ToggleHeading({
           style={{
             display: "inline-block",
             fontSize: "clamp(14px, 1.8vw, 20px)",
-            color: "rgba(255, 248, 240, 0.92)",
+            color: "var(--text-bright)",
             transform: open ? "rotate(90deg)" : "rotate(0deg)",
             transition: "transform 400ms ease",
             willChange: "transform",
@@ -49,10 +49,10 @@ export function ToggleHeading({
         </span>
         <span
           style={{
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: "var(--font-sans)",
             fontSize: "clamp(20px, 2.5vw, 28px)",
             fontWeight: 400,
-            color: "rgba(255, 248, 240, 0.92)",
+            color: "var(--text-bright)",
             lineHeight: 1,
           }}
         >
@@ -66,9 +66,9 @@ export function ToggleHeading({
           style={{
             paddingLeft: "clamp(24px, 3vw, 34px)",
             marginTop: 16,
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: "var(--font-sans)",
             fontSize: "clamp(14px, 1.4vw, 18px)",
-            color: "rgba(255, 248, 240, 0.7)",
+            color: "var(--text-muted)",
             lineHeight: 1.6,
           }}
         >

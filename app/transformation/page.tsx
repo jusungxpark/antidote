@@ -1,48 +1,22 @@
 import { SubpageLayout } from "../components/SubpageLayout";
 import { ToggleHeading } from "../components/ToggleHeading";
 
-export default function ConsultingPage() {
+const introStyle = {
+  margin: "0 0 28px",
+  fontFamily: "var(--font-sans)",
+  fontSize: "clamp(14px, 1.4vw, 18px)",
+  color: "var(--text-muted)",
+  lineHeight: 1.6,
+} as const;
+
+export default function TransformationPage() {
   return (
     <SubpageLayout>
-      <ToggleHeading title="Thesis">
-        <p style={{ margin: "0 0 16px" }}>
-          AI has crossed a capability threshold that most of the market has not
-          yet internalized. The technology is no longer augmenting work. It is
-          performing it. Research, analysis, coordination, execution. These are
-          compressing into systems that operate as genuine substitutes for units
-          of labor. That changes the economics of every service business.
-          Outcomes, not hours, are becoming the unit of value. And when the work
-          itself becomes commoditized, the only durable asset is the customer
-          relationship. The firms that understand this will restructure around
-          it. The ones that don&apos;t will find themselves selling labor into a
-          market that no longer values it the same way.
-        </p>
-        <p style={{ margin: "0 0 16px" }}>
-          But capturing that value requires more than intent. It requires
-          infrastructure. Most AI initiatives fail before they start because the
-          data underneath is fragmented, inconsistent, and unstructured. This is
-          not a tooling problem, but rather a foundation problem. Accelerating
-          workflows with AI does not automatically mean faster or better results.
-          It also surfaces and exacerbates every underlying broken system that
-          has gone unnoticed for years, masked by manual work and reliance on
-          tribal knowledge. Without proper process and data visibility, a clear
-          understanding of how work actually moves through an organization, and
-          clean systems of record, AI is just an amplifier of dysfunction. Data
-          hygiene and governance are not afterthoughts. They are prerequisites.
-        </p>
-        <p style={{ margin: 0 }}>
-          Even with the right data foundation in place, execution is an entirely
-          separate hurdle. Building on top of nondeterministic systems is
-          fundamentally different from building traditional software, and it
-          demands a different kind of engineering and architecture: guardrails,
-          evaluations, sandboxes, tool calling, orchestration, escalation, and
-          token economics. Getting a model to produce a demo is easy. Getting it
-          to run reliably in production, at scale, with proper oversight, is the
-          actual work. Proper AI transformation requires practitioners who have
-          built and shipped these systems before, not advisors who have read
-          about them.
-        </p>
-      </ToggleHeading>
+      <p style={introStyle}>
+        Partner with us. Most of what we know, we can teach. We bring the
+        philosophy, the playbook, and the engineering to rebuild how your
+        business runs – and make you the first AI-native operator in your field.
+      </p>
       <ToggleHeading title="Services">
         <p style={{ margin: "0 0 8px" }}>
           We partner with private equity firms to provide value in the following
@@ -66,7 +40,7 @@ export default function ConsultingPage() {
         <p
           style={{
             margin: "20px 0 12px",
-            color: "rgba(255, 248, 240, 0.62)",
+            color: "var(--text-muted)",
           }}
         >
           Our team is from
@@ -102,7 +76,7 @@ export default function ConsultingPage() {
         <p
           style={{
             margin: "20px 0 0",
-            color: "rgba(255, 248, 240, 0.62)",
+            color: "var(--text-muted)",
           }}
         >
           For inquiries, please reach out to{" "}

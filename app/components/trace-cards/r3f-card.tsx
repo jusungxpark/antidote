@@ -500,7 +500,7 @@ function CardShadowReceiver() {
   return (
     <mesh receiveShadow renderOrder={0} position={[0, 0, -0.02]}>
       <planeGeometry args={[w, h]} />
-      <shadowMaterial transparent opacity={0.55} />
+      <shadowMaterial transparent opacity={0.72} />
     </mesh>
   );
 }

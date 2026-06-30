@@ -12,31 +12,57 @@ import {
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { PillarExpandOverlay } from "./PillarExpandOverlay";
+import { CARDS } from "./trace-cards/config";
+import { computeHomeCardRect, type LayoutRect } from "./trace-cards/card-layout";
 
 const AsciiSTL = dynamic(
   () => import("./AsciiSTL").then((m) => m.AsciiSTL),
   { ssr: false }
 );
 
-const TRANSITION_MS = 800;
+const TraceCardsScene = dynamic(
+  () =>
+    import("./trace-cards/r3f-scene").then((m) => m.TraceCardsScene),
+  { ssr: false }
+);
+
+const TRANSITION_MS = 680;
 
 interface TransitionRequest {
   href: string;
   title: string;
+  subtitle?: string;
+  labels?: string[];
   titleStart: { x: number; y: number };
+  cardRect: { top: number; left: number; width: number; height: number };
+  cardIndex: number;
   mirror: boolean;
+  direction: "forward" | "reverse";
 }
 
 interface SceneContextValue {
   startTransition: (req: TransitionRequest) => void;
+  startReturnTransition: () => void;
+  acknowledgeExpandReady: () => void;
+  beginCollapse: (rect: LayoutRect) => void;
   transitioning: boolean;
   returningHome: boolean;
+  transition: TransitionRequest | null;
+  transitionPhase: number;
+  cardsIntroDone: boolean;
 }
 
 const SceneContext = createContext<SceneContextValue>({
   startTransition: () => {},
+  startReturnTransition: () => {},
+  acknowledgeExpandReady: () => {},
+  beginCollapse: () => {},
   transitioning: false,
   returningHome: false,
+  transition: null,
+  transitionPhase: 0,
+  cardsIntroDone: false,
 });
 
 export function useScene() {
@@ -45,23 +71,66 @@ export function useScene() {
 
 function getPageInfo(pathname: string): { title: string; mirror: boolean } | null {
   switch (pathname) {
-    case "/consulting":
+    case "/transformation":
       return { title: "AI Transformation", mirror: false };
     case "/buyouts":
-      return { title: "Buyouts", mirror: false };
+      return { title: "Buyouts", mirror: true };
     default:
       return null;
   }
 }
 
-type NavPage = "about" | "blog";
+type NavPage = "manifesto" | "team" | "blog";
 
-const ABOUT_CONTENT = (
+const MANIFESTO_CONTENT = (
+  <div
+    style={{
+      maxWidth: 680,
+      maxHeight: "100%",
+      overflowY: "auto",
+      padding: "clamp(48px, 8vh, 80px) clamp(24px, 4vw, 48px)",
+      fontFamily: "var(--font-sans)",
+      textAlign: "left",
+    }}
+  >
+    <p
+      style={{
+        fontSize: "clamp(18px, 2.2vw, 28px)",
+        lineHeight: 1.5,
+        color: "var(--text-bright)",
+        margin: "0 0 28px",
+      }}
+    >
+      We believe AI-native businesses will win.
+    </p>
+    {[
+      "Most people are chasing that future down two dead ends. One camp builds AI-native companies from scratch: brilliant technology with no customers, no context, and no right to exist in a market yet. The other bolts agents onto legacy infrastructure and systems and calls it transformation (spoiler: it isn't).",
+      "The real answer is the unglamorous one in between. Take a real business – one with customers, history, with a proven right to exist – and rebuild it AI-native from the ground up. Incumbency on the outside, brand new on the inside. That is the company that wins the next decade.",
+      "We spread this conviction two ways. We partner – the philosophy is replicable, so we share it, helping established players become the first AI-native operator in their industry. And we buy – because the hardest part of transformation is not the technology, it's change management and adoption, which is hard to control without ownership. So we acquire incumbents and turn them into the next generation of leaders in their fields, proving the thesis by owning the outcome.",
+      "Do it once, you've transformed a company. Do it with a repeatable engine, sector after sector, and you've built something that compounds.",
+      "That's Antidote.",
+    ].map((paragraph) => (
+      <p
+        key={paragraph.slice(0, 24)}
+        style={{
+          fontSize: "clamp(14px, 1.4vw, 18px)",
+          lineHeight: 1.7,
+          color: "var(--text-muted)",
+          margin: "0 0 20px",
+        }}
+      >
+        {paragraph}
+      </p>
+    ))}
+  </div>
+);
+
+const TEAM_CONTENT = (
   <div
     style={{
       maxWidth: 780,
       padding: "0 clamp(24px, 4vw, 48px)",
-      fontFamily: 'Georgia, "Times New Roman", serif',
+      fontFamily: "var(--font-sans)",
       textAlign: "center",
     }}
   >
@@ -69,7 +138,7 @@ const ABOUT_CONTENT = (
       style={{
         fontSize: "clamp(18px, 2.2vw, 28px)",
         lineHeight: 1.5,
-        color: "rgba(255, 248, 240, 0.9)",
+        color: "var(--text-bright)",
         margin: "0 0 28px",
       }}
     >
@@ -79,7 +148,7 @@ const ABOUT_CONTENT = (
       style={{
         fontSize: "clamp(14px, 1.4vw, 18px)",
         lineHeight: 1.7,
-        color: "rgba(255, 248, 240, 0.62)",
+        color: "var(--text-muted)",
         margin: "0 0 28px",
       }}
     >
@@ -90,11 +159,11 @@ const ABOUT_CONTENT = (
       style={{
         fontSize: "clamp(13px, 1.2vw, 17px)",
         lineHeight: 1.7,
-        color: "rgba(255, 248, 240, 0.62)",
+        color: "var(--text-muted)",
         margin: "0 0 32px",
       }}
     >
-      From the world's leading institutions:
+      From the world&apos;s leading institutions:
     </p>
     <div
       style={{
@@ -131,7 +200,7 @@ const ABOUT_CONTENT = (
 const BLOG_CONTENT = (
   <p
     style={{
-      fontFamily: 'Georgia, "Times New Roman", serif',
+      fontFamily: "var(--font-sans)",
       fontSize: "clamp(18px, 2.2vw, 28px)",
       lineHeight: 1.5,
       color: "rgba(10, 10, 10, 0.6)",
@@ -143,21 +212,43 @@ const BLOG_CONTENT = (
 );
 
 const OVERLAY_STYLES: Record<NavPage, React.CSSProperties> = {
-  about: {
+  manifesto: {
+    background: "rgba(18, 18, 18, 0.70)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+  },
+  team: {
     background: "rgba(18, 18, 18, 0.70)",
     backdropFilter: "blur(12px)",
     WebkitBackdropFilter: "blur(12px)",
   },
   blog: {
-    background: "rgba(255, 248, 240, 0.97)",
+    background: "var(--overlay-light)",
     backdropFilter: "blur(12px)",
     WebkitBackdropFilter: "blur(12px)",
   },
 };
 
+const NAV_ITEMS: { page: NavPage; label: string }[] = [
+  { page: "manifesto", label: "Manifesto" },
+  { page: "team", label: "Team" },
+  { page: "blog", label: "Blog" },
+];
+
 function getOverlayClass(page: NavPage, leaving: boolean): string {
-  if (page === "about") return leaving ? "shimmer-up" : "shimmer-down";
-  return leaving ? "shimmer-right-out" : "shimmer-right-in";
+  if (page === "blog") return leaving ? "shimmer-right-out" : "shimmer-right-in";
+  return leaving ? "shimmer-up" : "shimmer-down";
+}
+
+function getOverlayContent(page: NavPage): ReactNode {
+  switch (page) {
+    case "manifesto":
+      return MANIFESTO_CONTENT;
+    case "team":
+      return TEAM_CONTENT;
+    case "blog":
+      return BLOG_CONTENT;
+  }
 }
 
 export function SceneShell({ children }: { children: ReactNode }) {
@@ -166,52 +257,81 @@ export function SceneShell({ children }: { children: ReactNode }) {
   const [transition, setTransition] = useState<TransitionRequest | null>(null);
   const [phase, setPhase] = useState(0);
   const transitionLock = useRef(false);
+  const expandReadyRef = useRef(false);
+  const collapseStartedRef = useRef(false);
   const [returningHome, setReturningHome] = useState(false);
-  const returnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [cardsIntroDone, setCardsIntroDone] = useState(false);
+
+  useEffect(() => {
+    if (cardsIntroDone) return;
+    const timer = setTimeout(() => setCardsIntroDone(true), 900);
+    return () => clearTimeout(timer);
+  }, [cardsIntroDone]);
 
   // Nav overlay state
   const [navOverlay, setNavOverlay] = useState<NavPage | null>(null);
   const [navOverlayLeaving, setNavOverlayLeaving] = useState(false);
   const navReturnHomeRef = useRef(false);
 
-  // Track viewport size (null until mounted — avoids SSR hydration mismatch)
-  const [windowSize, setWindowSize] = useState<{ w: number; h: number } | null>(
-    null
-  );
-  useEffect(() => {
-    const update = () =>
-      setWindowSize({ w: window.innerWidth, h: window.innerHeight });
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
   const isHome = pathname === "/";
   const pageInfo = getPageInfo(pathname);
 
   const mirror = transition?.mirror ?? pageInfo?.mirror ?? false;
-  const title = transition?.title ?? pageInfo?.title ?? "";
 
   const startTransition = useCallback((req: TransitionRequest) => {
     if (transitionLock.current) return;
     transitionLock.current = true;
-    setTransition(req);
+    expandReadyRef.current = false;
+    collapseStartedRef.current = false;
+    setTransition({ ...req, direction: req.direction ?? "forward" });
     setPhase(0);
   }, []);
 
-  // Phase 0 → 1
-  useEffect(() => {
-    if (transition && phase === 0) {
-      const id = requestAnimationFrame(() => {
-        requestAnimationFrame(() => setPhase(1));
-      });
-      return () => cancelAnimationFrame(id);
-    }
-  }, [transition, phase]);
+  const acknowledgeExpandReady = useCallback(() => {
+    if (expandReadyRef.current) return;
+    expandReadyRef.current = true;
+    setPhase(1);
+  }, []);
 
-  // Navigate after animation
+  const beginCollapse = useCallback((rect: LayoutRect) => {
+    if (collapseStartedRef.current) return;
+    collapseStartedRef.current = true;
+    setTransition((prev) =>
+      prev && prev.direction === "reverse" ? { ...prev, cardRect: rect } : prev
+    );
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setPhase(0));
+    });
+  }, []);
+
+  const startReturnTransition = useCallback(() => {
+    if (transitionLock.current || returningHome || isHome) return;
+    const cardIndex = pathname === "/transformation" ? 0 : pathname === "/buyouts" ? 1 : -1;
+    if (cardIndex < 0) return;
+
+    const card = CARDS[cardIndex];
+    expandReadyRef.current = false;
+    collapseStartedRef.current = false;
+    transitionLock.current = true;
+    setReturningHome(true);
+    setTransition({
+      href: pathname,
+      title: card.title,
+      subtitle: card.description,
+      labels: card.labels,
+      cardIndex,
+      mirror: cardIndex === 1,
+      cardRect: computeHomeCardRect(cardIndex),
+      titleStart: { x: 0, y: 0 },
+      direction: "reverse",
+    });
+    setPhase(1);
+    window.setTimeout(() => router.push("/"), 80);
+  }, [pathname, returningHome, isHome, router]);
+
+  // Forward: navigate to subpage after expand completes
   useEffect(() => {
-    if (transition && phase === 1) {
+    if (transition?.direction === "forward" && transition && phase === 1) {
       const timer = setTimeout(() => {
         router.push(transition.href);
       }, TRANSITION_MS + 50);
@@ -219,26 +339,55 @@ export function SceneShell({ children }: { children: ReactNode }) {
     }
   }, [transition, phase, router]);
 
-  // Clear transition on arrival
+  // Forward: clear overlay after subpage panel has painted underneath
   useEffect(() => {
-    if (transition && pathname === transition.href) {
-      setTransition(null);
-      setPhase(0);
-      transitionLock.current = false;
+    if (
+      transition?.direction === "forward" &&
+      transition &&
+      pathname === transition.href
+    ) {
+      const id = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTransition(null);
+            setPhase(0);
+            transitionLock.current = false;
+            expandReadyRef.current = false;
+          });
+        });
+      });
+      return () => cancelAnimationFrame(id);
     }
   }, [pathname, transition]);
 
-  // Reset lock when back on home
+  // Reverse: clear transition after collapse completes on home
   useEffect(() => {
-    if (isHome) {
-      transitionLock.current = false;
-      setReturningHome(false);
-      if (returnTimerRef.current) {
-        clearTimeout(returnTimerRef.current);
-        returnTimerRef.current = null;
-      }
+    if (
+      transition?.direction === "reverse" &&
+      transition &&
+      phase === 0 &&
+      isHome
+    ) {
+      const timer = setTimeout(() => {
+        setTransition(null);
+        setPhase(0);
+        transitionLock.current = false;
+        collapseStartedRef.current = false;
+        setReturningHome(false);
+      }, TRANSITION_MS + 80);
+      return () => clearTimeout(timer);
     }
-  }, [isHome]);
+  }, [transition, phase, isHome]);
+
+  // Reset lock when idle on a subpage or after returning home
+  useEffect(() => {
+    if (!transition) {
+      transitionLock.current = false;
+      expandReadyRef.current = false;
+      collapseStartedRef.current = false;
+      if (isHome) setReturningHome(false);
+    }
+  }, [isHome, transition]);
 
   // Nav overlay handlers
   const handleNavPage = useCallback(
@@ -280,17 +429,16 @@ export function SceneShell({ children }: { children: ReactNode }) {
       }
       if (isHome || returningHome) return;
       e.preventDefault();
-      setReturningHome(true);
-      returnTimerRef.current = setTimeout(() => {
-        router.push("/");
-      }, 450);
+      startReturnTransition();
     },
-    [isHome, returningHome, router, navOverlay]
+    [isHome, returningHome, navOverlay, startReturnTransition]
   );
 
-  // Caduceus: subpage position when animating (phase 1) or on a subpage
+  // Caduceus: subpage layout during forward expand or while on subpage (before reverse)
   const atSubpage =
-    (transition !== null && phase === 1) || (!isHome && transition === null);
+    (transition?.direction === "forward" && transition !== null && phase === 1) ||
+    (transition?.direction === "reverse" && transition !== null && phase === 1) ||
+    (!isHome && transition === null && !returningHome);
 
   let caduceusClass = "scene-caduceus";
   if (atSubpage) {
@@ -299,156 +447,63 @@ export function SceneShell({ children }: { children: ReactNode }) {
     caduceusClass += " scene-caduceus--home";
   }
 
-  // Title
-  let titleNode: ReactNode = null;
-  const showTitle =
-    windowSize !== null && (transition !== null || (!isHome && !!title));
-
-  if (showTitle) {
-    const vw = windowSize.w;
-    const vh = windowSize.h;
-    const isMobile = vw <= 768;
-
-    const fontSize = isMobile
-      ? Math.max(24, Math.min(vw * 0.065, 32))
-      : Math.max(36, Math.min(vw * 0.05, 64));
-
-    let targetX: number | undefined;
-    let targetY: number | undefined;
-    let transform = "translate(0, 0) scale(1)";
-    let isAnimating = false;
-
-    if (!isMobile) {
-      const padding = Math.max(40, Math.min(vw * 0.05, 80));
-      const cadTop = vh * 0.05;
-      const cadHeight = Math.max(220, Math.min(vh * 0.35, 460));
-      targetY = cadTop + cadHeight / 2 - fontSize / 2;
-
-      if (mirror) {
-        const titleW = title.length * fontSize * 0.58;
-        targetX = vw - padding - titleW;
-      } else {
-        targetX = padding;
-      }
-
-      if (transition && phase === 0) {
-        const scaleRatio = 28 / fontSize;
-        const offsetX = transition.titleStart.x - targetX;
-        const offsetY = transition.titleStart.y - targetY;
-        transform = `translate(${offsetX}px, ${offsetY}px) scale(${scaleRatio})`;
-      }
-
-      isAnimating = transition !== null;
-    }
-
-    titleNode = (
-      <div
-        className="scene-title"
-        style={{
-          position: isMobile ? "relative" : isAnimating ? "fixed" : "absolute",
-          left: targetX,
-          top: targetY,
-          padding: isMobile ? "16px 24px" : undefined,
-          fontSize,
-          fontFamily: 'Georgia, "Times New Roman", serif',
-          fontWeight: 400,
-          lineHeight: 1,
-          color: "rgba(255, 248, 240, 0.92)",
-          pointerEvents: "none",
-          zIndex: 7,
-          transformOrigin: "left top",
-          transform: isMobile ? undefined : transform,
-          opacity: returningHome ? 0 : 1,
-          willChange: isAnimating || returningHome ? "transform, opacity" : "auto",
-          transition: isAnimating
-            ? `transform ${TRANSITION_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`
-            : returningHome
-              ? "opacity 400ms ease"
-              : "none",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {title}
-      </div>
-    );
-  }
-
-  const navLinkStyle = (page: NavPage): React.CSSProperties => ({
-    background: "none",
-    border: "none",
-    padding: "12px 8px",
-    margin: "-12px -8px",
-    cursor: "pointer",
-    color:
-      navOverlay === page && !navOverlayLeaving
-        ? "rgba(255, 248, 240, 0.92)"
-        : "rgba(255, 248, 240, 0.68)",
-    font: '400 clamp(11px, 1.1vw, 14px)/1 Georgia, "Times New Roman", serif',
-    textTransform: "lowercase",
-    transition: "color 200ms ease",
-  });
+  const navLinkClass = (page: NavPage) =>
+    navOverlay === page && !navOverlayLeaving ? "scene-nav-link is-active" : "scene-nav-link";
 
   return (
     <SceneContext.Provider
-      value={{ startTransition, transitioning: transition !== null, returningHome }}
+      value={{
+        startTransition,
+        startReturnTransition,
+        acknowledgeExpandReady,
+        beginCollapse,
+        transitioning: transition !== null,
+        returningHome,
+        transition,
+        transitionPhase: phase,
+        cardsIntroDone,
+      }}
     >
       <div
-        className="scene-shell"
+        className={`scene-shell${!isHome && transition === null ? " scene-shell--subpage" : ""}`}
         style={{
           position: "relative",
           width: "100%",
           height: "100vh",
-          background: "#000",
+          background: "var(--page-bg)",
           overflowX: "hidden",
-          overflowY: isHome ? "hidden" : "auto",
+          overflowY: "hidden",
         }}
       >
-        {/* Top bar */}
-        <div
-          className="scene-topbar"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 10,
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "center",
-            gap: "clamp(28px, 4vw, 56px)",
-            padding: "clamp(18px, 2.5vh, 32px) clamp(24px, 3vw, 48px)",
-            background: "#000",
-          }}
+        <a
+          href="mailto:founders@antidotetransform.com"
+          className="scene-frame scene-frame-tl scene-email"
         >
-          <button
-            onClick={() => handleNavPage("about")}
-            style={navLinkStyle("about")}
-          >
-            about us
-          </button>
+          founders@antidotetransform.com
+        </a>
 
-          <Link
-            href="/"
-            onClick={handleReturnHome}
-            style={{
-              color: "rgba(255, 248, 240, 0.9)",
-              font: '400 clamp(20px, 2vw, 28px)/1 Georgia, "Times New Roman", serif',
-              whiteSpace: "nowrap",
-              textDecoration: "none",
-              padding: "8px 4px",
-              margin: "-8px -4px",
-            }}
-          >
-            Antid<span style={{ fontStyle: "italic" }}>o</span>te.
-          </Link>
+        <nav className="scene-frame scene-frame-tr scene-nav" aria-label="Site">
+          {NAV_ITEMS.map(({ page, label }) => (
+            <button
+              key={page}
+              type="button"
+              className={navLinkClass(page)}
+              onClick={() => handleNavPage(page)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
 
-          <button
-            onClick={() => handleNavPage("blog")}
-            style={navLinkStyle("blog")}
-          >
-            blog
-          </button>
-        </div>
+        <Link href="/" onClick={handleReturnHome} className="scene-logo">
+          Antid<span style={{ fontStyle: "italic" }}>o</span>te.
+        </Link>
+
+        <p className="scene-frame scene-frame-bl scene-tagline">
+          Transforming service businesses to become AI-native.
+        </p>
+
+        <div className="scene-frame scene-frame-br scene-location">New York — 2026</div>
 
         {/* Caduceus — persists across routes */}
         <div
@@ -458,11 +513,11 @@ export function SceneShell({ children }: { children: ReactNode }) {
           <AsciiSTL />
         </div>
 
-        {/* Floating title */}
-        {titleNode}
-
-        {/* Page content */}
         {children}
+
+        <TraceCardsScene />
+
+        {transition && <PillarExpandOverlay />}
 
         {/* Nav page overlay */}
         {navOverlay && (
@@ -480,7 +535,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
               ...OVERLAY_STYLES[navOverlay],
             }}
           >
-            {navOverlay === "about" ? ABOUT_CONTENT : BLOG_CONTENT}
+            {getOverlayContent(navOverlay)}
           </div>
         )}
       </div>

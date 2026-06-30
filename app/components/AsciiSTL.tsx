@@ -32,7 +32,7 @@ export function AsciiSTL({ src = "/caduceo.stl" }: { src?: string }) {
       };
 
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x000000);
+      scene.background = new THREE.Color(0x0b0a09);
 
       const camera = new THREE.PerspectiveCamera(
         45,
@@ -50,7 +50,7 @@ export function AsciiSTL({ src = "/caduceo.stl" }: { src?: string }) {
       });
       effect.setSize(container.clientWidth, container.clientHeight);
       effect.domElement.style.color = "#fff";
-      effect.domElement.style.backgroundColor = "#000";
+      effect.domElement.style.backgroundColor = "#0b0a09";
       effect.domElement.style.overflow = "hidden";
       effect.domElement.style.whiteSpace = "pre";
       container.appendChild(effect.domElement);
