@@ -10,18 +10,25 @@ interface SubpageLayoutProps {
   mirror?: boolean;
 }
 
-const PILLAR_TITLES: Record<string, string> = {
-  "/transformation": "AI Transformation",
-  "/buyouts": "Buyouts",
-};
+function getPillarMeta(pathname: string) {
+  if (pathname.startsWith("/transformation")) {
+    return { title: "AI Transformation", mirror: false as const };
+  }
+  if (pathname.startsWith("/buyouts")) {
+    return { title: "Buyouts", mirror: true as const };
+  }
+  return null;
+}
 
 export function SubpageLayout({ children, mirror = false }: SubpageLayoutProps) {
   const pathname = usePathname();
   const { returningHome } = useScene();
-  const side = mirror ? "right" : "left";
-  const title = PILLAR_TITLES[pathname] ?? "Antidote";
+  const meta = getPillarMeta(pathname);
 
   if (!children) return null;
+
+  const side = (meta?.mirror ?? mirror) ? "right" : "left";
+  const title = meta?.title ?? "Antidote";
 
   return (
     <ExpandedPillarPanel
