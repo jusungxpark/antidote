@@ -211,32 +211,19 @@ const TEAM_CONTENT = (
     >
       From the world&apos;s leading institutions:
     </p>
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "clamp(24px, 3.5vw, 48px)",
-        flexWrap: "nowrap",
-      }}
-    >
+    <div className="team-logos-row">
       {[
-        { src: "/logos/cdr.png", alt: "CD&R", h: "clamp(40px, 5vw, 60px)" },
-        { src: "/logos/bcg.svg", alt: "BCG", h: "clamp(40px, 5vw, 60px)" },
-        { src: "/logos/mit.svg", alt: "MIT", h: "clamp(40px, 5vw, 60px)" },
-        { src: "/logos/dartmouth.svg", alt: "Dartmouth", h: "clamp(22px, 2.8vw, 34px)" },
-        { src: "/logos/angellist.svg", alt: "AngelList", h: "clamp(40px, 5vw, 60px)" },
+        { src: "/logos/cdr.png", alt: "CD&R", id: "cdr" },
+        { src: "/logos/bcg.svg", alt: "BCG", id: "bcg" },
+        { src: "/logos/mit.svg", alt: "MIT", id: "mit" },
+        { src: "/logos/dartmouth.svg", alt: "Dartmouth", id: "dartmouth" },
+        { src: "/logos/angellist.svg", alt: "AngelList", id: "angellist" },
       ].map((logo) => (
         <img
-          key={logo.alt}
+          key={logo.id}
+          data-logo={logo.id}
           src={logo.src}
           alt={logo.alt}
-          style={{
-            height: logo.h,
-            width: "auto",
-            opacity: 0.5,
-            filter: "brightness(0) invert(1)",
-          }}
         />
       ))}
     </div>

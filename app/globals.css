@@ -1089,6 +1089,44 @@ a {
   animation: toggle-reveal 500ms ease both;
 }
 
+/* ── Team overlay logos — optical size alignment ── */
+
+.team-logos-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 3vw, 42px);
+  flex-wrap: nowrap;
+}
+
+.team-logos-row img {
+  width: auto;
+  opacity: 0.5;
+  filter: brightness(0) invert(1);
+  object-fit: contain;
+}
+
+/* BCG/MIT SVGs have generous viewBox padding — use the row baseline height. */
+.team-logos-row img[data-logo="bcg"],
+.team-logos-row img[data-logo="mit"] {
+  height: clamp(34px, 4.2vw, 48px);
+}
+
+/* CD&R PNG fills its box edge-to-edge — scale down to match SVG cap height. */
+.team-logos-row img[data-logo="cdr"] {
+  height: clamp(22px, 2.8vw, 32px);
+}
+
+/* Wide wordmark — slightly shorter so it doesn't dominate horizontally. */
+.team-logos-row img[data-logo="dartmouth"] {
+  height: clamp(18px, 2.2vw, 26px);
+}
+
+/* Tall mark — between baseline and full height. */
+.team-logos-row img[data-logo="angellist"] {
+  height: clamp(30px, 3.8vw, 44px);
+}
+
 /* ── Nav page shimmer — about (top ↔ bottom) ── */
 
 @keyframes shimmer-down {
