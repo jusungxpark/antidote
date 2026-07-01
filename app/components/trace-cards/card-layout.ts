@@ -10,16 +10,37 @@ export interface LayoutRect {
   height: number;
 }
 
+function clamp(min: number, preferred: number, max: number): number {
+  return Math.min(Math.max(preferred, min), max);
+}
+
+/** Matches `.scene-caduceus--left` / `--right` horizontal sizing in globals.css */
+export function getCaduceusHorizontalBounds(vw: number, mirror: boolean) {
+  const edgePad = clamp(40, vw * 0.05, 80);
+  const width = clamp(180, vw * 0.28, 380);
+  if (mirror) {
+    return { left: edgePad, right: edgePad + width };
+  }
+  const left = vw - edgePad - width;
+  return { left, right: vw - edgePad };
+}
+
 export function computePillarTargetRect(mirror: boolean): LayoutRect {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const top = Math.min(Math.max(84, vh * 0.11), 108);
-  const bottom = Math.min(Math.max(58, vh * 0.065), 68);
-  const pad = Math.min(Math.max(24, vw * 0.03), 48);
-  const width = Math.min(vw * 0.62, 820);
+  const top = clamp(84, vh * 0.11, 108);
+  const bottom = clamp(58, vh * 0.065, 68);
+  const pad = clamp(24, vw * 0.03, 48);
+  const gap = clamp(16, vw * 0.02, 32);
   const height = vh - top - bottom;
-  const left = mirror ? vw - width - pad : pad;
-  return { top, left, width, height };
+  const caduceus = getCaduceusHorizontalBounds(vw, mirror);
+
+  if (mirror) {
+    const left = caduceus.right + gap;
+    return { top, left, width: vw - pad - left, height };
+  }
+
+  return { top, left: pad, width: caduceus.left - gap - pad, height };
 }
 
 export function computeHomeCardRect(cardIndex: number): LayoutRect {

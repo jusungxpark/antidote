@@ -244,7 +244,7 @@ export function CaseStudyExpandOverlay() {
           <h1
             className={`case-study-detail-banner-title case-study-morph-banner-title${expanded ? " is-expanded" : ""}`}
           >
-            {study.firm}
+            {study.label}
           </h1>
         ) : null}
       </div>
@@ -258,7 +258,7 @@ export function CaseStudyExpandOverlay() {
 
       {isReverse ? (
         <h1 ref={floatTitleRef} className="case-study-morph-float-title">
-          {study.firm}
+          {study.label}
         </h1>
       ) : null}
     </div>,

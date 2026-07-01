@@ -36,7 +36,7 @@ export function CaseStudyDetailView({
           ref={titleRef}
           className={`case-study-detail-banner-title${titleClassName ? ` ${titleClassName}` : ""}`}
         >
-          {study.firm}
+          {study.label}
         </h1>
       </header>
 

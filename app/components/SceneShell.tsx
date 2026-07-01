@@ -18,6 +18,7 @@ import { CaseStudyDetailScreen } from "./CaseStudyDetailScreen";
 import { CaseStudyExpandOverlay } from "./CaseStudyExpandOverlay";
 import {
   CASE_STUDIES_PATH,
+  CASE_STUDIES_SLIDE_MS,
   getCaseStudyBySlug,
   getCaseStudySlugFromPath,
   type CaseStudy,
@@ -41,7 +42,6 @@ const TraceCardsScene = dynamic(
 );
 
 const TRANSITION_MS = 680;
-const CASE_STUDIES_SLIDE_MS = 900;
 const CASE_STUDY_EXPAND_MS = 680;
 
 interface TransitionRequest {
@@ -791,7 +791,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
           Transforming service businesses to become AI-native.
         </p>
 
-        <div className="scene-frame scene-frame-br scene-location">New York — 2026</div>
+        <div className="scene-frame scene-frame-br scene-location">New York / San Francisco — 2026</div>
 
         {/* Caduceus — persists across routes */}
         <div

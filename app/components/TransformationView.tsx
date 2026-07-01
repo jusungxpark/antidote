@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CASE_STUDIES_PATH } from "./case-studies-data";
+import { PeFirmLogoCarousel } from "./PeFirmLogoCarousel";
 
 export function TransformationView() {
   return (
@@ -16,26 +17,7 @@ export function TransformationView() {
         transformation and automation for private equity firms and their
         portfolio companies.
       </p>
-      <section className="pillar-work-section">
-        <h2 className="pillar-section-title">Work</h2>
-        <div className="pillar-body">
-          <p>Have worked with and provided value for:</p>
-          <ul>
-            {[
-              "KKR",
-              "Comvest Partners",
-              "Vistria Group",
-              "Partners Group",
-              "Grain Management",
-              "New Atlas Capital",
-              "Graham Partners",
-              "Connection Capital",
-            ].map((firm) => (
-              <li key={firm}>• {firm}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <PeFirmLogoCarousel />
       <Link href={CASE_STUDIES_PATH} className="pillar-case-link pillar-case-link--bold">
         <span className="pillar-case-link-mark" aria-hidden="true">
           ↳

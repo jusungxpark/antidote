@@ -75,6 +75,7 @@ export const CASE_STUDIES: CaseStudy[] = [
 ];
 
 export const CASE_STUDIES_PATH = "/case-studies";
+export const CASE_STUDIES_SLIDE_MS = 900;
 
 export const DETAIL_FIELDS = [
   "Business",
