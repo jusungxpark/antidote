@@ -1,0 +1,211 @@
+{
+  "_README": "FIXED PER SECTOR. Built once, refreshed quarterly. Nothing in this file changes per recipient — the per-firm layer lives in data/companies/[slug].json.",
+
+  "id": "retirement-tpa",
+  "name": "Retirement Plan Administration (TPA)",
+  "efficiencyMetric": "plans per administrator (FTE)",
+
+  "sectorMap": {
+    "_note": "Graph A. x = share of delivery labor AI can absorb (0-100). y = revenue defensibility (0-100). Re-projected from internal sector scores — outputs only, never the framework itself. dx/dy nudge label placement.",
+    "points": [
+      { "id": "retirement-tpa", "label": "Retirement TPA", "x": 70, "y": 82 },
+      { "id": "freight-audit", "label": "Freight audit", "x": 90, "y": 58 },
+      { "id": "property-mgmt", "label": "Property management", "x": 72, "y": 68, "dy": -14 },
+      { "id": "hoa-mgmt", "label": "Association / HOA mgmt", "x": 66, "y": 61, "dy": 16, "dx": -10 },
+      { "id": "insurance-brokerage", "label": "Insurance brokerage", "x": 45, "y": 88 },
+      { "id": "customs-brokerage", "label": "Customs brokerage", "x": 50, "y": 84, "dy": 16 },
+      { "id": "fund-admin", "label": "Fund administration", "x": 35, "y": 55 },
+      { "id": "payroll", "label": "Payroll processing", "x": 78, "y": 32 },
+      { "id": "rcm", "label": "Medical billing (RCM)", "x": 65, "y": 35 },
+      { "id": "bpo", "label": "Call center / BPO", "x": 88, "y": 12 },
+      { "id": "legal", "label": "Legal advisory", "x": 35, "y": 80, "dy": -14 },
+      { "id": "wealth", "label": "Wealth management", "x": 40, "y": 76, "dy": 16 },
+      { "id": "lease-admin", "label": "Lease administration", "x": 70, "y": 40, "dy": 16 },
+      { "id": "utility-audit", "label": "Utility bill audit", "x": 80, "y": 45 },
+      { "id": "medical-records", "label": "Medical records / HIM", "x": 62, "y": 55, "dy": -14 },
+      { "id": "relocation", "label": "Corporate relocation", "x": 55, "y": 48 }
+    ]
+  },
+
+  "benchmark": {
+    "_note": "Graph B. bands = productivity reference bands (source: Stax CX operating data, 2026). peers = SYNTHETIC PLACEHOLDER DATA — replace with the EFAST2/Form-5500 preparer-count x LinkedIn-headcount pipeline output before any external send.",
+    "xLabel": "plans administered (log scale)",
+    "yLabel": "plans per FTE",
+    "bands": [
+      { "lo": 40, "hi": 60, "label": "industry baseline" },
+      { "lo": 100, "hi": 140, "label": "modern-stack operators" },
+      { "lo": 200, "hi": 250, "label": "top decile" }
+    ],
+    "ebitdaStrip": [
+      { "atY": 50, "label": "approx. 15-20% EBITDA" },
+      { "atY": 120, "label": "approx. 30-40% EBITDA" },
+      { "atY": 225, "label": "approx. 45%+ EBITDA" }
+    ],
+    "peers": [
+      { "plans": 160, "fte": 4 }, { "plans": 210, "fte": 5 }, { "plans": 260, "fte": 5 },
+      { "plans": 320, "fte": 7 }, { "plans": 340, "fte": 6 }, { "plans": 410, "fte": 9 },
+      { "plans": 450, "fte": 8 }, { "plans": 520, "fte": 11 }, { "plans": 560, "fte": 9 },
+      { "plans": 610, "fte": 13 }, { "plans": 680, "fte": 12 }, { "plans": 700, "fte": 15 },
+      { "plans": 760, "fte": 13 }, { "plans": 820, "fte": 17 }, { "plans": 900, "fte": 15 },
+      { "plans": 940, "fte": 20 }, { "plans": 1050, "fte": 18 }, { "plans": 1150, "fte": 24 },
+      { "plans": 1250, "fte": 21 }, { "plans": 1400, "fte": 26 }, { "plans": 1500, "fte": 24 },
+      { "plans": 1650, "fte": 30 }, { "plans": 1800, "fte": 28 }, { "plans": 2000, "fte": 36 },
+      { "plans": 2200, "fte": 34 }, { "plans": 2500, "fte": 45 }, { "plans": 2700, "fte": 40 },
+      { "plans": 3000, "fte": 52 }, { "plans": 3300, "fte": 48 }, { "plans": 3600, "fte": 60 },
+      { "plans": 4200, "fte": 66 }, { "plans": 4800, "fte": 78 }, { "plans": 5500, "fte": 82 },
+      { "plans": 6500, "fte": 100 }, { "plans": 8000, "fte": 118 }, { "plans": 9500, "fte": 150 },
+      { "plans": 12000, "fte": 185 }, { "plans": 14000, "fte": 230 }, { "plans": 16000, "fte": 250 },
+      { "plans": 25000, "fte": 390 },
+      { "plans": 300, "fte": 5 }, { "plans": 480, "fte": 7 }, { "plans": 850, "fte": 12 },
+      { "plans": 1100, "fte": 14 }, { "plans": 1900, "fte": 22 }, { "plans": 2400, "fte": 26 },
+      { "plans": 3800, "fte": 38 }, { "plans": 5200, "fte": 44 }, { "plans": 7200, "fte": 62 },
+      { "plans": 10500, "fte": 90 }
+    ]
+  },
+
+  "workflows": {
+    "_note": "Graph C rows. FIXED structure per sector. Per-firm stack chips removed; workflow map is sector-typical only.",
+    "scaleMax": 25,
+    "rows": [
+      { "id": "census", "label": "Census intake & scrubbing", "pct": 22, "ceiling": "80-90% automatable", "cls": "green" },
+      { "id": "testing", "label": "Compliance testing", "pct": 16, "ceiling": "60-70%; diagnosis retained", "cls": "amber" },
+      { "id": "f5500", "label": "Form 5500 prep & filing", "pct": 14, "ceiling": "70-80% automatable", "cls": "green" },
+      { "id": "docs", "label": "Plan docs & amendments", "pct": 10, "ceiling": "60-70% automatable", "cls": "amber" },
+      { "id": "distributions", "label": "Distributions / loans / QDROs", "pct": 12, "ceiling": "70-80% with approval gates", "cls": "amber" },
+      { "id": "onboarding", "label": "New plan onboarding", "pct": 9, "ceiling": "50-60% automatable", "cls": "amber" },
+      { "id": "actuarial", "label": "Actuarial valuation", "pct": 7, "ceiling": "human-led", "cls": "moat" },
+      { "id": "design", "label": "Plan design consulting", "pct": 10, "ceiling": "human-led", "cls": "moat" }
+    ]
+  },
+
+  "bridge": {
+    "_note": "Margin bridge. Conservative bands, not point estimates. Same numbers for both variants — only the title changes.",
+    "steps": [
+      { "label": "Today", "lo": 15, "hi": 20, "type": "start" },
+      { "label": "Delivery cost reduction", "lo": 8, "hi": 13, "type": "delta" },
+      { "label": "Unified data layer", "lo": 2, "hi": 3, "type": "delta" },
+      { "label": "SG&A automation", "lo": 2, "hi": 3, "type": "delta" },
+      { "label": "AI run-cost", "lo": -4, "hi": -3, "type": "delta" },
+      { "label": "Destination", "lo": 35, "hi": 45, "type": "end" }
+    ]
+  },
+
+  "operatingContext": {
+    "paragraphs": [
+      "Most lower middle market TPAs still run three core systems: a workflow platform (commonly PensionPro or equivalent), a desktop compliance engine (ASC, ftwilliam/Datair, or Relius), and a document vendor (often FTWilliam). Census and payroll data are often entered separately in each system before testing and filing. That made sense when labor was the main cost; it now caps plans per administrator.",
+      "Automation is hitting mechanical work first: payroll normalization, census scrubbing, document extraction, and compliance testing prep. Plan design, actuarial certification, complex distributions, and advisor relationships stay human-led in most firms we track. The goal is not a smaller team but higher revenue per employee: same staff, more plans, more time on judgment work.",
+      "Regulatory load is rising at the same time (SECURE 2.0, Cycle 3/4 restatements, vendor platform migrations). Firms that add capacity mostly through hires feel margin pressure. Firms that fix intake and the data layer can grow plan count while keeping staffing lean."
+    ]
+  },
+
+  "operatingSequence": {
+    "intro": "The sequence below draws on patterns we have seen across TPA transformations. It describes sector norms, not any single firm's internals. The objective is revenue per employee: more plans with a lean team. Our programs do not depend on layoffs; freed capacity goes to growth, complex work, and client coverage.",
+    "steps": [
+      {
+        "title": "Automate census and payroll intake before testing season.",
+        "body": "Census intake and scrubbing often takes 20% or more of administrator time and involves limited judgment relative to downstream compliance work. Document AI and payroll normalization can remove much of the manual mapping before data enters the compliance engine. A production pilot in Q3 or Q4 lets January testing season prove capacity under peak load."
+      },
+      {
+        "title": "Establish one plan record before adding point solutions.",
+        "body": "Automation programs often stall at the interfaces between the workflow platform, compliance engine, and document system. One canonical plan record (participants, provisions, payroll history, amendments) is required before gains compound. Without it, each new tool repeats the same re-keying work."
+      },
+      {
+        "title": "Automate testing queues and Form 5500 assembly; retain judgment roles.",
+        "body": "Compliance testing prep, error triage, and Form 5500 population are high-volume and largely machine-readable. Plan design, actuarial review, and advisor coverage should stay with existing staff and absorb freed time. The target is revenue per employee: more plans and higher-value work per person, not headcount reduction."
+      }
+    ],
+    "caveat": "Sequencing and adoption matter more than model choice. Programs that skip change management or launch during peak testing season underperform most often."
+  },
+
+  "sourceBlocks": {
+    "benchmark": {
+      "links": [
+        {
+          "label": "DOL Form 5500 filings (preparer counts)",
+          "url": "https://www.efast.dol.gov/landing.html"
+        },
+        {
+          "label": "EBSA Form 5500 datasets",
+          "url": "https://www.dol.gov/agencies/ebsa/about-ebsa/our-activities/public-disclosure/foia/form-5500-datasets"
+        },
+        {
+          "label": "Stax.ai CX operating benchmarks, 2026",
+          "url": "https://help.stax.ai/en/articles/13891220-what-is-cx-client-experience"
+        }
+      ],
+      "suffix": "Peer field shown anonymized."
+    },
+    "sectorMap": {
+      "links": [
+        {
+          "label": "Antidote sector research (300+ B2B services sectors scored, 2025-26)",
+          "url": "https://antidotetransform.com/"
+        }
+      ]
+    },
+    "workflows": {
+      "links": [],
+      "suffix": "Time shares reflect a typical LMM TPA. Boxed rows are work we expect to stay human."
+    },
+    "bridge": {
+      "links": [],
+      "suffix": "Ranges are net of ongoing AI run-cost."
+    }
+  },
+
+  "evidence": [
+    {
+      "claim": "Productivity benchmarks have moved. Typical TPAs run 40-60 plans per administrator; firms on integrated platforms average 100-140; top decile exceeds 200.",
+      "sources": [
+        {
+          "label": "Stax CX operating data across client TPAs, 2026",
+          "url": "https://help.stax.ai/en/articles/13891220-what-is-cx-client-experience"
+        }
+      ]
+    },
+    {
+      "claim": "Margins track productivity. Standalone EBITDA of 15-20% remains common; operators combining automation with bundled services report 30%+; full operating-model rebuilds reach 40%+ in cases we have seen.",
+      "sources": [
+        {
+          "label": "Sector M&A advisor and expert-network interviews, 2025-26",
+          "url": "https://www.businesswire.com/news/home/20251007944156/en/8-of-the-Top-10-Retirement-TPAs-Choose-Stax.ai-to-Power-Administration-and-Growth"
+        }
+      ]
+    },
+    {
+      "claim": "Adoption is still early. Operators describe current use as document scrubbing and data entry; deployed capability lags what is available.",
+      "sources": [
+        {
+          "label": "Sector M&A advisor, 2026",
+          "url": "https://stax.ai/resources/show-me-the-results-how-stax-ai-delivers-real-value-for-tpa-firms"
+        }
+      ]
+    },
+    {
+      "claim": "Consolidation without operating integration has underperformed. One national roll-up lost roughly 20% of an acquired book after forced standardization; another still runs 7-8 separate PensionPro instances across ten acquisitions.",
+      "sources": [
+        {
+          "label": "Industry operators and platform vendor, 2026",
+          "url": "https://stax.ai/resources/stax-ai-vs-7-simple-machines-dynamis-7sm"
+        }
+      ]
+    },
+    {
+      "claim": "Regulatory and vendor timelines add near-term pressure. Cycle 3 to 4 restatements begin in Q4 2026; SECURE 2.0 amendments are due by end-2026; the FIS/Relius platform transition will leave many small shops on end-of-life systems by 2030.",
+      "sources": [
+        {
+          "label": "IRS pre-approved plan document program",
+          "url": "https://www.irs.gov/retirement-plans/pre-approved-retirement-plan-document-program"
+        },
+        {
+          "label": "SECURE 2.0 Act of 2022",
+          "url": "https://www.irs.gov/retirement-plans/secure-2-0-act-of-2022"
+        },
+        {
+          "label": "FIS Relius platform roadmap",
+          "url": "https://www.wealthmanagement.com/rpa-news/fis-new-cloud-based-record-keeping-system-could-unlock-the-potential-of-401-k-plans"
+        }
+      ]
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import {
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { AntidoteWordmarkLabel } from "./AntidoteWordmark";
 import { PillarExpandOverlay } from "./PillarExpandOverlay";
 import { CaseStudiesScreen } from "./CaseStudiesScreen";
 import { CaseStudyDetailScreen } from "./CaseStudyDetailScreen";
@@ -282,6 +283,23 @@ function getOverlayContent(page: NavPage): ReactNode {
     case "blog":
       return BLOG_CONTENT;
   }
+}
+
+// ------------------------------------------------------------------
+// AppShell — routes the marketing site through the 3D SceneShell,
+// but lets outreach-report routes (/[company-name], /pe/[company-name])
+// render bare. Any pathname that isn't a known site route is a report.
+// If you add a new top-level site page, add it to SITE_PATHS.
+// ------------------------------------------------------------------
+const SITE_PATHS = new Set(["/", "/buyouts", "/transformation"]);
+
+export function AppShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const isSite =
+    pathname != null &&
+    (SITE_PATHS.has(pathname) || pathname.startsWith(CASE_STUDIES_PATH));
+  if (!isSite) return <>{children}</>;
+  return <SceneShell>{children}</SceneShell>;
 }
 
 export function SceneShell({ children }: { children: ReactNode }) {
@@ -784,7 +802,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
         </nav>
 
         <Link href="/" onClick={handleReturnHome} className="scene-logo">
-          Antid<span style={{ fontStyle: "italic" }}>o</span>te.
+          <AntidoteWordmarkLabel />
         </Link>
 
         <p className="scene-frame scene-frame-bl scene-tagline">

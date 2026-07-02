@@ -1,0 +1,23 @@
+{
+  "_README": "PER-FIRM LAYER — the only file you touch per send (~30 min for public-data fields). Duplicate as data/companies/[company-name].json → the route antidotetransform.com/[company-name] (and /pe/[company-name]) exists automatically.",
+
+  "slug": "retirementtpa",
+  "sector": "retirement-tpa",
+
+  "templateMode": true,
+  "_templateMode": "true = render amber 'customize' tags on every per-firm slot (for internal review). SET FALSE BEFORE SENDING.",
+
+  "name": "Sample Pension Group",
+  "_name": "[CUSTOMIZE] Recipient firm's name, exactly as they write it.",
+
+  "shortName": "SPG",
+
+  "plans": 1150,
+  "fte": 19,
+  "_plansFte": "[CUSTOMIZE] plans = Form-5500 preparer pull; fte = LinkedIn/Apollo headcount. These public numbers size their dot on Graph B only. Do not add firm-specific observations we cannot verify.",
+
+  "peState": {
+    "sponsorName": "Example Capital Partners",
+    "_sponsorName": "[CUSTOMIZE — PE VARIANT ONLY] The sponsor's name; used in the /pe route framing."
+  }
+}
