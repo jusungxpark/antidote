@@ -1,5 +1,5 @@
 {
-  "_README": "PER-FIRM LAYER — the only file you touch per send (~30 min for public-data fields). Duplicate as data/companies/[company-name].json → the route antidotetransform.com/[company-name] (and /pe/[company-name]) exists automatically.",
+  "_README": "Per-firm layer. retirementtpa.json is the reference send for the retirement TPA sector; duplicate as data/companies/[slug].json for each new firm. Routes /[slug] and /pe/[slug] are generated automatically. Sector scaffold: data/sectors/retirement-tpa.json (shared by all firms in this sector).",
 
   "slug": "retirementtpa",
   "sector": "retirement-tpa",
@@ -18,6 +18,6 @@
 
   "peState": {
     "sponsorName": "Example Capital Partners",
-    "_sponsorName": "[CUSTOMIZE — PE VARIANT ONLY] The sponsor's name; used in the /pe route framing."
+    "_sponsorName": "[CUSTOMIZE, PE VARIANT ONLY] Sponsor name for /pe/[slug] framing."
   }
 }

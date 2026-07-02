@@ -1,7 +1,7 @@
 // antidotetransform.com/[company-name] — portco-direct variant.
-// A report route exists for every file in data/companies/.
-// To create a new report: duplicate data/companies/retirementtpa.json,
-// fill the [CUSTOMIZE] slots, done — no code changes.
+// One route per file in data/companies/. retirementtpa.json is the
+// reference send; duplicate it for each new firm (same sector scaffold).
+// Fill name, plans, fte, and peState.sponsorName if needed. No code changes.
 
 import { notFound } from "next/navigation";
 import Report from "../../components/report/Report";

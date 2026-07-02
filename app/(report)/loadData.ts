@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
 
-// Report data lives at the repo root:
-//   data/companies/[slug].json  — per-firm layer (one file per send)
-//   data/sectors/[id].json      — fixed sector scaffold
+// Report data at repo root:
+//   data/companies/[slug].json  per firm (duplicate retirementtpa.json)
+//   data/sectors/[id].json        fixed sector scaffold (retirement-tpa today)
 const companiesDir = path.join(process.cwd(), "data", "companies");
 const sectorsDir = path.join(process.cwd(), "data", "sectors");
 

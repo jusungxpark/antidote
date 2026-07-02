@@ -1,7 +1,8 @@
 // antidotetransform.com/pe/[company-name] — PE-sponsor variant.
-// Same data files as the portco route; the variant flag switches
-// framing (margin/EBITDA), the benchmark's EBITDA strip, and the
-// ask (4-week portco pilot instead of the 2-week audit).
+// Same company JSON as the portco route. variant="pe" switches headline,
+// lede, benchmark EBITDA strip, sequence title, margin bridge label, and
+// Why Antidote copy. retirementtpa is the reference; duplicate the JSON
+// per firm.
 
 import { notFound } from "next/navigation";
 import Report from "../../../components/report/Report";
