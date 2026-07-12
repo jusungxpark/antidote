@@ -32,16 +32,12 @@ export function CaseStudyDetailView({
           aria-hidden="true"
         />
         <div className="case-study-detail-banner-tint" aria-hidden="true" />
-        <h1
-          ref={titleRef}
-          className={`case-study-detail-banner-title${titleClassName ? ` ${titleClassName}` : ""}`}
-        >
-          {study.label}
-        </h1>
       </header>
 
       {onBack ? (
-        <div className="case-study-detail-nav">
+        <div
+          className={`case-study-detail-nav${animateFields ? " is-animating-in" : ""}`}
+        >
           <a
             href="/case-studies"
             className="pillar-case-link pillar-case-link--back case-study-detail-back"
@@ -58,7 +54,18 @@ export function CaseStudyDetailView({
         </div>
       ) : null}
 
-      <CaseStudyDetailBody animateIn={animateFields} />
+      <div
+        className={`case-study-detail-header${animateFields ? " is-animating-in" : ""}`}
+      >
+        <h1
+          ref={titleRef}
+          className={`case-study-detail-title${titleClassName ? ` ${titleClassName}` : ""}`}
+        >
+          {study.title}
+        </h1>
+      </div>
+
+      <CaseStudyDetailBody study={study} animateIn={animateFields} />
     </>
   );
 }

@@ -26,7 +26,6 @@ export function CaseStudyCard({ study }: CaseStudyCardProps) {
         study,
         href: getCaseStudyPath(study.slug),
         cardRect: measured.cardRect,
-        titleRect: measured.titleRect,
         direction: "forward",
       });
     },
@@ -40,7 +39,7 @@ export function CaseStudyCard({ study }: CaseStudyCardProps) {
       href={getCaseStudyPath(study.slug)}
       className={`case-study-card-link${caseStudyTransition?.study.slug === study.slug ? " is-morphing" : ""}`}
       onClick={handleClick}
-      aria-label={`${study.label}. View case study.`}
+      aria-label={`${study.title}. View case study.`}
       style={{ ["--case-hue" as string]: study.hue }}
     >
       <article className="case-study-card case-study-card--full">
@@ -51,7 +50,7 @@ export function CaseStudyCard({ study }: CaseStudyCardProps) {
         />
         <div className="case-study-card-tint" aria-hidden="true" />
         <div className="case-study-card-content">
-          <h3>{study.label}</h3>
+          <h3>{study.title}</h3>
         </div>
       </article>
     </a>

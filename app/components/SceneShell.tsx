@@ -28,7 +28,6 @@ import { CARDS } from "./trace-cards/config";
 import { computeHomeCardRect, type LayoutRect } from "./trace-cards/card-layout";
 import {
   measureCaseStudyCardTarget,
-  type TitleRect,
 } from "./case-study-layout";
 
 const AsciiSTL = dynamic(
@@ -43,7 +42,7 @@ const TraceCardsScene = dynamic(
 );
 
 const TRANSITION_MS = 680;
-const CASE_STUDY_EXPAND_MS = 680;
+const CASE_STUDY_CLOSE_MS = 380;
 
 interface TransitionRequest {
   href: string;
@@ -61,8 +60,7 @@ export interface CaseStudyTransitionRequest {
   study: CaseStudy;
   href: string;
   cardRect: { top: number; left: number; width: number; height: number };
-  titleRect?: TitleRect;
-  direction: "forward" | "reverse";
+  direction: "forward";
 }
 
 interface SceneContextValue {
@@ -85,8 +83,8 @@ interface SceneContextValue {
   closeCaseStudyDetail: () => void;
   acknowledgeCaseStudyExpandReady: () => void;
   caseStudyHandoff: boolean;
+  caseStudyClosing: boolean;
   onCaseStudyMorphEnd: () => void;
-  onCaseStudyReverseEnd: () => void;
 }
 
 const SceneContext = createContext<SceneContextValue>({
@@ -109,8 +107,8 @@ const SceneContext = createContext<SceneContextValue>({
   closeCaseStudyDetail: () => {},
   acknowledgeCaseStudyExpandReady: () => {},
   caseStudyHandoff: false,
+  caseStudyClosing: false,
   onCaseStudyMorphEnd: () => {},
-  onCaseStudyReverseEnd: () => {},
 });
 
 export function useScene() {
@@ -333,11 +331,13 @@ export function SceneShell({ children }: { children: ReactNode }) {
     useState<CaseStudyTransitionRequest | null>(null);
   const [caseStudyTransitionPhase, setCaseStudyTransitionPhase] = useState(0);
   const [caseStudyHandoff, setCaseStudyHandoff] = useState(false);
+  const [caseStudyClosing, setCaseStudyClosing] = useState(false);
+  const [closingStudy, setClosingStudy] = useState<CaseStudy | null>(null);
+  const [caseStudyGridEnterKey, setCaseStudyGridEnterKey] = useState(0);
   const caseStudyTransitionLock = useRef(false);
+  const caseStudyClosePendingRef = useRef(false);
   const caseStudyOriginRectRef = useRef<LayoutRect | null>(null);
-  const caseStudyOriginTitleRectRef = useRef<TitleRect | null>(null);
   const caseStudyExpandReadyRef = useRef(false);
-  const reverseAwaitingRouteRef = useRef(false);
 
   const caseStudySlug = getCaseStudySlugFromPath(pathname);
   const activeCaseStudy = caseStudySlug
@@ -363,6 +363,9 @@ export function SceneShell({ children }: { children: ReactNode }) {
     setCaseStudyTransition(null);
     setCaseStudyTransitionPhase(0);
     setCaseStudyHandoff(false);
+    setCaseStudyClosing(false);
+    setClosingStudy(null);
+    caseStudyClosePendingRef.current = false;
     caseStudyTransitionLock.current = false;
     caseStudyExpandReadyRef.current = false;
     window.setTimeout(() => {
@@ -379,8 +382,8 @@ export function SceneShell({ children }: { children: ReactNode }) {
       caseStudyTransitionLock.current = true;
       caseStudyExpandReadyRef.current = false;
       caseStudyOriginRectRef.current = req.cardRect;
-      caseStudyOriginTitleRectRef.current = req.titleRect ?? null;
       setCaseStudyHandoff(false);
+      setCaseStudyClosing(false);
       setCaseStudyTransition(req);
       setCaseStudyTransitionPhase(0);
     },
@@ -398,75 +401,36 @@ export function SceneShell({ children }: { children: ReactNode }) {
     router.push(caseStudyTransition.href);
   }, [caseStudyTransition, router]);
 
-  const onCaseStudyReverseEnd = useCallback(() => {
-    if (!caseStudyTransition || caseStudyTransition.direction !== "reverse") return;
-    if (reverseAwaitingRouteRef.current) return;
-    reverseAwaitingRouteRef.current = true;
-    router.push(CASE_STUDIES_PATH);
-  }, [caseStudyTransition, router]);
+  const closeCaseStudyDetail = useCallback(() => {
+    if (caseStudyTransitionLock.current || !activeCaseStudy) return;
 
-  const finishReverseTransition = useCallback((slug: string) => {
-    const measured = measureCaseStudyCardTarget(slug);
-    const cardRect =
-      measured?.cardRect ?? caseStudyOriginRectRef.current ?? null;
-    const titleRect =
-      measured?.titleRect ?? caseStudyOriginTitleRectRef.current ?? undefined;
+    caseStudyTransitionLock.current = true;
+    caseStudyClosePendingRef.current = true;
+    setClosingStudy(activeCaseStudy);
+    setCaseStudyClosing(true);
 
-    if (cardRect) {
-      setCaseStudyTransition((prev) =>
-        prev && prev.direction === "reverse"
-          ? { ...prev, cardRect, titleRect }
-          : prev
-      );
-    }
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          reverseAwaitingRouteRef.current = false;
-          setCaseStudyTransition(null);
-          setCaseStudyTransitionPhase(0);
-          setCaseStudyHandoff(false);
-          caseStudyTransitionLock.current = false;
-          caseStudyExpandReadyRef.current = false;
-        });
-      });
-    });
-  }, []);
+    window.setTimeout(() => {
+      router.push(CASE_STUDIES_PATH);
+    }, CASE_STUDY_CLOSE_MS);
+  }, [activeCaseStudy, router]);
 
   useEffect(() => {
     if (
-      !reverseAwaitingRouteRef.current ||
-      pathname !== CASE_STUDIES_PATH ||
-      caseStudyTransition?.direction !== "reverse"
+      !caseStudyClosePendingRef.current ||
+      !caseStudyClosing ||
+      pathname !== CASE_STUDIES_PATH
     ) {
       return;
     }
 
-    finishReverseTransition(caseStudyTransition.study.slug);
-  }, [pathname, caseStudyTransition, finishReverseTransition]);
-
-  useEffect(() => {
-    if (
-      !reverseAwaitingRouteRef.current ||
-      caseStudyTransition?.direction !== "reverse"
-    ) {
-      return;
-    }
-
-    const fallback = window.setTimeout(() => {
-      if (!reverseAwaitingRouteRef.current) return;
-      if (pathname === CASE_STUDIES_PATH) return;
-      reverseAwaitingRouteRef.current = false;
-      setCaseStudyTransition(null);
-      setCaseStudyTransitionPhase(0);
-      setCaseStudyHandoff(false);
+    caseStudyClosePendingRef.current = false;
+    const id = requestAnimationFrame(() => {
+      setCaseStudyClosing(false);
+      setClosingStudy(null);
       caseStudyTransitionLock.current = false;
-      caseStudyExpandReadyRef.current = false;
-    }, CASE_STUDY_EXPAND_MS + 200);
-
-    return () => window.clearTimeout(fallback);
-  }, [caseStudyTransition, pathname]);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [pathname, caseStudyClosing]);
 
   useEffect(() => {
     if (
@@ -482,35 +446,6 @@ export function SceneShell({ children }: { children: ReactNode }) {
 
     return () => window.clearTimeout(timer);
   }, [caseStudyTransition, caseStudyTransitionPhase, acknowledgeCaseStudyExpandReady]);
-
-  const closeCaseStudyDetail = useCallback(() => {
-    if (caseStudyTransitionLock.current || !activeCaseStudy) return;
-
-    const measured = measureCaseStudyCardTarget(activeCaseStudy.slug);
-    const cardRect =
-      measured?.cardRect ?? caseStudyOriginRectRef.current;
-    const titleRect =
-      measured?.titleRect ?? caseStudyOriginTitleRectRef.current ?? undefined;
-
-    if (!cardRect) return;
-
-    reverseAwaitingRouteRef.current = false;
-    setCaseStudyHandoff(false);
-    caseStudyTransitionLock.current = true;
-    caseStudyExpandReadyRef.current = false;
-    setCaseStudyTransition({
-      study: activeCaseStudy,
-      href: `${CASE_STUDIES_PATH}/${activeCaseStudy.slug}`,
-      cardRect,
-      titleRect,
-      direction: "reverse",
-    });
-    setCaseStudyTransitionPhase(1);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setCaseStudyTransitionPhase(0));
-    });
-  }, [activeCaseStudy]);
 
   useEffect(() => {
     if (
@@ -725,17 +660,18 @@ export function SceneShell({ children }: { children: ReactNode }) {
   const navLinkClass = (page: NavPage) =>
     navOverlay === page && !navOverlayLeaving ? "scene-nav-link is-active" : "scene-nav-link";
 
-  const detailStudy = activeCaseStudy ?? caseStudyTransition?.study;
+  const detailStudy =
+    activeCaseStudy ?? caseStudyTransition?.study ?? closingStudy ?? undefined;
 
   let detailPhase: "hidden" | "underlay" | "visible" = "hidden";
   if (detailStudy) {
-    if (caseStudyTransition?.direction === "reverse") {
+    if (
+      caseStudyTransition?.direction === "forward" &&
+      !caseStudyHandoff &&
+      !caseStudyClosing
+    ) {
       detailPhase = "underlay";
-    } else if (caseStudyHandoff || (activeCaseStudy && !caseStudyTransition)) {
-      detailPhase = "visible";
-    } else if (caseStudyTransition?.direction === "forward") {
-      detailPhase = "underlay";
-    } else if (activeCaseStudy) {
+    } else {
       detailPhase = "visible";
     }
   }
@@ -762,8 +698,8 @@ export function SceneShell({ children }: { children: ReactNode }) {
         closeCaseStudyDetail,
         acknowledgeCaseStudyExpandReady,
         caseStudyHandoff,
+        caseStudyClosing,
         onCaseStudyMorphEnd,
-        onCaseStudyReverseEnd,
       }}
     >
       <div
@@ -849,17 +785,22 @@ export function SceneShell({ children }: { children: ReactNode }) {
             <div className="scene-viewport-pane scene-case-studies-pane">
               <CaseStudiesScreen
                 onBack={closeCaseStudies}
-                hidden={detailStudy !== undefined}
+                hidden={
+                  Boolean(activeCaseStudy || caseStudyTransition) &&
+                  !caseStudyClosing
+                }
+                gridEnterKey={caseStudyGridEnterKey}
               />
               {detailStudy ? (
                 <CaseStudyDetailScreen
                   study={detailStudy}
                   onBack={closeCaseStudyDetail}
                   phase={detailPhase}
+                  closing={caseStudyClosing}
                   animateFields={
-                    caseStudyTransition?.direction === "forward" &&
-                    caseStudyTransitionPhase === 1 &&
-                    !caseStudyHandoff
+                    !caseStudyClosing &&
+                    (caseStudyHandoff ||
+                      (Boolean(activeCaseStudy) && !caseStudyTransition))
                   }
                 />
               ) : null}

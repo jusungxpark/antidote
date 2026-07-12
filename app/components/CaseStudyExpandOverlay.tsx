@@ -5,11 +5,7 @@ import { createPortal } from "react-dom";
 import { useScene } from "./SceneShell";
 import {
   CASE_STUDY_TRANSITION_MS,
-  easeInOutCubic,
   getCaseStudyBannerRect,
-  getCollapsedTitlePosition,
-  getExpandedTitlePosition,
-  lerpTitleStyle,
 } from "./case-study-layout";
 
 function readViewport() {
@@ -26,13 +22,9 @@ export function CaseStudyExpandOverlay() {
     caseStudyHandoff,
     acknowledgeCaseStudyExpandReady,
     onCaseStudyMorphEnd,
-    onCaseStudyReverseEnd,
   } = useScene();
   const bannerRef = useRef<HTMLDivElement>(null);
-  const floatTitleRef = useRef<HTMLHeadingElement>(null);
   const morphEndedRef = useRef(false);
-  const reverseEndedRef = useRef(false);
-  const collapseStartRef = useRef<number | null>(null);
   const [viewport, setViewport] = useState(readViewport);
 
   useEffect(() => {
@@ -45,20 +37,8 @@ export function CaseStudyExpandOverlay() {
   useEffect(() => {
     if (!caseStudyTransition) {
       morphEndedRef.current = false;
-      reverseEndedRef.current = false;
-      collapseStartRef.current = null;
     }
   }, [caseStudyTransition]);
-
-  useEffect(() => {
-    if (caseStudyTransition?.direction === "reverse" && caseStudyTransitionPhase === 0) {
-      if (collapseStartRef.current === null) {
-        collapseStartRef.current = performance.now();
-      }
-    } else {
-      collapseStartRef.current = null;
-    }
-  }, [caseStudyTransition?.direction, caseStudyTransitionPhase]);
 
   useLayoutEffect(() => {
     if (
@@ -94,52 +74,6 @@ export function CaseStudyExpandOverlay() {
     acknowledgeCaseStudyExpandReady,
   ]);
 
-  useLayoutEffect(() => {
-    if (
-      !caseStudyTransition ||
-      caseStudyTransition.direction !== "reverse" ||
-      !floatTitleRef.current ||
-      viewport.w === 0
-    ) {
-      return;
-    }
-
-    const title = floatTitleRef.current;
-    const { cardRect, titleRect } = caseStudyTransition;
-    const toCollapsed = getCollapsedTitlePosition(cardRect, titleRect);
-
-    let raf = 0;
-
-    const applyTitleLayout = () => {
-      const titleWidth = title.offsetWidth || title.scrollWidth;
-      const expanded = getExpandedTitlePosition(viewport.w, viewport.h, titleWidth);
-
-      if (caseStudyTransitionPhase === 1) {
-        title.style.top = `${expanded.top}px`;
-        title.style.left = `${expanded.left}px`;
-        title.style.fontSize = `${expanded.fontSize}px`;
-        return;
-      }
-
-      const start = collapseStartRef.current ?? performance.now();
-      const raw = Math.min(1, (performance.now() - start) / CASE_STUDY_TRANSITION_MS);
-      const t = easeInOutCubic(raw);
-      const style = lerpTitleStyle(expanded, toCollapsed, t);
-      title.style.top = `${style.top}px`;
-      title.style.left = `${style.left}px`;
-      title.style.fontSize = `${style.fontSize}px`;
-      title.style.lineHeight = t > 0.92 ? "1.2" : "1.08";
-    };
-
-    applyTitleLayout();
-    raf = requestAnimationFrame(function tick() {
-      applyTitleLayout();
-      raf = requestAnimationFrame(tick);
-    });
-
-    return () => cancelAnimationFrame(raf);
-  }, [caseStudyTransition, caseStudyTransitionPhase, viewport]);
-
   useEffect(() => {
     if (
       !caseStudyTransition ||
@@ -174,50 +108,19 @@ export function CaseStudyExpandOverlay() {
     };
   }, [caseStudyTransition, caseStudyTransitionPhase, onCaseStudyMorphEnd]);
 
-  useEffect(() => {
-    if (
-      !caseStudyTransition ||
-      caseStudyTransition.direction !== "reverse" ||
-      caseStudyTransitionPhase !== 0 ||
-      reverseEndedRef.current
-    ) {
-      return;
-    }
-
-    const banner = bannerRef.current;
-    if (!banner) return;
-
-    const handleEnd = (event: TransitionEvent) => {
-      if (event.target !== banner) return;
-      if (!["width", "height", "top", "left"].includes(event.propertyName)) return;
-      if (reverseEndedRef.current) return;
-      reverseEndedRef.current = true;
-      onCaseStudyReverseEnd();
-    };
-
-    const fallback = window.setTimeout(() => {
-      if (reverseEndedRef.current) return;
-      reverseEndedRef.current = true;
-      onCaseStudyReverseEnd();
-    }, CASE_STUDY_TRANSITION_MS + 40);
-
-    banner.addEventListener("transitionend", handleEnd);
-    return () => {
-      banner.removeEventListener("transitionend", handleEnd);
-      window.clearTimeout(fallback);
-    };
-  }, [caseStudyTransition, caseStudyTransitionPhase, onCaseStudyReverseEnd]);
-
-  if (!caseStudyTransition || viewport.w === 0 || typeof document === "undefined") {
+  if (
+    !caseStudyTransition ||
+    caseStudyTransition.direction !== "forward" ||
+    viewport.w === 0 ||
+    typeof document === "undefined"
+  ) {
     return null;
   }
 
   const expanded = caseStudyTransitionPhase === 1;
-  const { cardRect, study, direction } = caseStudyTransition;
+  const { cardRect, study } = caseStudyTransition;
   const bannerTarget = getCaseStudyBannerRect(viewport.w, viewport.h);
   const rect = expanded ? bannerTarget : cardRect;
-  const isReverse = direction === "reverse";
-  const isReverseCollapsing = isReverse && !expanded;
 
   return createPortal(
     <div
@@ -226,7 +129,7 @@ export function CaseStudyExpandOverlay() {
     >
       <div
         ref={bannerRef}
-        className={`case-study-morph-banner${expanded ? " is-expanded" : ""}${isReverse ? " is-reverse" : ""}`}
+        className={`case-study-morph-banner${expanded ? " is-expanded" : ""}`}
         style={{
           top: rect.top,
           left: rect.left,
@@ -240,27 +143,12 @@ export function CaseStudyExpandOverlay() {
           style={{ backgroundImage: `url(${study.image})` }}
         />
         <div className="case-study-detail-banner-tint" aria-hidden="true" />
-        {!isReverse ? (
-          <h1
-            className={`case-study-detail-banner-title case-study-morph-banner-title${expanded ? " is-expanded" : ""}`}
-          >
-            {study.label}
-          </h1>
-        ) : null}
       </div>
 
-      {!isReverse ? (
-        <div
-          className={`case-study-morph-sheet${expanded ? " is-visible" : ""}${isReverseCollapsing ? " is-hiding" : ""}`}
-          style={{ top: bannerTarget.height }}
-        />
-      ) : null}
-
-      {isReverse ? (
-        <h1 ref={floatTitleRef} className="case-study-morph-float-title">
-          {study.label}
-        </h1>
-      ) : null}
+      <div
+        className={`case-study-morph-sheet${expanded ? " is-visible" : ""}`}
+        style={{ top: bannerTarget.height }}
+      />
     </div>,
     document.body
   );

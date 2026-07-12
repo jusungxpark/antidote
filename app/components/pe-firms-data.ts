@@ -20,9 +20,4 @@ export const PE_FIRM_LOGOS: PeFirmLogo[] = [
   },
   { id: "new-atlas", name: "New Atlas Capital", src: "/logos/pe-firms/new-atlas.png" },
   { id: "graham", name: "Graham Partners", src: "/logos/pe-firms/graham.png" },
-  {
-    id: "connection-capital",
-    name: "Connection Capital",
-    src: "/logos/pe-firms/connection-capital.png",
-  },
 ];

@@ -8,6 +8,7 @@ interface CaseStudyDetailScreenProps {
   onBack: () => void;
   phase?: "hidden" | "underlay" | "visible";
   animateFields?: boolean;
+  closing?: boolean;
 }
 
 export function CaseStudyDetailScreen({
@@ -15,12 +16,13 @@ export function CaseStudyDetailScreen({
   onBack,
   phase = "visible",
   animateFields = false,
+  closing = false,
 }: CaseStudyDetailScreenProps) {
   return (
     <div
-      className={`case-study-detail-screen case-study-detail-screen--${phase}`}
+      className={`case-study-detail-screen case-study-detail-screen--${phase}${closing ? " is-closing" : ""}`}
       style={{ ["--case-hue" as string]: study.hue }}
-      aria-hidden={phase !== "visible"}
+      aria-hidden={phase !== "visible" && !closing}
     >
       <CaseStudyDetailView
         study={study}

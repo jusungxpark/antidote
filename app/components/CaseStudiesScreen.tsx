@@ -42,9 +42,14 @@ function useCaseStudyGridColumns() {
 interface CaseStudiesScreenProps {
   onBack: () => void;
   hidden?: boolean;
+  gridEnterKey?: number;
 }
 
-export function CaseStudiesScreen({ onBack, hidden = false }: CaseStudiesScreenProps) {
+export function CaseStudiesScreen({
+  onBack,
+  hidden = false,
+  gridEnterKey = 0,
+}: CaseStudiesScreenProps) {
   const { caseStudyTransition, caseStudiesOpen } = useScene();
   const columns = useCaseStudyGridColumns();
   const [enterCycle, setEnterCycle] = useState(0);
@@ -61,6 +66,16 @@ export function CaseStudiesScreen({ onBack, hidden = false }: CaseStudiesScreenP
     handleScrollUpDismiss,
     isVisible && caseStudyTransition === null
   );
+
+  const prevGridEnterKeyRef = useRef(gridEnterKey);
+
+  useEffect(() => {
+    if (gridEnterKey > prevGridEnterKeyRef.current) {
+      prevGridEnterKeyRef.current = gridEnterKey;
+      setEnterBaseDelayMs(0);
+      setEnterCycle((cycle) => cycle + 1);
+    }
+  }, [gridEnterKey]);
 
   useEffect(() => {
     if (isVisible && !prevVisibleRef.current) {
