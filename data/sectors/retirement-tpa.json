@@ -90,6 +90,50 @@
     ]
   },
 
+  "defense": {
+    "_note": "The defensible-vs-not table. FIXED per sector. No em dashes in this copy by design. Closing line switches per variant in Report.tsx.",
+    "holds": [
+      {
+        "title": "Complex plan work",
+        "body": "Cash balance, DB and combo plans require credentialed judgment, and enrolled actuaries are genuinely scarce."
+      },
+      {
+        "title": "The advisor relationship",
+        "body": "Roughly 85% of new plans arrive through advisors, who have no economic reason to move a performing plan."
+      },
+      {
+        "title": "The compliance position",
+        "body": "ERISA exposure sits with the sponsor; a clean testing and audit history cannot be bought."
+      },
+      {
+        "title": "Per-plan pricing",
+        "body": "Fees anchor to the plan, not hours. Switching realistically happens only at restatement windows."
+      }
+    ],
+    "erodes": [
+      {
+        "title": "Simple safe-harbor books",
+        "body": "Recordkeeper bundles, payroll-platform 401(k)s and pooled plans (PEPs) are absorbing the vanilla end."
+      },
+      {
+        "title": "Manual delivery labor",
+        "body": "Census intake, testing prep and 5500 assembly. The tools that automate this are for sale to every competitor."
+      },
+      {
+        "title": "Inertia mistaken for loyalty",
+        "body": "Retention that exists only because nothing better showed up dissolves when something does."
+      },
+      {
+        "title": "Single-administrator dependence",
+        "body": "The A-to-Z model concentrates client trust in one person. That is a succession risk, not a moat."
+      }
+    ],
+    "close": {
+      "portco": "Most TPAs hold both books. Strategy is deciding which one you are becoming.",
+      "pe": "Most TPAs hold both books. In diligence, the question is which side the revenue sits on, and which side the operating plan grows."
+    }
+  },
+
   "operatingContext": {
     "paragraphs": [
       "Most lower middle market TPAs still run three core systems: a workflow platform (commonly PensionPro or equivalent), a desktop compliance engine (ASC, ftwilliam/Datair, or Relius), and a document vendor (often FTWilliam). Census and payroll data are often entered separately in each system before testing and filing. That made sense when labor was the main cost; it now caps plans per administrator.",
@@ -173,20 +217,28 @@
       ]
     },
     {
-      "claim": "Adoption is still early. Operators describe current use as document scrubbing and data entry; deployed capability lags what is available.",
+      "claim": "Adoption is still early. All but the largest TPAs lack the resources to build AI capability in-house, and deployed capability lags what is available: roughly 40% of firms economy-wide reported no AI investment in 2025.",
       "sources": [
         {
-          "label": "Sector M&A advisor, 2026",
-          "url": "https://stax.ai/resources/show-me-the-results-how-stax-ai-delivers-real-value-for-tpa-firms"
+          "label": "ASPPA, Why TPAs Need to Embrace AI or Find a Partner That Does (Sept 2025)",
+          "url": "https://www.asppa-net.org/news/2025/9/why-tpas-need-to-embrace-ai-or-find-a-partner-that-does/"
+        },
+        {
+          "label": "NAPA / NBER survey of ~750 corporate executives (Mar 2026)",
+          "url": "https://www.napa-net.org/news/2026/3/ais-productivity-payoff-is-coming--just-not-all-at-once/"
         }
       ]
     },
     {
-      "claim": "Consolidation without operating integration has underperformed. One national roll-up lost roughly 20% of an acquired book after forced standardization; another still runs 7-8 separate PensionPro instances across ten acquisitions.",
+      "claim": "Consolidation without operating integration has underperformed. One national roll-up lost roughly 20% of an acquired book after forced standardization; another still runs 7-8 separate workflow-system instances across ten acquisitions (figures per operator interviews, 2026).",
       "sources": [
         {
-          "label": "Industry operators and platform vendor, 2026",
-          "url": "https://stax.ai/resources/stax-ai-vs-7-simple-machines-dynamis-7sm"
+          "label": "PLANADVISER, What Makes Retirement and Wealth M&A Stick (2023)",
+          "url": "https://www.planadviser.com/exclusives/inside-deal-makes-retirement-wealth-ma-stick/"
+        },
+        {
+          "label": "InvestmentNews on the TPA consolidation wave",
+          "url": "https://www.investmentnews.com/retirement-planning/why-401k-advisers-should-heed-tpa-consolidation/74474"
         }
       ]
     },

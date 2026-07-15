@@ -1286,19 +1286,21 @@ a {
 }
 
 .team-logos-row img {
+  display: block;
   width: auto;
   opacity: 0.5;
   filter: brightness(0) invert(1);
   object-fit: contain;
+  flex-shrink: 0;
 }
 
-/* BCG/MIT SVGs have generous viewBox padding — use the row baseline height. */
+/* BCG/MIT SVGs carry viewBox padding — scale up so they read at row height. */
 .team-logos-row img[data-logo="bcg"],
 .team-logos-row img[data-logo="mit"] {
-  height: clamp(34px, 4.2vw, 48px);
+  height: clamp(56px, 6.8vw, 76px);
 }
 
-/* CD&R PNG fills its box edge-to-edge — scale down to match SVG cap height. */
+/* CD&R PNG fills its box edge-to-edge — scale down to match row cap height. */
 .team-logos-row img[data-logo="cdr"] {
   height: clamp(22px, 2.8vw, 32px);
 }

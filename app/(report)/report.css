@@ -313,6 +313,66 @@
   color: var(--grey);
 }
 
+/* ---------- defensible vs not (02b) ---------- */
+
+.report-body .defense {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 44px;
+  max-width: 900px;
+}
+
+.report-body .defense-head {
+  font-family: var(--r-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  padding: 12px 0 10px;
+}
+
+.report-body .defense-head.holds {
+  color: var(--accent);
+  border-top: 2px solid var(--accent);
+}
+
+.report-body .defense-head.erodes {
+  color: var(--grey);
+  border-top: 2px solid var(--grey);
+}
+
+.report-body .defense-item {
+  border-top: 1px solid var(--hairline);
+  padding: 14px 0;
+}
+
+.report-body .defense-item h3 {
+  font-size: 15.5px;
+  margin: 0 0 4px;
+}
+
+.report-body .defense-item p {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0;
+  max-width: none;
+}
+
+.report-body .defense-close {
+  margin-top: 28px;
+  font-size: 19px;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  max-width: 700px;
+}
+
+@media (max-width: 720px) {
+  .report-body .defense {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- prose blocks ---------- */
 
 .report-body .obs {

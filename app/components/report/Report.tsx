@@ -170,6 +170,38 @@ export default function Report({
         </div>
       </section>
 
+      {/* ================= 02b — DEFENSIBLE VS NOT [FIXED] ================= */}
+      {/* Two-column table from sector JSON (defense.holds / defense.erodes).
+          Copy contains no em dashes by design. Closing line is variant-aware. */}
+      {sector.defense && (
+        <section className="section">
+          <h2>What is defensible here, and what is not.</h2>
+          <div className="defense">
+            <div className="defense-col">
+              <div className="defense-head holds">Holds</div>
+              {sector.defense.holds.map((d: any) => (
+                <div className="defense-item" key={d.title}>
+                  <h3>{d.title}</h3>
+                  <p>{d.body}</p>
+                </div>
+              ))}
+            </div>
+            <div className="defense-col">
+              <div className="defense-head erodes">Erodes</div>
+              {sector.defense.erodes.map((d: any) => (
+                <div className="defense-item" key={d.title}>
+                  <h3>{d.title}</h3>
+                  <p>{d.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="defense-close">
+            {isPE ? sector.defense.close.pe : sector.defense.close.portco}
+          </p>
+        </section>
+      )}
+
       {/* ================= 03 — THE EVIDENCE [FIXED] ================= */}
       <section className="section">
         <h3 className="report-subhead">Sector data points</h3>
