@@ -1276,8 +1276,11 @@ a {
 }
 
 /* ── Team overlay logos — optical size alignment ── */
+/* BCG/MIT SVGs are cropped tight to ink. All marks share one height so
+   letter/cap height matches; flex centers the ink (no viewBox padding). */
 
 .team-logos-row {
+  --team-logo-h: clamp(22px, 2.8vw, 32px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1288,31 +1291,21 @@ a {
 .team-logos-row img {
   display: block;
   width: auto;
+  height: var(--team-logo-h);
   opacity: 0.5;
   filter: brightness(0) invert(1);
   object-fit: contain;
   flex-shrink: 0;
 }
 
-/* BCG/MIT SVGs carry viewBox padding — scale up so they read at row height. */
-.team-logos-row img[data-logo="bcg"],
-.team-logos-row img[data-logo="mit"] {
-  height: clamp(56px, 6.8vw, 76px);
-}
-
-/* CD&R PNG fills its box edge-to-edge — scale down to match row cap height. */
-.team-logos-row img[data-logo="cdr"] {
-  height: clamp(22px, 2.8vw, 32px);
-}
-
-/* Wide wordmark — slightly shorter so it doesn't dominate horizontally. */
+/* Wide wordmark — cap height a touch lower so lowercase doesn't dominate. */
 .team-logos-row img[data-logo="dartmouth"] {
-  height: clamp(18px, 2.2vw, 26px);
+  height: calc(var(--team-logo-h) * 0.92);
 }
 
-/* Tall mark — between baseline and full height. */
+/* Tall icon mark — keep optical weight near text logos. */
 .team-logos-row img[data-logo="angellist"] {
-  height: clamp(30px, 3.8vw, 44px);
+  height: calc(var(--team-logo-h) * 1.15);
 }
 
 /* ── Nav page shimmer — about (top ↔ bottom) ── */
