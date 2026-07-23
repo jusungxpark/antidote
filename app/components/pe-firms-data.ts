@@ -2,6 +2,8 @@ export type PeFirmLogo = {
   id: string;
   name: string;
   src: string;
+  /** When false, kept in data for later but omitted from the carousel. */
+  carousel?: boolean;
 };
 
 export const PE_FIRM_LOGOS: PeFirmLogo[] = [
@@ -19,5 +21,15 @@ export const PE_FIRM_LOGOS: PeFirmLogo[] = [
     src: "/logos/pe-firms/grain-management.png",
   },
   { id: "new-atlas", name: "New Atlas Capital", src: "/logos/pe-firms/new-atlas.png" },
-  { id: "graham", name: "Graham Partners", src: "/logos/pe-firms/graham.png" },
+  // Kept for later — omit from carousel until ready to show again.
+  {
+    id: "graham",
+    name: "Graham Partners",
+    src: "/logos/pe-firms/graham.png",
+    carousel: false,
+  },
 ];
+
+export const PE_FIRM_CAROUSEL_LOGOS = PE_FIRM_LOGOS.filter(
+  (firm) => firm.carousel !== false
+);

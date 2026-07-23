@@ -1,9 +1,9 @@
 "use client";
 
-import { PE_FIRM_LOGOS } from "./pe-firms-data";
+import { PE_FIRM_CAROUSEL_LOGOS } from "./pe-firms-data";
 
 export function PeFirmLogoCarousel() {
-  const track = [...PE_FIRM_LOGOS, ...PE_FIRM_LOGOS];
+  const track = [...PE_FIRM_CAROUSEL_LOGOS, ...PE_FIRM_CAROUSEL_LOGOS];
 
   return (
     <div
