@@ -1,31 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import {
-  BLOG_POSTS,
-  type BlogPost,
-} from "./blog-posts-data";
-
-type BlogBlock =
-  | { type: "h2"; text: string }
-  | { type: "h3"; text: string }
-  | { type: "p"; text: string };
-
-function parseBlogBody(body: string): BlogBlock[] {
-  return body
-    .split(/\n\n+/)
-    .map((chunk) => chunk.trim())
-    .filter(Boolean)
-    .map((chunk) => {
-      if (chunk.startsWith("### ")) {
-        return { type: "h3" as const, text: chunk.slice(4).trim() };
-      }
-      if (chunk.startsWith("## ")) {
-        return { type: "h2" as const, text: chunk.slice(3).trim() };
-      }
-      return { type: "p" as const, text: chunk };
-    });
-}
+import { useEffect, useState } from "react";
+import { BLOG_POSTS, type BlogPost } from "./blog-posts-data";
 
 function BlogPostList({
   onSelect,
@@ -69,7 +45,36 @@ function BlogPostReader({
   post: BlogPost;
   onBack: () => void;
 }) {
-  const blocks = parseBlogBody(post.body);
+  const [html, setHtml] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setHtml(null);
+    setError(null);
+
+    fetch(`/api/blog/${post.slug}`)
+      .then(async (response) => {
+        const data = (await response.json()) as {
+          html?: string;
+          error?: string;
+        };
+        if (!response.ok) {
+          throw new Error(data.error ?? "Failed to load post");
+        }
+        if (!data.html) throw new Error("Empty post body");
+        if (!cancelled) setHtml(data.html);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load post");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [post.slug]);
 
   return (
     <article className="blog-overlay-panel blog-overlay-panel--reader">
@@ -91,29 +96,21 @@ function BlogPostReader({
         </p>
       </header>
 
-      <div className="blog-reader-body">
-        {blocks.map((block, index) => {
-          if (block.type === "h2") {
-            return (
-              <h2 key={`${block.type}-${index}`} className="blog-reader-h2">
-                {block.text}
-              </h2>
-            );
-          }
-          if (block.type === "h3") {
-            return (
-              <h3 key={`${block.type}-${index}`} className="blog-reader-h3">
-                {block.text}
-              </h3>
-            );
-          }
-          return (
-            <p key={`${block.type}-${index}`} className="blog-reader-p">
-              {block.text}
-            </p>
-          );
-        })}
-      </div>
+      {error ? (
+        <p className="blog-reader-status">
+          Couldn’t load the essay ({error}).{" "}
+          <a href={post.substackUrl} target="_blank" rel="noopener noreferrer">
+            Read on Substack
+          </a>
+        </p>
+      ) : html ? (
+        <div
+          className="blog-reader-prose"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : (
+        <p className="blog-reader-status">Loading essay…</p>
+      )}
 
       <footer className="blog-reader-footer">
         <a
