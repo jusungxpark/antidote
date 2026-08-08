@@ -14,6 +14,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { AntidoteWordmarkLabel } from "./AntidoteWordmark";
 import { PillarExpandOverlay } from "./PillarExpandOverlay";
+import { BlogOverlay } from "./BlogOverlay";
 import { CaseStudiesScreen } from "./CaseStudiesScreen";
 import { CaseStudyDetailScreen } from "./CaseStudyDetailScreen";
 import { CaseStudyExpandOverlay } from "./CaseStudyExpandOverlay";
@@ -229,20 +230,6 @@ const TEAM_CONTENT = (
   </div>
 );
 
-const BLOG_CONTENT = (
-  <p
-    style={{
-      fontFamily: "var(--font-sans)",
-      fontSize: "clamp(18px, 2.2vw, 28px)",
-      lineHeight: 1.5,
-      color: "rgba(10, 10, 10, 0.6)",
-      margin: 0,
-    }}
-  >
-    Coming soon.
-  </p>
-);
-
 const OVERLAY_STYLES: Record<NavPage, React.CSSProperties> = {
   manifesto: {
     background: "rgba(18, 18, 18, 0.70)",
@@ -279,7 +266,7 @@ function getOverlayContent(page: NavPage): ReactNode {
     case "team":
       return TEAM_CONTENT;
     case "blog":
-      return BLOG_CONTENT;
+      return <BlogOverlay />;
   }
 }
 
@@ -765,15 +752,17 @@ export function SceneShell({ children }: { children: ReactNode }) {
         {navOverlay && (
           <div
             key={navOverlay}
-            className={getOverlayClass(navOverlay, navOverlayLeaving)}
+            className={`${getOverlayClass(navOverlay, navOverlayLeaving)}${
+              navOverlay === "blog" ? " scene-nav-overlay--blog" : ""
+            }`}
             onAnimationEnd={handleNavAnimEnd}
             style={{
               position: "fixed",
               inset: 0,
               zIndex: 8,
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              alignItems: navOverlay === "blog" ? "stretch" : "center",
+              justifyContent: navOverlay === "blog" ? "stretch" : "center",
               ...OVERLAY_STYLES[navOverlay],
             }}
           >
