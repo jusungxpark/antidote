@@ -22,7 +22,9 @@ function BlogPostList({
               className="blog-post-row"
               onClick={() => onSelect(post)}
             >
-              <span className="blog-post-row-series">{post.series}</span>
+              {post.series ? (
+                <span className="blog-post-row-series">{post.series}</span>
+              ) : null}
               <span className="blog-post-row-title">{post.title}</span>
               <span className="blog-post-row-dek">{post.dek}</span>
               <span className="blog-post-row-meta">
@@ -86,7 +88,9 @@ function BlogPostReader({
       </button>
 
       <header className="blog-reader-header">
-        <p className="blog-post-row-series">{post.series}</p>
+        {post.series ? (
+          <p className="blog-post-row-series">{post.series}</p>
+        ) : null}
         <h1 className="blog-reader-title">{post.title}</h1>
         <p className="blog-reader-dek">{post.dek}</p>
         <p className="blog-reader-meta">

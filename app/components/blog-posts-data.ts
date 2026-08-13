@@ -1,6 +1,6 @@
 export type BlogPost = {
   slug: string;
-  series: string;
+  series?: string;
   title: string;
   dek: string;
   date: string;
@@ -11,6 +11,16 @@ export type BlogPost = {
 };
 
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: "the-harness-is-the-product",
+    title: "The Harness is the Product",
+    dek: "Fable is incredible, but it's not going to save your company by itself.",
+    date: "2026-08-11",
+    dateLabel: "Aug 11, 2026",
+    authors: ["Jusung Park"],
+    substackUrl:
+      "https://antidotetransform.substack.com/p/the-harness-is-the-product",
+  },
   {
     slug: "follow-the-value",
     series: "Acquired Intelligence",
