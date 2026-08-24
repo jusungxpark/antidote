@@ -396,7 +396,7 @@ export default function Report({
           </p>
           <p>
             <a href="https://antidotetransform.com">Antidote</a> ·{" "}
-            <a href="https://antidotetransform.com/transformation">
+            <a href="https://antidotetransform.com/forward-deployed">
               Case studies
             </a>{" "}
             · <a href="mailto:founders@antidotetransform.com">founders@antidotetransform.com</a>

@@ -11,8 +11,8 @@ interface SubpageLayoutProps {
 }
 
 function getPillarMeta(pathname: string) {
-  if (pathname.startsWith("/transformation")) {
-    return { title: "AI Transformation", mirror: false as const };
+  if (pathname.startsWith("/forward-deployed")) {
+    return { title: "Forward Deployed", mirror: false as const };
   }
   if (pathname.startsWith("/buyouts")) {
     return { title: "Buyouts", mirror: true as const };

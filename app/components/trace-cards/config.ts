@@ -76,7 +76,7 @@ export interface CardDefinition {
 
 export const CARDS: CardDefinition[] = [
   {
-    title: "AI Transformation",
+    title: "Forward Deployed",
     description: "PROJECT BASED",
     labels: ["Diligence", "Strategy", "Implementation"],
     movementPattern: "pyramidTrace",
@@ -84,7 +84,7 @@ export const CARDS: CardDefinition[] = [
     structureLayers: 1,
     shapeColor: "#ffffff",
     sculptColor: "#ffffff",
-    href: "/transformation",
+    href: "/forward-deployed",
   },
   {
     title: "Buyouts",

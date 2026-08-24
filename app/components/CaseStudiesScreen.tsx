@@ -95,7 +95,7 @@ export function CaseStudiesScreen({
       aria-hidden={hidden}
     >
       <a
-        href="/transformation"
+        href="/forward-deployed"
         className="pillar-case-link pillar-case-link--back"
         onClick={(event) => {
           event.preventDefault();

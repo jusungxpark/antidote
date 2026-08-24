@@ -117,8 +117,8 @@ export function useScene() {
 }
 
 function getPageInfo(pathname: string): { title: string; mirror: boolean } | null {
-  if (pathname.startsWith("/transformation")) {
-    return { title: "AI Transformation", mirror: false };
+  if (pathname.startsWith("/forward-deployed")) {
+    return { title: "Forward Deployed", mirror: false };
   }
   if (pathname.startsWith("/buyouts")) {
     return { title: "Buyouts", mirror: true };
@@ -276,7 +276,7 @@ function getOverlayContent(page: NavPage): ReactNode {
 // render bare. Any pathname that isn't a known site route is a report.
 // If you add a new top-level site page, add it to SITE_PATHS.
 // ------------------------------------------------------------------
-const SITE_PATHS = new Set(["/", "/buyouts", "/transformation"]);
+const SITE_PATHS = new Set(["/", "/buyouts", "/forward-deployed"]);
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -357,7 +357,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
     caseStudyExpandReadyRef.current = false;
     window.setTimeout(() => {
       if (pathname.startsWith(CASE_STUDIES_PATH)) {
-        router.push("/transformation");
+        router.push("/forward-deployed");
       }
       caseStudiesClosingRef.current = false;
     }, CASE_STUDIES_SLIDE_MS);
@@ -455,14 +455,14 @@ export function SceneShell({ children }: { children: ReactNode }) {
   }, [pathname, caseStudyTransition]);
 
   const isHome = pathname === "/";
-  const isTransformation = pathname.startsWith("/transformation");
+  const isForwardDeployed = pathname.startsWith("/forward-deployed");
   const pageInfo = getPageInfo(pathname);
 
   useEffect(() => {
-    if (!isTransformation && !isCaseStudiesRoute && !caseStudiesClosingRef.current) {
+    if (!isForwardDeployed && !isCaseStudiesRoute && !caseStudiesClosingRef.current) {
       setCaseStudiesOpen(false);
     }
-  }, [isTransformation, isCaseStudiesRoute]);
+  }, [isForwardDeployed, isCaseStudiesRoute]);
 
   const mirror = transition?.mirror ?? pageInfo?.mirror ?? false;
 
@@ -494,7 +494,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
 
   const startReturnTransition = useCallback(() => {
     if (transitionLock.current || returningHome || isHome) return;
-    const cardIndex = pathname.startsWith("/transformation")
+    const cardIndex = pathname.startsWith("/forward-deployed")
       ? 0
       : pathname.startsWith("/buyouts")
         ? 1

@@ -414,6 +414,19 @@ a {
   margin-bottom: 0;
 }
 
+.pillar-inline-link {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 180ms ease, text-decoration-color 180ms ease;
+}
+
+.pillar-inline-link:hover {
+  color: var(--text-bright);
+  text-decoration-color: var(--text-bright);
+}
+
 .pillar-panel-body--stage {
   overflow: hidden !important;
 }
