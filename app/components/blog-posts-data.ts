@@ -12,6 +12,17 @@ export type BlogPost = {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "b2b-services-become-ai-pilled",
+    series: "Acquired Intelligence",
+    title: "B2B services become AI-pilled.",
+    dek: "Why the future of B2B services is AI-native, why context is so important, and what that all means for who wins the next decade?",
+    date: "2026-08-25",
+    dateLabel: "Aug 25, 2026",
+    authors: ["Akash Raigangar", "Karo de Jonge", "Jusung Park"],
+    substackUrl:
+      "https://antidotetransform.substack.com/p/b2b-services-become-ai-pilled",
+  },
+  {
     slug: "the-harness-is-the-product",
     title: "The Harness is the Product",
     dek: "Fable is incredible, but it's not going to save your company by itself.",
