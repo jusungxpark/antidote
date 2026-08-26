@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   CycleVisual,
@@ -23,19 +23,6 @@ const HubAsciiDeploy = dynamic(
   () => import("./HubAsciiDeploy").then((m) => m.HubAsciiDeploy),
   { ssr: false },
 );
-
-function useIsFdHost() {
-  const [isFd, setIsFd] = useState(false);
-  useEffect(() => {
-    const host = window.location.hostname.toLowerCase();
-    setIsFd(
-      host === "fd.antidotetransform.com" ||
-        host === "fd.localhost" ||
-        host.startsWith("fd."),
-    );
-  }, []);
-  return isFd;
-}
 
 type Site = "hub" | "strategy" | "diligence" | "transformation";
 
@@ -241,7 +228,6 @@ function scrollShell(top = 0) {
 }
 
 export default function ForwardDeployedMockPage() {
-  const isFdHost = useIsFdHost();
   const [site, setSite] = useState<Site>("hub");
   const [page, setPage] = useState("home");
 
@@ -272,15 +258,6 @@ export default function ForwardDeployedMockPage() {
 
   return (
     <>
-      {!isFdHost ? (
-        <div className="fdm-banner">
-          <strong>Ephemeral preview</strong>
-          <span>
-            Full offering landings · deal-cycle shown in content, not as a filter
-          </span>
-        </div>
-      ) : null}
-
       <header className="fdm-layer1">
         <div className="fdm-layer1-inner">
           <button type="button" className="fdm-brand" onClick={goHub}>

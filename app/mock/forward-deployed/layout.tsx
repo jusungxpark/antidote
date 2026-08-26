@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
+import { PreviewBanner } from "./PreviewBanner";
 import "./mock.css";
 
 export const metadata: Metadata = {
@@ -23,6 +24,9 @@ export default async function ForwardDeployedLayout({
   const isFd = isFdRequest(h.get("host"), h.get("x-antidote-site"));
 
   return (
-    <div className={`fdm-root${isFd ? " fdm-root--fd" : ""}`}>{children}</div>
+    <div className={`fdm-root${isFd ? " fdm-root--fd" : ""}`}>
+      <PreviewBanner />
+      {children}
+    </div>
   );
 }
