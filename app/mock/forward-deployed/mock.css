@@ -95,6 +95,11 @@
   font-weight: 600;
 }
 
+/* Production FD host: never show preview chrome */
+.fdm-root--fd .fdm-banner {
+  display: none;
+}
+
 /* ── Layer 1 ── */
 .fdm-layer1 {
   position: sticky;
