@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   CycleVisual,
@@ -23,6 +23,19 @@ const HubAsciiDeploy = dynamic(
   () => import("./HubAsciiDeploy").then((m) => m.HubAsciiDeploy),
   { ssr: false },
 );
+
+function useIsFdHost() {
+  const [isFd, setIsFd] = useState(false);
+  useEffect(() => {
+    const host = window.location.hostname.toLowerCase();
+    setIsFd(
+      host === "fd.antidotetransform.com" ||
+        host === "fd.localhost" ||
+        host.startsWith("fd."),
+    );
+  }, []);
+  return isFd;
+}
 
 type Site = "hub" | "strategy" | "diligence" | "transformation";
 
@@ -211,7 +224,7 @@ function DiligenceCddFrame({ page }: { page: string }) {
 
   return (
     <div className="fdm-cdd-embed">
-      {/* Masks CDD wordmark + Work with us / Login; mock layer2 is the shared nav */}
+      {/* Masks CDD wordmark + Work with us / Login; layer2 is the shared nav */}
       <div className="fdm-cdd-chrome-mask" aria-hidden="true" />
       <iframe
         className="fdm-cdd-frame"
@@ -223,24 +236,25 @@ function DiligenceCddFrame({ page }: { page: string }) {
   );
 }
 
-function scrollMock(top = 0) {
+function scrollShell(top = 0) {
   document.querySelector(".fdm-root")?.scrollTo({ top, behavior: "smooth" });
 }
 
 export default function ForwardDeployedMockPage() {
+  const isFdHost = useIsFdHost();
   const [site, setSite] = useState<Site>("hub");
   const [page, setPage] = useState("home");
 
   const enter = (next: Exclude<Site, "hub">, nextPage = "home") => {
     setSite(next);
     setPage(nextPage);
-    scrollMock(0);
+    scrollShell(0);
   };
 
   const goHub = () => {
     setSite("hub");
     setPage("home");
-    scrollMock(0);
+    scrollShell(0);
   };
 
   const nav = site === "hub" ? [] : SUBSITE_NAV[site];
@@ -258,12 +272,14 @@ export default function ForwardDeployedMockPage() {
 
   return (
     <>
-      <div className="fdm-banner">
-        <strong>Ephemeral mock</strong>
-        <span>
-          Full offering landings · deal-cycle shown in content, not as a filter
-        </span>
-      </div>
+      {!isFdHost ? (
+        <div className="fdm-banner">
+          <strong>Ephemeral preview</strong>
+          <span>
+            Full offering landings · deal-cycle shown in content, not as a filter
+          </span>
+        </div>
+      ) : null}
 
       <header className="fdm-layer1">
         <div className="fdm-layer1-inner">
@@ -311,7 +327,7 @@ export default function ForwardDeployedMockPage() {
                 className={page === item.id ? "is-active" : undefined}
                 onClick={() => {
                   setPage(item.id);
-                  scrollMock(0);
+                  scrollShell(0);
                 }}
               >
                 {item.label}
@@ -453,7 +469,7 @@ export default function ForwardDeployedMockPage() {
                 site={site}
                 onNavigate={(next) => {
                   setPage(next);
-                  scrollMock(0);
+                  scrollShell(0);
                 }}
                 onEnterSibling={enter}
               />
@@ -463,14 +479,14 @@ export default function ForwardDeployedMockPage() {
               <TransformationCasesView
                 onNavigate={(next) => {
                   setPage(next);
-                  scrollMock(0);
+                  scrollShell(0);
                 }}
               />
             ) : site === "strategy" && page === "work" ? (
               <StrategyCasesView
                 onNavigate={(next) => {
                   setPage(next);
-                  scrollMock(0);
+                  scrollShell(0);
                 }}
               />
             ) : (
@@ -536,7 +552,7 @@ export default function ForwardDeployedMockPage() {
         )}
 
         <footer className="fdm-footer">
-          <span>Antidote · Forward Deployed mock</span>
+          <span>Antidote · Forward Deployed</span>
           <button type="button" className="fdm-text-link" onClick={goHub}>
             Back to landing
           </button>
