@@ -1,0 +1,65 @@
+{
+  "palm": {
+    "file": "/mock/hand-parts/palm.png",
+    "x": 6.71,
+    "y": 6.71,
+    "w": 293.29,
+    "h": 239.6,
+    "pixels": 125608
+  },
+  "pinky": {
+    "file": "/mock/hand-parts/pinky.png",
+    "x": 46.64,
+    "y": 114.09,
+    "w": 81.54,
+    "h": 83.22,
+    "pixels": 16827,
+    "pivotX": 79.2,
+    "pivotY": 10.07,
+    "restAngle": 137.23
+  },
+  "ring": {
+    "file": "/mock/hand-parts/ring.png",
+    "x": 82.55,
+    "y": 121.48,
+    "w": 57.05,
+    "h": 108.72,
+    "pixels": 6907,
+    "pivotX": 60.07,
+    "pivotY": 6.04,
+    "restAngle": 116.98
+  },
+  "middle": {
+    "file": "/mock/hand-parts/middle.png",
+    "x": 109.06,
+    "y": 118.79,
+    "w": 42.28,
+    "h": 102.35,
+    "pixels": 10080,
+    "pivotX": 46.98,
+    "pivotY": 5.37,
+    "restAngle": 113.2
+  },
+  "index": {
+    "file": "/mock/hand-parts/index.png",
+    "x": 118.46,
+    "y": 112.75,
+    "w": 68.12,
+    "h": 94.63,
+    "pixels": 19585,
+    "pivotX": 51.0,
+    "pivotY": 6.38,
+    "restAngle": 115.08
+  },
+  "thumb": {
+    "file": "/mock/hand-parts/thumb.png",
+    "x": 208.72,
+    "y": 84.23,
+    "w": 21.48,
+    "h": 16.11,
+    "pixels": 841,
+    "pivotX": -4.02,
+    "pivotY": 19.8,
+    "restAngle": 21.04
+  }
+}
