@@ -33,8 +33,12 @@
 
   position: fixed;
   inset: 0;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
+  /* Prevent header reflow when Diligence hides the scrollbar */
+  scrollbar-gutter: stable;
   overscroll-behavior: contain;
   background: var(--canvas);
   color: var(--ink);
@@ -105,6 +109,8 @@
   position: sticky;
   top: 0;
   z-index: 30;
+  height: 64px;
+  flex: 0 0 64px;
   background: rgba(253, 250, 250, 0.92);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
@@ -112,17 +118,18 @@
 
 .fdm-layer1-inner {
   width: min(1180px, calc(100% - 48px));
+  height: 64px;
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  min-height: 64px;
+  column-gap: 20px;
 }
 
 .fdm-brand {
   display: inline-flex;
   align-items: baseline;
+  justify-self: start;
   background: none;
   border: 0;
   padding: 0;
@@ -132,6 +139,7 @@
   font-weight: 650;
   letter-spacing: -0.03em;
   color: var(--ink);
+  white-space: nowrap;
 }
 
 .fdm-brand em {
@@ -142,14 +150,17 @@
 .fdm-offering-switch {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(3, minmax(7.5rem, 1fr));
+  grid-template-columns: repeat(3, 8.75rem);
   align-items: center;
+  justify-self: center;
   gap: 0;
+  width: max-content;
   padding: 4px;
   background: var(--paper-deep);
   border: 1px solid var(--line);
   border-radius: 999px;
   isolation: isolate;
+  flex: 0 0 auto;
 }
 
 .fdm-offering-switch-thumb {
@@ -223,6 +234,7 @@
 }
 
 .fdm-layer1-cta {
+  justify-self: end;
   font-size: 14px;
   font-weight: 600;
   color: #fff;
@@ -236,6 +248,7 @@
   transition-property: background, scale;
   transition-duration: 150ms;
   transition-timing-function: var(--ease-out);
+  white-space: nowrap;
 }
 
 .fdm-layer1-cta:hover {
@@ -256,6 +269,8 @@
   position: sticky;
   top: 64px;
   z-index: 29;
+  height: 52px;
+  flex: 0 0 52px;
   background: color-mix(in srgb, var(--canvas) 96%, transparent);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
@@ -263,13 +278,13 @@
 
 .fdm-layer2-inner {
   width: min(1180px, calc(100% - 48px));
+  height: 52px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px 18px;
-  min-height: 52px;
-  overflow-x: auto;
+  overflow: hidden;
 }
 
 .fdm-layer2-label {
@@ -385,9 +400,8 @@
 }
 
 .fdm-root:has(.fdm-cdd-embed) {
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
+  /* keep scrollbar-gutter from .fdm-root so layer1 width stays put */
 }
 
 .fdm-cdd-embed {
@@ -1226,15 +1240,35 @@
 }
 
 @media (max-width: 960px) {
+  .fdm-layer1 {
+    height: auto;
+    flex-basis: auto;
+  }
+
   .fdm-layer1-inner {
-    flex-wrap: wrap;
+    height: auto;
+    min-height: 64px;
     padding: 12px 0;
-    min-height: auto;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand cta"
+      "switch switch";
+    row-gap: 10px;
+  }
+
+  .fdm-brand {
+    grid-area: brand;
+  }
+
+  .fdm-layer1-cta {
+    grid-area: cta;
   }
 
   .fdm-offering-switch {
-    order: 3;
+    grid-area: switch;
+    justify-self: stretch;
     width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     overflow-x: auto;
   }
 

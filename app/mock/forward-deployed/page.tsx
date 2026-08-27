@@ -224,7 +224,11 @@ function DiligenceCddFrame({ page }: { page: string }) {
 }
 
 function scrollShell(top = 0) {
-  document.querySelector(".fdm-root")?.scrollTo({ top, behavior: "smooth" });
+  const root = document.querySelector(".fdm-root");
+  if (!root) return;
+  // Avoid a smooth-scroll jolt when already at the top (felt like the nav shifting)
+  if (Math.abs(root.scrollTop - top) < 2) return;
+  root.scrollTo({ top, behavior: "smooth" });
 }
 
 export default function ForwardDeployedMockPage() {
