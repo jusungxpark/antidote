@@ -273,14 +273,18 @@ function getOverlayContent(page: NavPage): ReactNode {
 // ------------------------------------------------------------------
 // AppShell — routes the marketing site through the 3D SceneShell,
 // but lets outreach-report routes (/[company-name], /pe/[company-name])
-// render bare. Any pathname that isn't a known site route is a report.
+// and the Forward Deployed mock (/mock/...) render bare.
+// fd.antidotetransform.com is excluded in root layout (host-based).
 // If you add a new top-level site page, add it to SITE_PATHS.
 // ------------------------------------------------------------------
 const SITE_PATHS = new Set(["/", "/buyouts", "/forward-deployed"]);
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  // /mock/* is the FD buyer site preview on the main domain — keep it separate
+  const isMockPath = pathname != null && pathname.startsWith("/mock/");
   const isSite =
+    !isMockPath &&
     pathname != null &&
     (SITE_PATHS.has(pathname) || pathname.startsWith(CASE_STUDIES_PATH));
   if (!isSite) return <>{children}</>;
