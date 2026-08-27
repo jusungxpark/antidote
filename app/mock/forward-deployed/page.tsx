@@ -264,7 +264,13 @@ export default function ForwardDeployedMockPage() {
             Antidote, Forward Deployed<em>.</em>
           </button>
 
-          <div className="fdm-offering-switch" role="tablist" aria-label="Offering">
+          <div
+            className="fdm-offering-switch"
+            role="tablist"
+            aria-label="Offering"
+            data-active={site === "hub" ? undefined : site}
+          >
+            <span className="fdm-offering-switch-thumb" aria-hidden="true" />
             {(
               [
                 ["strategy", "Strategy"],

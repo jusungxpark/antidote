@@ -140,29 +140,69 @@
 }
 
 .fdm-offering-switch {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(7.5rem, 1fr));
   align-items: center;
-  gap: 2px;
+  gap: 0;
   padding: 4px;
   background: var(--paper-deep);
   border: 1px solid var(--line);
   border-radius: 999px;
+  isolation: isolate;
+}
+
+.fdm-offering-switch-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  z-index: 0;
+  width: calc((100% - 8px) / 3);
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: 0 1px 2px rgba(23, 18, 18, 0.06);
+  opacity: 0;
+  transform: translateX(0);
+  transition:
+    transform 320ms var(--ease-out),
+    opacity 200ms var(--ease-out);
+  pointer-events: none;
+}
+
+.fdm-offering-switch[data-active="strategy"] .fdm-offering-switch-thumb {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.fdm-offering-switch[data-active="diligence"] .fdm-offering-switch-thumb {
+  opacity: 1;
+  transform: translateX(100%);
+}
+
+.fdm-offering-switch[data-active="transformation"] .fdm-offering-switch-thumb {
+  opacity: 1;
+  transform: translateX(200%);
 }
 
 .fdm-offering-switch button {
+  position: relative;
+  z-index: 1;
   appearance: none;
   border: 0;
   background: transparent;
   font: inherit;
   cursor: pointer;
-  padding: 9px 16px;
+  padding: 9px 14px;
   min-height: 40px;
   border-radius: 999px;
   font-size: 14px;
-  font-weight: 540;
+  font-weight: 560;
   color: var(--ink-soft);
-  transition-property: background, color, scale;
-  transition-duration: 150ms;
+  text-align: center;
+  white-space: nowrap;
+  transition-property: color;
+  transition-duration: 180ms;
   transition-timing-function: var(--ease-out);
 }
 
@@ -170,15 +210,11 @@
   color: var(--ink);
 }
 
-.fdm-offering-switch button:active {
-  scale: 0.96;
-}
-
 .fdm-offering-switch button.is-active {
-  background: var(--paper);
   color: var(--ink);
-  box-shadow: 0 1px 2px rgba(23, 18, 18, 0.06);
-  font-weight: 600;
+  background: transparent;
+  box-shadow: none;
+  font-weight: 560;
 }
 
 .fdm-offering-switch button:focus-visible {
@@ -343,7 +379,9 @@
 }
 
 .fdm-layer2.is-hub {
-  display: none;
+  /* Keep height so layer1 + page don't jump when entering an offering */
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .fdm-root:has(.fdm-cdd-embed) {
@@ -3021,6 +3059,7 @@
   transform: rotate(-2.4deg);
   transform-origin: 58% 40%;
   overflow: hidden;
+  font-family: "Times New Roman", Times, serif;
 }
 
 .fdm-strat-report-paper {
