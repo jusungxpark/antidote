@@ -228,6 +228,8 @@ export function StrategyHeroVisual() {
 
   return (
     <aside className="fdm-strat-report" aria-hidden="true">
+      <div className="fdm-strat-report-paper fdm-strat-report-paper--back" />
+      <div className="fdm-strat-report-paper fdm-strat-report-paper--mid" />
       <div className="fdm-strat-report-sheet">
         <header className="fdm-strat-report-meta">
           <span>Exhibit A</span>
