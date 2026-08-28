@@ -2,13 +2,6 @@
 
 import type { CaseStudy } from "../../components/case-studies-data";
 
-function pullQuote(study: CaseStudy): string {
-  const text = study.result.trim();
-  const sentence = text.match(/^[^.!?]+[.!?]/)?.[0] ?? text;
-  const cleaned = sentence.replace(/\s+/g, " ").trim();
-  return cleaned.length > 220 ? `${cleaned.slice(0, 217).trim()}…` : cleaned;
-}
-
 /** Rogo-style listing: gray media tile + title row. */
 export function FdCaseStoryCards({
   studies,
@@ -36,7 +29,7 @@ export function FdCaseStoryCards({
   );
 }
 
-/** Rogo-style report: hero, pull quote, meta rail + narrative. */
+/** Rogo-style report: hero, meta rail + narrative. */
 export function FdCaseStudyReport({
   study,
   crumbLabel,
@@ -46,8 +39,6 @@ export function FdCaseStudyReport({
   crumbLabel: string;
   onBack: () => void;
 }) {
-  const quote = pullQuote(study);
-
   return (
     <article className="fdm-story-report">
       <nav className="fdm-story-crumbs" aria-label="Breadcrumb">
@@ -64,10 +55,6 @@ export function FdCaseStudyReport({
           <img src={study.image} alt="" />
         </div>
       </header>
-
-      <blockquote className="fdm-story-quote">
-        <p>“{quote.replace(/^["“]|["”]$/g, "")}”</p>
-      </blockquote>
 
       <div className="fdm-story-report-body">
         <dl className="fdm-story-meta">

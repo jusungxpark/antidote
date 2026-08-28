@@ -355,9 +355,9 @@ export default function ForwardDeployedMockPage() {
               <div className="fdm-land-hero-copy">
                 <h1>We forward deploy at the frontier of AI.</h1>
                 <p>
-                  Into diligence rooms, portfolio companies, and the workflows
-                  that still run on people, so sponsors and operators get
-                  strategy, evidence, and shipped deliverables.
+                  Into strategy meetings, diligence rooms, portfolio companies,
+                  and the workflows that still run on people, so sponsors and
+                  operators get strategy, evidence, and shipped deliverables.
                 </p>
                 <div className="fdm-land-actions">
                   <button
@@ -423,7 +423,7 @@ export default function ForwardDeployedMockPage() {
 
             {/* 3. Deal cycle — sticky phases */}
             <div id="cycle">
-              <DealCycleSticky onEnter={enter} />
+              <DealCycleSticky />
             </div>
 
             {/* 4. CTA */}

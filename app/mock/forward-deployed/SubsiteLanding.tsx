@@ -34,11 +34,11 @@ type PainItem = {
   icon: PainIconKind;
 };
 
-function SectionHead({ title, lede }: { title: string; lede: string }) {
+function SectionHead({ title, lede }: { title: string; lede?: string }) {
   return (
-    <div className="fdm-section-head">
+    <div className={`fdm-section-head${lede ? "" : " fdm-section-head--solo"}`}>
       <h2>{title}</h2>
-      <p>{lede}</p>
+      {lede ? <p>{lede}</p> : null}
     </div>
   );
 }
@@ -185,20 +185,20 @@ function StickyPain({
 function SellWhat({
   items,
 }: {
-  items: { title: string; body: string; mark: "value" | "truth" | "fund" | "model" | "process" | "data" | "jobs" | "agents" }[];
+  items: { title: string; body: string; mark: FeatureKind }[];
 }) {
   return (
     <div className="fdm-feature-grid">
       {items.map((item) => (
-        <article key={item.title} className="fdm-feature-block">
+        <article
+          key={item.title}
+          className={`fdm-feature-block fdm-feature-block--${item.mark}`}
+        >
           <div className="fdm-feature-block-copy">
             <strong>{item.title}</strong>
             <p>{item.body}</p>
           </div>
-          <span className="fdm-feature-block-visual" aria-hidden="true">
-            <span className="fdm-feature-block-glow" />
-            <FeatureMark kind={item.mark} />
-          </span>
+          <FeatureVisual kind={item.mark} />
         </article>
       ))}
     </div>
@@ -212,11 +212,8 @@ function SellHow({
 }) {
   return (
     <ol className="fdm-step-rail">
-      {steps.map((step, i) => (
+      {steps.map((step) => (
         <li key={step.title} className="fdm-step-rail-item">
-          <span className="fdm-step-rail-n" aria-hidden="true">
-            {String(i + 1).padStart(2, "0")}
-          </span>
           <div className="fdm-step-rail-copy">
             <strong>{step.title}</strong>
             <p>{step.body}</p>
@@ -228,93 +225,202 @@ function SellHow({
   );
 }
 
-function FeatureMark({
-  kind,
-}: {
-  kind: "value" | "truth" | "fund" | "model" | "process" | "data" | "jobs" | "agents";
-}) {
-  const stroke = {
-    stroke: "currentColor",
-    strokeWidth: 1.4,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    fill: "none",
-  };
+type FeatureKind =
+  | "value"
+  | "truth"
+  | "fund"
+  | "model"
+  | "process"
+  | "data"
+  | "jobs"
+  | "agents";
 
+/** Enterprise mini-panels for What you get — not icon placeholders. */
+function FeatureVisual({ kind }: { kind: FeatureKind }) {
   switch (kind) {
     case "value":
       return (
-        <svg viewBox="0 0 64 64" className="fdm-feature-mark">
-          <path d="M10 48H54" {...stroke} />
-          <path d="M18 48V34" {...stroke} />
-          <path d="M32 48V22" {...stroke} />
-          <path d="M46 48V12" {...stroke} />
-        </svg>
+        <div className="fdm-feat-panel fdm-feat-panel--value" aria-hidden="true">
+          <header>
+            <span>Value map</span>
+            <span>Exhibit</span>
+          </header>
+          <ul className="fdm-feat-bars">
+            <li>
+              <em>Friction</em>
+              <i style={{ ["--bar" as string]: "34%" }} />
+            </li>
+            <li>
+              <em>Ownership</em>
+              <i style={{ ["--bar" as string]: "68%" }} />
+            </li>
+            <li className="is-accent">
+              <em>Margin</em>
+              <i style={{ ["--bar" as string]: "92%" }} />
+            </li>
+          </ul>
+        </div>
       );
     case "truth":
       return (
-        <svg viewBox="0 0 64 64" className="fdm-feature-mark">
-          <rect x="14" y="12" width="36" height="40" rx="3" {...stroke} />
-          <path d="M22 26H42M22 34H38M22 42H34" {...stroke} />
-        </svg>
+        <div className="fdm-feat-panel fdm-feat-panel--truth" aria-hidden="true">
+          <header>
+            <span>Must be true</span>
+            <span>IC</span>
+          </header>
+          <ul className="fdm-feat-checks">
+            <li data-state="ok">Data owned</li>
+            <li data-state="ok">Exceptions named</li>
+            <li data-state="open">Still human</li>
+            <li data-state="flag">Unproven</li>
+          </ul>
+        </div>
       );
     case "fund":
       return (
-        <svg viewBox="0 0 64 64" className="fdm-feature-mark">
-          <path d="M18 40L28 22L36 34L46 16" {...stroke} />
-          <path d="M40 16H46V22" {...stroke} />
-          <path d="M14 48H50" {...stroke} />
-        </svg>
+        <div className="fdm-feat-panel fdm-feat-panel--fund" aria-hidden="true">
+          <header>
+            <span>Roadmap</span>
+            <span>Sequenced</span>
+          </header>
+          <ul className="fdm-feat-fund">
+            <li data-tone="fund">
+              <strong>Fund</strong>
+              <em>First thin path</em>
+            </li>
+            <li data-tone="hold">
+              <strong>Hold</strong>
+              <em>Needs evidence</em>
+            </li>
+            <li data-tone="kill">
+              <strong>Refuse</strong>
+              <em>Kill criteria</em>
+            </li>
+          </ul>
+        </div>
       );
     case "model":
       return (
-        <svg viewBox="0 0 64 64" className="fdm-feature-mark">
-          <rect x="24" y="10" width="16" height="12" rx="2" {...stroke} />
-          <path d="M32 22V28M16 28H48" {...stroke} />
-          <rect x="10" y="28" width="14" height="12" rx="2" {...stroke} />
-          <rect x="25" y="28" width="14" height="12" rx="2" {...stroke} />
-          <rect x="40" y="28" width="14" height="12" rx="2" {...stroke} />
-          <path d="M17 40V46M32 40V46M47 40V46" {...stroke} />
-          <rect x="10" y="46" width="14" height="10" rx="2" {...stroke} />
-          <rect x="25" y="46" width="14" height="10" rx="2" {...stroke} />
-          <rect x="40" y="46" width="14" height="10" rx="2" {...stroke} />
-        </svg>
+        <div className="fdm-feat-panel fdm-feat-panel--model" aria-hidden="true">
+          <header>
+            <span>Operating model</span>
+            <span>Holds</span>
+          </header>
+          <div className="fdm-feat-model">
+            <div>
+              <strong>Agents</strong>
+              <em>Volume</em>
+            </div>
+            <span aria-hidden="true" />
+            <div>
+              <strong>Humans</strong>
+              <em>Outcomes</em>
+            </div>
+            <div className="fdm-feat-model-foot">Incentives · exceptions · review</div>
+          </div>
+        </div>
       );
     case "process":
       return (
-        <svg viewBox="0 0 64 64" className="fdm-feature-mark">
-          <rect x="8" y="14" width="20" height="14" rx="2" {...stroke} />
-          <rect x="36" y="36" width="20" height="14" rx="2" {...stroke} />
-          <path d="M28 21H34L38 29" {...stroke} />
-          <path d="M36 43H30L26 35" {...stroke} />
-        </svg>
+        <div className="fdm-feat-panel fdm-feat-panel--process" aria-hidden="true">
+          <header>
+            <span>Process mine</span>
+            <span>Live path</span>
+          </header>
+          <div className="fdm-feat-flow">
+            <div>
+              <strong>CRM</strong>
+              <em>12m</em>
+            </div>
+            <i />
+            <div>
+              <strong>Inbox</strong>
+              <em>41m</em>
+            </div>
+            <i />
+            <div className="is-leak">
+              <strong>ERP</strong>
+              <em>Leak</em>
+            </div>
+            <span className="fdm-feat-cursor" />
+          </div>
+          <p className="fdm-feat-note">Bottleneck · rework · handoff</p>
+        </div>
       );
     case "data":
       return (
-        <svg viewBox="0 0 64 64" className="fdm-feature-mark">
-          <ellipse cx="32" cy="16" rx="18" ry="7" {...stroke} />
-          <path d="M14 16V28c0 3.9 8.1 7 18 7s18-3.1 18-7V16" {...stroke} />
-          <path d="M14 28V40c0 3.9 8.1 7 18 7s18-3.1 18-7V28" {...stroke} />
-          <path d="M14 40V48c0 3.9 8.1 7 18 7s18-3.1 18-7V40" {...stroke} />
-        </svg>
+        <div className="fdm-feat-panel fdm-feat-panel--data" aria-hidden="true">
+          <header>
+            <span>Substrate</span>
+            <span>Clean</span>
+          </header>
+          <ul className="fdm-feat-fields">
+            <li>
+              <strong>customer_id</strong>
+              <span data-tone="ok">Canonical</span>
+            </li>
+            <li>
+              <strong>invoice_status</strong>
+              <span data-tone="ok">Mapped</span>
+            </li>
+            <li>
+              <strong>owner_queue</strong>
+              <span data-tone="open">Lineage</span>
+            </li>
+            <li>
+              <strong>exception_code</strong>
+              <span data-tone="flag">Defined</span>
+            </li>
+          </ul>
+        </div>
       );
     case "jobs":
       return (
-        <svg viewBox="0 0 64 64" className="fdm-feature-mark">
-          <circle cx="22" cy="20" r="7" {...stroke} />
-          <circle cx="44" cy="22" r="5" {...stroke} />
-          <path d="M10 48c1.5-8 7-12 12-12s10.5 4 12 12" {...stroke} />
-          <path d="M36 46c1-5 4.5-8 8-8s7 3 8 8" {...stroke} />
-        </svg>
+        <div className="fdm-feat-panel fdm-feat-panel--jobs" aria-hidden="true">
+          <header>
+            <span>Job redesign</span>
+            <span>Shift</span>
+          </header>
+          <div className="fdm-feat-jobs">
+            <div>
+              <span>Before</span>
+              <strong>Chase work</strong>
+              <em>Copy · reconcile · chase</em>
+            </div>
+            <div className="is-after">
+              <span>After</span>
+              <strong>Judgment</strong>
+              <em>Exceptions · customers</em>
+            </div>
+          </div>
+        </div>
       );
     case "agents":
       return (
-        <svg viewBox="0 0 64 64" className="fdm-feature-mark">
-          <circle cx="18" cy="20" r="5" {...stroke} />
-          <circle cx="46" cy="20" r="5" {...stroke} />
-          <circle cx="32" cy="44" r="5" {...stroke} />
-          <path d="M22.5 23L28 39M41.5 23L36 39M23 20H41" {...stroke} />
-        </svg>
+        <div className="fdm-feat-panel fdm-feat-panel--agents" aria-hidden="true">
+          <header>
+            <span>Production agent</span>
+            <span className="fdm-feat-live">Live</span>
+          </header>
+          <ul className="fdm-feat-agent">
+            <li>
+              <strong>Stack</strong>
+              <em>Dynamics · Teams · ERP</em>
+            </li>
+            <li>
+              <strong>Gates</strong>
+              <em>Permission · approval</em>
+            </li>
+            <li>
+              <strong>Evals</strong>
+              <em>Hold under load</em>
+            </li>
+            <li>
+              <strong>Escalation</strong>
+              <em>Human on exception</em>
+            </li>
+          </ul>
+        </div>
       );
   }
 }
@@ -326,7 +432,7 @@ function StrategyLanding({
 }) {
   return (
     <div className="fdm-subland">
-      <section className="fdm-subland-hero">
+      <section className="fdm-subland-hero fdm-subland-hero--strat">
         <div className="fdm-subland-hero-copy">
           <h1>
             Know where AI
@@ -381,11 +487,8 @@ function StrategyLanding({
       />
 
       <section className="fdm-land-section">
-        <div className="fdm-land-split">
+        <div className="fdm-land-split fdm-land-split--solo">
           <h2>What you get</h2>
-          <p>
-            A decision frame you can underwrite, not a catalog of pilots.
-          </p>
         </div>
         <SellWhat
           items={[
@@ -414,10 +517,7 @@ function StrategyLanding({
       </section>
 
       <section className="fdm-land-section">
-        <SectionHead
-          title="How we work"
-          lede="Built for people who have to decide."
-        />
+        <SectionHead title="How we work" />
         <SellHow
           steps={[
             {
@@ -443,10 +543,11 @@ function StrategyLanding({
       <div className="fdm-land-work-link">
         <button
           type="button"
-          className="fdm-btn fdm-btn--ghost"
+          className="fdm-work-banner"
           onClick={() => onNavigate("work")}
         >
-          See our work →
+          <span>See our work</span>
+          <span aria-hidden="true">→</span>
         </button>
       </div>
     </div>
@@ -503,8 +604,8 @@ function TransformationLanding({
           },
           {
             icon: "data",
-            title: "Dirty data kills the demo.",
-            body: "Fragmented truth, undefined fields, and the 20% that never fits the happy path. Without hygiene, production is a ticket queue.",
+            title: "Fragmented data is not a substrate.",
+            body: "Without shared definitions, field lineage, and hygiene, agents have nothing trustworthy to act on. Production becomes a ticket queue before the model ever fails.",
           },
           {
             icon: "change",
@@ -514,17 +615,18 @@ function TransformationLanding({
           {
             icon: "safety",
             title: "Nobody owns safety when agents act.",
-            body: "Permissions, gates, and evals stay afterthoughts until a customer-facing action goes wrong and the program freezes.",
+            body: "Liability lands on the operator when an agent acts without clear ownership. Permissions, gates, and evals stay afterthoughts until a customer-facing action goes wrong and the program freezes.",
           },
         ]}
       />
 
-      <section className="fdm-land-section">
-        <div className="fdm-land-split">
-          <h2>What you get</h2>
+      <section className="fdm-land-section fdm-land-section--connect">
+        <div className="fdm-section-connector">
+          <span className="fdm-section-connector-rule" aria-hidden="true" />
           <p>
-            Agents that do the work in the stack you already run, with controls
-            that hold when a chat demo would break.
+            From those failure modes into production: process truth, a clean
+            substrate, jobs rebuilt for judgment, and agents with guardrails that
+            hold in the stack you already run.
           </p>
         </div>
         <SellWhat
@@ -591,10 +693,11 @@ function TransformationLanding({
       <div className="fdm-land-work-link">
         <button
           type="button"
-          className="fdm-btn fdm-btn--ghost"
+          className="fdm-work-banner"
           onClick={() => onNavigate("work")}
         >
-          See our work →
+          <span>See our work</span>
+          <span aria-hidden="true">→</span>
         </button>
       </div>
     </div>
