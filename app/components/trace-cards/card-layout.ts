@@ -50,6 +50,18 @@ export function computePillarTargetRect(
   const pad = clamp(24, vw * 0.03, 48);
   const gap = clamp(16, vw * 0.02, 32);
   const height = Math.max(0, vh - top - bottom);
+
+  // Mobile: full-width flowing panel — match CSS `.pillar-panel` at ≤768px.
+  if (vw > 0 && vw <= 768) {
+    const side = Math.min(20, Math.max(14, vw * 0.045));
+    return {
+      top: Math.min(top, 72),
+      left: side,
+      width: Math.max(0, vw - side * 2),
+      height: Math.max(0, vh - Math.min(top, 72) - Math.min(bottom, 48)),
+    };
+  }
+
   const mid = vw / 2;
   const caduceus = getCaduceusHorizontalBounds(vw, mirror);
 
@@ -71,7 +83,7 @@ export function computePillarTargetRect(
 export function computeHomeCardRect(cardIndex: number): LayoutRect {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const cardPx = vw <= 768 ? Math.floor(vw - 48) : CARD_PX;
+  const cardPx = vw <= 768 ? Math.max(260, Math.floor(vw - 40)) : CARD_PX;
   const height = cardPx * CARD_ASPECT;
   const bottom = Math.min(Math.max(80, vh * 0.1), 100);
   const top = vh - bottom - height;
