@@ -92,7 +92,7 @@ export function parseFdRoute(pathname: string): FdRoute {
     site,
     page: "home",
     studySlug: null,
-    cddPath: site === "diligence" ? "/" : null,
+    cddPath: null,
   };
 }
 
