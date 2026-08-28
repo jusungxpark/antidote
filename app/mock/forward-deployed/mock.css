@@ -5170,6 +5170,11 @@
 }
 
 /* Transformation hero: connecting orb on a soft wash */
+.fdm-subland-hero:has(.fdm-tx-visual) {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
 .fdm-tx-visual {
   width: 100%;
   min-width: 0;
@@ -5177,7 +5182,7 @@
   display: grid;
   place-items: center;
   align-self: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .fdm-tx-orb-stage {
@@ -5188,49 +5193,48 @@
   max-width: 100%;
   display: grid;
   place-items: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .fdm-tx-orb-glow {
   position: absolute;
-  inset: -28%;
+  /* Bleed well past the orb so the wash dies out before any clip */
+  inset: -62%;
   border-radius: 50%;
   background: radial-gradient(
     circle at 50% 48%,
-    rgba(23, 18, 18, 0.48) 0%,
-    rgba(23, 18, 18, 0.4) 6%,
-    rgba(23, 18, 18, 0.3) 14%,
-    rgba(23, 18, 18, 0.2) 24%,
-    rgba(23, 18, 18, 0.12) 36%,
-    rgba(23, 18, 18, 0.07) 48%,
-    rgba(23, 18, 18, 0.038) 58%,
-    rgba(23, 18, 18, 0.02) 68%,
-    rgba(23, 18, 18, 0.01) 78%,
-    rgba(23, 18, 18, 0.004) 88%,
-    rgba(23, 18, 18, 0.001) 95%,
-    transparent 100%
+    rgba(23, 18, 18, 0.34) 0%,
+    rgba(23, 18, 18, 0.26) 10%,
+    rgba(23, 18, 18, 0.16) 22%,
+    rgba(23, 18, 18, 0.09) 34%,
+    rgba(23, 18, 18, 0.045) 46%,
+    rgba(23, 18, 18, 0.02) 58%,
+    rgba(23, 18, 18, 0.008) 68%,
+    rgba(23, 18, 18, 0.002) 78%,
+    transparent 88%
   );
   -webkit-mask-image: radial-gradient(
     circle at 50% 48%,
     #000 0%,
-    #000 28%,
-    rgba(0, 0, 0, 0.85) 42%,
-    rgba(0, 0, 0, 0.55) 58%,
-    rgba(0, 0, 0, 0.22) 74%,
-    rgba(0, 0, 0, 0.06) 88%,
-    transparent 100%
+    #000 18%,
+    rgba(0, 0, 0, 0.78) 34%,
+    rgba(0, 0, 0, 0.42) 52%,
+    rgba(0, 0, 0, 0.14) 68%,
+    rgba(0, 0, 0, 0.03) 80%,
+    transparent 90%
   );
   mask-image: radial-gradient(
     circle at 50% 48%,
     #000 0%,
-    #000 28%,
-    rgba(0, 0, 0, 0.85) 42%,
-    rgba(0, 0, 0, 0.55) 58%,
-    rgba(0, 0, 0, 0.22) 74%,
-    rgba(0, 0, 0, 0.06) 88%,
-    transparent 100%
+    #000 18%,
+    rgba(0, 0, 0, 0.78) 34%,
+    rgba(0, 0, 0, 0.42) 52%,
+    rgba(0, 0, 0, 0.14) 68%,
+    rgba(0, 0, 0, 0.03) 80%,
+    transparent 90%
   );
   pointer-events: none;
+  z-index: 0;
 }
 
 .fdm-tx-orb-canvas {
@@ -5248,10 +5252,16 @@
     min-height: 0;
     width: min(100%, 420px);
     margin-inline: auto;
+    overflow: visible;
   }
 
   .fdm-tx-orb-stage {
     width: 100%;
+    overflow: visible;
+  }
+
+  .fdm-tx-orb-glow {
+    inset: -48%;
   }
 }
 

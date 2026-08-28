@@ -656,10 +656,7 @@ function TransformationLanding({
       </section>
 
       <section className="fdm-land-section" id="method">
-        <SectionHead
-          title="How we deliver"
-          lede="From process truth to production, without boiling the ocean."
-        />
+        <SectionHead title="How we deliver" />
         <SellHow
           steps={[
             {
