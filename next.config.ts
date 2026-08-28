@@ -4,15 +4,8 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
-  async redirects() {
-    return [
-      {
-        source: "/transformation",
-        destination: "/forward-deployed",
-        permanent: true,
-      },
-    ];
-  },
+  // /transformation → /forward-deployed is host-scoped in middleware
+  // so fd.antidotetransform.com can own /transformation as an offering route.
 };
 
 export default nextConfig;

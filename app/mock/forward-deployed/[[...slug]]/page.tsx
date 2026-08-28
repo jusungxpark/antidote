@@ -52,6 +52,7 @@ const SUBSITE_NAV: Record<Exclude<Site, "hub">, NavItem[]> = {
     { id: "software", label: "Software" },
     { id: "advisory", label: "Advisory" },
     { id: "automation", label: "Automation" },
+    { id: "reports", label: "Reports" },
   ],
   transformation: [
     { id: "home", label: "Overview" },
@@ -121,6 +122,10 @@ const PAGE_COPY: Record<
     advisory: {
       title: "Product advisory",
       body: "Which AI features are feasibility-supported today, and what a pilot must still prove.",
+    },
+    reports: {
+      title: "Reports",
+      body: "Published diligence reports and exhibit write-ups.",
     },
     automation: {
       title: "Automation diligence",
@@ -206,23 +211,15 @@ function casesForSite(site: Exclude<Site, "hub">) {
 
 const CDD_ORIGIN = "https://cdd.antidotetransform.com";
 
-const CDD_PATH: Record<string, string> = {
-  home: "/",
-  method: "/method",
-  evals: "/evals",
-  software: "/software",
-  advisory: "/advisory",
-  automation: "/automation",
-};
-
-function DiligenceCddFrame({ page }: { page: string }) {
-  const path = CDD_PATH[page] ?? "/";
+function DiligenceCddFrame({ cddPath }: { cddPath: string }) {
+  const path = cddPath.startsWith("/") ? cddPath : `/${cddPath}`;
 
   return (
     <div className="fdm-cdd-embed">
       {/* Masks CDD wordmark + Work with us / Login; layer2 is the shared nav */}
       <div className="fdm-cdd-chrome-mask" aria-hidden="true" />
       <iframe
+        key={path}
         className="fdm-cdd-frame"
         title="Antidote Diligence"
         src={`${CDD_ORIGIN}${path}`}
@@ -244,7 +241,7 @@ export default function ForwardDeployedMockPage() {
   const pathname = usePathname() || "/";
   const router = useRouter();
   const base = fdBaseFromPathname(pathname);
-  const { site, page, studySlug } = parseFdRoute(pathname);
+  const { site, page, studySlug, cddPath } = parseFdRoute(pathname);
 
   const go = (
     next: Site,
@@ -341,7 +338,11 @@ export default function ForwardDeployedMockPage() {
                 key={item.id}
                 type="button"
                 className={
-                  page === item.id || (item.id === "work" && studySlug)
+                  page === item.id ||
+                  (item.id === "work" && studySlug) ||
+                  (site === "diligence" &&
+                    item.id === page &&
+                    Boolean(studySlug))
                     ? "is-active"
                     : undefined
                 }
@@ -358,7 +359,7 @@ export default function ForwardDeployedMockPage() {
       </div>
 
       {site === "diligence" ? (
-        <DiligenceCddFrame page={page} />
+        <DiligenceCddFrame cddPath={cddPath || "/"} />
       ) : (
       <div className="fdm-shell">
         {site === "hub" ? (
