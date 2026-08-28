@@ -1,32 +1,39 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { usePathname, useRouter } from "next/navigation";
 import {
   DealCycleSticky,
   OfferingBlock,
-} from "./media";
+} from "../media";
 import {
   StrategyCasesView,
   SubsiteLanding,
   TransformationCasesView,
   TransformationMethodView,
-} from "./SubsiteLanding";
-import { FdCaseStudyReport } from "./FdCaseStories";
+} from "../SubsiteLanding";
+import { FdCaseStudyReport } from "../FdCaseStories";
 import {
   STRATEGY_CASES,
   TRANSFORMATION_CASES,
   caseMetaLine,
   caseSummary,
-} from "./cases";
-import { getCaseStudyBySlug } from "../../components/case-studies-data";
+} from "../cases";
+import { getCaseStudyBySlug } from "../../../components/case-studies-data";
+import {
+  buildFdHref,
+  fdBaseFromPathname,
+  parseFdRoute,
+  type FdSite,
+} from "../fd-routing";
 
 const HubAsciiDeploy = dynamic(
-  () => import("./HubAsciiDeploy").then((m) => m.HubAsciiDeploy),
+  () => import("../HubAsciiDeploy").then((m) => m.HubAsciiDeploy),
   { ssr: false },
 );
 
-type Site = "hub" | "strategy" | "diligence" | "transformation";
+type Site = FdSite;
 
 type NavItem = {
   id: string;
@@ -234,33 +241,40 @@ function scrollShell(top = 0) {
 }
 
 export default function ForwardDeployedMockPage() {
-  const [site, setSite] = useState<Site>("hub");
-  const [page, setPage] = useState("home");
-  const [studySlug, setStudySlug] = useState<string | null>(null);
+  const pathname = usePathname() || "/";
+  const router = useRouter();
+  const base = fdBaseFromPathname(pathname);
+  const { site, page, studySlug } = parseFdRoute(pathname);
+
+  const go = (
+    next: Site,
+    nextPage = "home",
+    nextStudy: string | null = null,
+  ) => {
+    router.push(buildFdHref(base, next, nextPage, nextStudy));
+  };
 
   const enter = (next: Exclude<Site, "hub">, nextPage = "home") => {
-    setSite(next);
-    setPage(nextPage);
-    setStudySlug(null);
-    scrollShell(0);
+    go(next, nextPage, null);
   };
 
   const goHub = () => {
-    setSite("hub");
-    setPage("home");
-    setStudySlug(null);
-    scrollShell(0);
+    go("hub");
   };
 
   const openStudy = (slug: string) => {
-    setStudySlug(slug);
-    scrollShell(0);
+    if (site === "hub") return;
+    go(site, "work", slug);
   };
 
   const closeStudy = () => {
-    setStudySlug(null);
-    scrollShell(0);
+    if (site === "hub") return;
+    go(site, "work", null);
   };
+
+  useEffect(() => {
+    scrollShell(0);
+  }, [pathname]);
 
   const nav = site === "hub" ? [] : SUBSITE_NAV[site];
   const copy = useMemo(() => {
@@ -332,9 +346,8 @@ export default function ForwardDeployedMockPage() {
                     : undefined
                 }
                 onClick={() => {
-                  setPage(item.id);
-                  setStudySlug(null);
-                  scrollShell(0);
+                  if (site === "hub") return;
+                  go(site, item.id, null);
                 }}
               >
                 {item.label}
@@ -451,15 +464,14 @@ export default function ForwardDeployedMockPage() {
                 crumbLabel="Case Studies"
                 onBack={closeStudy}
               />
-            ) : page === "home" ? (
+            ) : page === "home" &&
+              (site === "strategy" || site === "transformation") ? (
               <SubsiteLanding
                 site={site}
                 onNavigate={(next) => {
-                  setPage(next);
-                  setStudySlug(null);
-                  scrollShell(0);
+                  go(site, next, null);
                 }}
-                onEnterSibling={enter}
+                onEnterSibling={(next) => enter(next)}
               />
             ) : site === "transformation" && page === "method" ? (
               <TransformationMethodView />

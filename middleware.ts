@@ -18,7 +18,8 @@ function isFdHost(host: string | null): boolean {
 
 /**
  * fd.antidotetransform.com serves the Forward Deployed site at `/`
- * (rewrites to /mock/forward-deployed). The /mock/... URL stays on the main site.
+ * (rewrites to /mock/forward-deployed/...). Nested paths keep their
+ * segments so client routing can deep-link offerings and pages.
  */
 export function middleware(request: NextRequest) {
   if (!isFdHost(request.headers.get("host"))) {
@@ -42,7 +43,10 @@ export function middleware(request: NextRequest) {
   }
 
   const url = request.nextUrl.clone();
-  url.pathname = "/mock/forward-deployed";
+  url.pathname =
+    pathname === "/"
+      ? "/mock/forward-deployed"
+      : `/mock/forward-deployed${pathname}`;
   const res = NextResponse.rewrite(url);
   res.headers.set("x-antidote-site", "fd");
   return res;
