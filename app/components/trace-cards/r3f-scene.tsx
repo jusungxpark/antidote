@@ -272,7 +272,9 @@ export function TraceCardsScene() {
   const cardWrapperRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const isHome = pathname === "/";
-  const showCards = isHome || transition?.direction === "reverse";
+  // Only mount home cards on `/`. Visibility during reverse is gated by pending classes
+  // so destination cards don't sit in the end spot while the overlay is still collapsing.
+  const showCards = isHome;
 
   const [cardPx, setCardPx] = useState(CARD_PX);
 
@@ -359,12 +361,14 @@ export function TraceCardsScene() {
 
     const idx = transition.cardIndex;
     let cancelled = false;
+    let attempts = 0;
 
     const measure = () => {
       if (cancelled) return;
       const el = cardWrapperRefs.current[idx];
       if (!el) {
-        requestAnimationFrame(measure);
+        attempts += 1;
+        if (attempts < 60) requestAnimationFrame(measure);
         return;
       }
 
@@ -423,12 +427,21 @@ export function TraceCardsScene() {
         const activeIdx = transition?.cardIndex ?? null;
 
         let cardClass = cardsIntroDone ? "card-idle" : "card-enter";
-        if (isForward && activeIdx === idx) cardClass = "card-expand-source";
-        else if (isForward && activeIdx !== null && activeIdx !== idx) {
+        if (isForward && activeIdx === idx) {
+          // Keep source visible until overlay has covered it (phase 1) to avoid a hole/flicker
+          cardClass =
+            transitionPhase === 0
+              ? "card-expand-source-pending"
+              : "card-expand-source";
+        } else if (isForward && activeIdx !== null && activeIdx !== idx) {
           cardClass = "card-sibling-fade";
-        } else if (isReverse && activeIdx === idx) cardClass = "card-collapse-reveal";
-        else if (isReverse && activeIdx !== null && activeIdx !== idx) {
-          cardClass = "card-sibling-return";
+        } else if (isReverse && activeIdx !== null) {
+          // Stay invisible for the whole reverse morph; overlay is the only visible card.
+          // Revealed as card-idle when transition clears.
+          cardClass =
+            activeIdx === idx
+              ? "card-collapse-pending"
+              : "card-sibling-pending";
         }
 
         return (

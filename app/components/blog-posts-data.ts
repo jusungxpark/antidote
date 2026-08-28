@@ -48,6 +48,22 @@ export function getBlogPostBySlug(slug: string): BlogPost | undefined {
   return BLOG_POSTS.find((post) => post.slug === slug);
 }
 
+export const BLOG_PATH = "/blog";
+
+export function getBlogSlugFromPath(pathname: string | null): string | null {
+  if (!pathname?.startsWith(`${BLOG_PATH}/`)) return null;
+  const slug = pathname.slice(BLOG_PATH.length + 1).split("/")[0];
+  return slug || null;
+}
+
+export function isBlogPath(pathname: string | null): boolean {
+  return pathname === BLOG_PATH || getBlogSlugFromPath(pathname) !== null;
+}
+
+export function blogPostPath(slug: string): string {
+  return `${BLOG_PATH}/${slug}`;
+}
+
 /** Substack JSON API for a post — returns body_html with images and marks. */
 export function getSubstackPostApiUrl(post: BlogPost): string | null {
   const match = post.substackUrl.match(/^(https?:\/\/[^/]+)\/p\/([^/?#]+)/);

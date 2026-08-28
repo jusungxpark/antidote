@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BLOG_POSTS, type BlogPost } from "./blog-posts-data";
+import { useRouter } from "next/navigation";
+import {
+  BLOG_PATH,
+  BLOG_POSTS,
+  blogPostPath,
+  getBlogPostBySlug,
+  type BlogPost,
+} from "./blog-posts-data";
 
 function BlogPostList({
   onSelect,
@@ -131,16 +138,23 @@ function BlogPostReader({
   );
 }
 
-export function BlogOverlay() {
-  const [activePost, setActivePost] = useState<BlogPost | null>(null);
+export function BlogOverlay({ slug }: { slug?: string | null }) {
+  const router = useRouter();
+  const post = slug ? getBlogPostBySlug(slug) : undefined;
+
+  if (post) {
+    return (
+      <div className="blog-overlay">
+        <BlogPostReader post={post} onBack={() => router.push(BLOG_PATH)} />
+      </div>
+    );
+  }
 
   return (
     <div className="blog-overlay">
-      {activePost ? (
-        <BlogPostReader post={activePost} onBack={() => setActivePost(null)} />
-      ) : (
-        <BlogPostList onSelect={setActivePost} />
-      )}
+      <BlogPostList
+        onSelect={(next) => router.push(blogPostPath(next.slug))}
+      />
     </div>
   );
 }

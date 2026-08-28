@@ -14,7 +14,13 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { AntidoteWordmarkLabel } from "./AntidoteWordmark";
 import { PillarExpandOverlay } from "./PillarExpandOverlay";
+import { FdOfferingRail } from "./FdOfferingRail";
 import { BlogOverlay } from "./BlogOverlay";
+import {
+  BLOG_PATH,
+  getBlogSlugFromPath,
+  isBlogPath,
+} from "./blog-posts-data";
 import { CaseStudiesScreen } from "./CaseStudiesScreen";
 import { CaseStudyDetailScreen } from "./CaseStudyDetailScreen";
 import { CaseStudyExpandOverlay } from "./CaseStudyExpandOverlay";
@@ -259,14 +265,14 @@ function getOverlayClass(page: NavPage, leaving: boolean): string {
   return leaving ? "shimmer-up" : "shimmer-down";
 }
 
-function getOverlayContent(page: NavPage): ReactNode {
+function getOverlayContent(page: NavPage, blogSlug?: string | null): ReactNode {
   switch (page) {
     case "manifesto":
       return MANIFESTO_CONTENT;
     case "team":
       return TEAM_CONTENT;
     case "blog":
-      return <BlogOverlay />;
+      return <BlogOverlay slug={blogSlug} />;
   }
 }
 
@@ -277,7 +283,7 @@ function getOverlayContent(page: NavPage): ReactNode {
 // fd.antidotetransform.com is excluded in root layout (host-based).
 // If you add a new top-level site page, add it to SITE_PATHS.
 // ------------------------------------------------------------------
-const SITE_PATHS = new Set(["/", "/buyouts", "/forward-deployed"]);
+const SITE_PATHS = new Set(["/", "/buyouts", "/forward-deployed", BLOG_PATH]);
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -286,7 +292,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isSite =
     !isMockPath &&
     pathname != null &&
-    (SITE_PATHS.has(pathname) || pathname.startsWith(CASE_STUDIES_PATH));
+    (SITE_PATHS.has(pathname) ||
+      pathname.startsWith(CASE_STUDIES_PATH) ||
+      pathname.startsWith(`${BLOG_PATH}/`));
   if (!isSite) return <>{children}</>;
   return <SceneShell>{children}</SceneShell>;
 }
@@ -309,7 +317,9 @@ export function SceneShell({ children }: { children: ReactNode }) {
   }, [cardsIntroDone]);
 
   // Nav overlay state
-  const [navOverlay, setNavOverlay] = useState<NavPage | null>(null);
+  const [navOverlay, setNavOverlay] = useState<NavPage | null>(() =>
+    isBlogPath(pathname) ? "blog" : null
+  );
   const [navOverlayLeaving, setNavOverlayLeaving] = useState(false);
   const [caseStudiesOpen, setCaseStudiesOpen] = useState(
     () =>
@@ -337,6 +347,19 @@ export function SceneShell({ children }: { children: ReactNode }) {
   const isCaseStudiesListRoute = pathname === CASE_STUDIES_PATH;
   const isCaseStudiesRoute =
     isCaseStudiesListRoute || activeCaseStudy !== undefined;
+  const isBlogRoute = isBlogPath(pathname);
+  const blogSlug = getBlogSlugFromPath(pathname);
+
+  useEffect(() => {
+    if (isBlogRoute) {
+      setNavOverlayLeaving(false);
+      setNavOverlay("blog");
+      return;
+    }
+    if (navOverlay === "blog" && !navOverlayLeaving) {
+      setNavOverlay(null);
+    }
+  }, [isBlogRoute]); // eslint-disable-line react-hooks/exhaustive-deps -- only follow route
 
   useEffect(() => {
     if (caseStudiesClosingRef.current) return;
@@ -463,10 +486,15 @@ export function SceneShell({ children }: { children: ReactNode }) {
   const pageInfo = getPageInfo(pathname);
 
   useEffect(() => {
-    if (!isForwardDeployed && !isCaseStudiesRoute && !caseStudiesClosingRef.current) {
+    if (
+      !isForwardDeployed &&
+      !isCaseStudiesRoute &&
+      !isBlogRoute &&
+      !caseStudiesClosingRef.current
+    ) {
       setCaseStudiesOpen(false);
     }
-  }, [isForwardDeployed, isCaseStudiesRoute]);
+  }, [isForwardDeployed, isCaseStudiesRoute, isBlogRoute]);
 
   const mirror = transition?.mirror ?? pageInfo?.mirror ?? false;
 
@@ -484,6 +512,15 @@ export function SceneShell({ children }: { children: ReactNode }) {
     expandReadyRef.current = true;
     setPhase(1);
   }, []);
+
+  // Safety: if expand never leaves phase 0 (e.g. overlay effect aborted), force it.
+  useEffect(() => {
+    if (transition?.direction !== "forward" || phase !== 0) return;
+    const timer = window.setTimeout(() => {
+      acknowledgeExpandReady();
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [transition, phase, acknowledgeExpandReady]);
 
   const beginCollapse = useCallback((rect: LayoutRect) => {
     if (collapseStartedRef.current) return;
@@ -542,17 +579,21 @@ export function SceneShell({ children }: { children: ReactNode }) {
       transition &&
       pathname === transition.href
     ) {
-      const id = requestAnimationFrame(() => {
+      let cancelled = false;
+      const id = window.setTimeout(() => {
+        if (cancelled) return;
         requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            setTransition(null);
-            setPhase(0);
-            transitionLock.current = false;
-            expandReadyRef.current = false;
-          });
+          if (cancelled) return;
+          setTransition(null);
+          setPhase(0);
+          transitionLock.current = false;
+          expandReadyRef.current = false;
         });
-      });
-      return () => cancelAnimationFrame(id);
+      }, 48);
+      return () => {
+        cancelled = true;
+        window.clearTimeout(id);
+      };
     }
   }, [pathname, transition]);
 
@@ -589,20 +630,33 @@ export function SceneShell({ children }: { children: ReactNode }) {
   const handleNavPage = useCallback(
     (page: NavPage) => {
       if (navOverlayLeaving) return;
-      if (navOverlay === page) {
-        // Toggle same page off
-        setNavOverlayLeaving(true);
-      } else {
-        // Open new page directly (swaps if another is open)
+
+      if (page === "blog") {
+        if (navOverlay === "blog") {
+          setNavOverlayLeaving(true);
+          return;
+        }
         setNavOverlayLeaving(false);
-        setNavOverlay(page);
+        setNavOverlay("blog");
+        if (!isBlogRoute) router.push(BLOG_PATH);
+        return;
       }
+
+      if (navOverlay === page) {
+        setNavOverlayLeaving(true);
+        return;
+      }
+
+      if (isBlogRoute) router.push("/");
+      setNavOverlayLeaving(false);
+      setNavOverlay(page);
     },
-    [navOverlay, navOverlayLeaving]
+    [navOverlay, navOverlayLeaving, isBlogRoute, router]
   );
 
   const handleNavAnimEnd = useCallback(() => {
     if (navOverlayLeaving) {
+      const closingBlog = navOverlay === "blog";
       setNavOverlayLeaving(false);
       setNavOverlay(null);
       if (navReturnHomeRef.current) {
@@ -610,9 +664,11 @@ export function SceneShell({ children }: { children: ReactNode }) {
         if (pathname !== "/") {
           router.push("/");
         }
+      } else if (closingBlog && isBlogPath(pathname)) {
+        router.push("/");
       }
     }
-  }, [navOverlayLeaving, pathname, router]);
+  }, [navOverlayLeaving, navOverlay, pathname, router]);
 
   // Handle return-to-home navigation
   const handleReturnHome = useCallback(
@@ -624,7 +680,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
       }
       if (navOverlay) {
         e.preventDefault();
-        navReturnHomeRef.current = !isHome;
+        navReturnHomeRef.current = pathname !== "/";
         setNavOverlayLeaving(true);
         return;
       }
@@ -632,14 +688,27 @@ export function SceneShell({ children }: { children: ReactNode }) {
       e.preventDefault();
       startReturnTransition();
     },
-    [isHome, returningHome, navOverlay, caseStudiesOpen, isCaseStudiesRoute, closeCaseStudies, startReturnTransition]
+    [
+      isHome,
+      returningHome,
+      navOverlay,
+      caseStudiesOpen,
+      isCaseStudiesRoute,
+      pathname,
+      closeCaseStudies,
+      startReturnTransition,
+    ]
   );
 
   // Caduceus: subpage layout during forward expand or while on subpage (before reverse)
   const atSubpage =
     (transition?.direction === "forward" && transition !== null && phase === 1) ||
     (transition?.direction === "reverse" && transition !== null && phase === 1) ||
-    (!isHome && transition === null && !returningHome);
+    (!isHome &&
+      !isBlogRoute &&
+      !isCaseStudiesRoute &&
+      transition === null &&
+      !returningHome);
 
   let caduceusClass = "scene-caduceus";
   if (atSubpage) {
@@ -648,8 +717,32 @@ export function SceneShell({ children }: { children: ReactNode }) {
     caduceusClass += " scene-caduceus--home";
   }
 
+  const blogOpen = navOverlay === "blog";
   const navLinkClass = (page: NavPage) =>
-    navOverlay === page && !navOverlayLeaving ? "scene-nav-link is-active" : "scene-nav-link";
+    navOverlay === page && !navOverlayLeaving
+      ? "scene-nav-link is-active"
+      : "scene-nav-link";
+
+  const siteNav = (
+    <nav className="scene-frame scene-frame-tr scene-nav" aria-label="Site">
+      {NAV_ITEMS.map(({ page, label }) => (
+        <button
+          key={page}
+          type="button"
+          className={navLinkClass(page)}
+          onClick={() => handleNavPage(page)}
+        >
+          {label}
+        </button>
+      ))}
+    </nav>
+  );
+
+  const siteLogo = (
+    <Link href="/" onClick={handleReturnHome} className="scene-logo">
+      <AntidoteWordmarkLabel />
+    </Link>
+  );
 
   const detailStudy =
     activeCaseStudy ?? caseStudyTransition?.study ?? closingStudy ?? undefined;
@@ -694,7 +787,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
       }}
     >
       <div
-        className={`scene-shell${!isHome && !isCaseStudiesRoute && transition === null ? " scene-shell--subpage" : ""}${navOverlay === "blog" ? " scene-shell--blog-open" : ""}${caseStudiesOpen ? " scene-shell--case-studies-open" : ""}`}
+        className={`scene-shell${!isHome && !isCaseStudiesRoute && !isBlogRoute && transition === null ? " scene-shell--subpage" : ""}${navOverlay === "blog" ? " scene-shell--blog-open" : ""}${caseStudiesOpen ? " scene-shell--case-studies-open" : ""}`}
         style={{
           position: "relative",
           width: "100%",
@@ -708,35 +801,27 @@ export function SceneShell({ children }: { children: ReactNode }) {
             className={`scene-viewport-track${caseStudiesOpen ? " is-advanced" : ""}`}
           >
             <div className="scene-viewport-pane">
-        <a
-          href="mailto:founders@antidotetransform.com"
-          className="scene-frame scene-frame-tl scene-email"
-        >
-          founders@antidotetransform.com
-        </a>
+        {siteNav}
+        {siteLogo}
 
-        <nav className="scene-frame scene-frame-tr scene-nav" aria-label="Site">
-          {NAV_ITEMS.map(({ page, label }) => (
-            <button
-              key={page}
-              type="button"
-              className={navLinkClass(page)}
-              onClick={() => handleNavPage(page)}
+        {!blogOpen ? (
+          <>
+            <a
+              href="mailto:founders@antidotetransform.com"
+              className="scene-frame scene-frame-tl scene-email"
             >
-              {label}
-            </button>
-          ))}
-        </nav>
+              founders@antidotetransform.com
+            </a>
 
-        <Link href="/" onClick={handleReturnHome} className="scene-logo">
-          <AntidoteWordmarkLabel />
-        </Link>
+            <p className="scene-frame scene-frame-bl scene-tagline">
+              Transforming service businesses to become AI-native.
+            </p>
 
-        <p className="scene-frame scene-frame-bl scene-tagline">
-          Transforming service businesses to become AI-native.
-        </p>
-
-        <div className="scene-frame scene-frame-br scene-location">New York / San Francisco — 2026</div>
+            <div className="scene-frame scene-frame-br scene-location">
+              New York / San Francisco — 2026
+            </div>
+          </>
+        ) : null}
 
         {/* Caduceus — persists across routes */}
         <div
@@ -745,6 +830,15 @@ export function SceneShell({ children }: { children: ReactNode }) {
         >
           <AsciiSTL />
         </div>
+
+        <FdOfferingRail
+          visible={
+            isForwardDeployed &&
+            atSubpage &&
+            !returningHome &&
+            transition === null
+          }
+        />
 
         {children}
 
@@ -757,7 +851,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
           <div
             key={navOverlay}
             className={`${getOverlayClass(navOverlay, navOverlayLeaving)}${
-              navOverlay === "blog" ? " scene-nav-overlay--blog" : ""
+              blogOpen ? " scene-nav-overlay--blog" : ""
             }`}
             onAnimationEnd={handleNavAnimEnd}
             style={{
@@ -765,12 +859,20 @@ export function SceneShell({ children }: { children: ReactNode }) {
               inset: 0,
               zIndex: 8,
               display: "flex",
-              alignItems: navOverlay === "blog" ? "stretch" : "center",
-              justifyContent: navOverlay === "blog" ? "stretch" : "center",
+              alignItems: blogOpen ? "stretch" : "center",
+              justifyContent: blogOpen ? "stretch" : "center",
               ...OVERLAY_STYLES[navOverlay],
             }}
           >
-            {getOverlayContent(navOverlay)}
+            {blogOpen ? (
+              <div className="blog-shell">
+                <div className="blog-overlay-scroll">
+                  {getOverlayContent("blog", blogSlug)}
+                </div>
+              </div>
+            ) : (
+              getOverlayContent(navOverlay)
+            )}
           </div>
         )}
             </div>

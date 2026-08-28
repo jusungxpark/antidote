@@ -75,112 +75,236 @@ export function HubHeroDeploy({
 
 
 
-/** Deal-cycle tree, root → phases → offerings. */
-export function CycleVisual({
+/** Sticky deal-cycle phases — pre-close → close → ownership (Rogo-style pin). */
+export function DealCycleSticky({
   onEnter,
 }: {
   onEnter: (site: "strategy" | "diligence" | "transformation") => void;
 }) {
-  const label = (site: "strategy" | "diligence" | "transformation") =>
-    site === "transformation"
-      ? "Transformation"
-      : site[0]!.toUpperCase() + site.slice(1);
+  const stroke = {
+    stroke: "currentColor",
+    strokeWidth: 1.5,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    fill: "none",
+  };
 
-  const branches = [
+  const phases = [
     {
-      phase: "Before the check",
-      leaves: [
-        { site: "strategy" as const, text: "Thesis & operating model" },
-        { site: "diligence" as const, text: "Evidence on the asset" },
-        { site: "transformation" as const, text: "Readiness & pilots" },
+      n: "01",
+      title: "Before the check",
+      body: "You are underwriting a thesis or an AI-exposed asset before capital is committed. The gap is a clear answer, not another demo.",
+      icon: (
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+          <circle cx="12" cy="12" r="7.5" {...stroke} />
+          <circle cx="12" cy="12" r="2.25" {...stroke} />
+          <path d="M12 2.5V5.5M12 18.5V21.5M2.5 12H5.5M18.5 12H21.5" {...stroke} />
+        </svg>
+      ),
+      bullets: [
+        {
+          site: "strategy" as const,
+          label: "Strategy",
+          text: "Where value accrues, what must be true, and what to fund or refuse",
+        },
+        {
+          site: "diligence" as const,
+          label: "Diligence",
+          text: "Evidence on capability, cost, defensibility, and unknowns — unmixed",
+        },
+        {
+          site: "transformation" as const,
+          label: "Transformation",
+          text: "Readiness and the first thin path agents can own on day one",
+        },
       ],
     },
     {
-      phase: "Around close",
-      leaves: [
-        { site: "strategy" as const, text: "100-day plan" },
-        { site: "diligence" as const, text: "Open questions carried" },
-        { site: "transformation" as const, text: "First agents live" },
+      n: "02",
+      title: "Around close",
+      body: "Open questions and the 100-day plan have to survive contact with the asset. What stays unresolved gets carried, not buried.",
+      icon: (
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+          <path d="M4 12H10" {...stroke} />
+          <path d="M14 12H20" {...stroke} />
+          <path d="M10 8V16M14 8V16" {...stroke} />
+          <path d="M7 9L4 12L7 15M17 9L20 12L17 15" {...stroke} />
+        </svg>
+      ),
+      bullets: [
+        {
+          site: "strategy" as const,
+          label: "Strategy",
+          text: "100-day plan and sequencing once the check clears",
+        },
+        {
+          site: "diligence" as const,
+          label: "Diligence",
+          text: "Open questions carried with claim status still visible",
+        },
+        {
+          site: "transformation" as const,
+          label: "Transformation",
+          text: "First agents live on a path that can hold under load",
+        },
       ],
     },
     {
-      phase: "Under ownership",
-      leaves: [
-        { site: "strategy" as const, text: "Roadmap & change" },
-        { site: "diligence" as const, text: "Re-underwrite" },
-        { site: "transformation" as const, text: "Production agents" },
+      n: "03",
+      title: "Under ownership",
+      body: "The thesis has to become P&L after the org pushes back. Delivery and re-underwriting stay on the same spine.",
+      icon: (
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+          <path d="M4 20H20" {...stroke} />
+          <path d="M6 20V10L12 5L18 10V20" {...stroke} />
+          <path d="M10 20V14H14V20" {...stroke} />
+        </svg>
+      ),
+      bullets: [
+        {
+          site: "strategy" as const,
+          label: "Strategy",
+          text: "Roadmap, change, and an operating model that survives contact",
+        },
+        {
+          site: "diligence" as const,
+          label: "Diligence",
+          text: "Re-underwrite when the facts move under ownership",
+        },
+        {
+          site: "transformation" as const,
+          label: "Transformation",
+          text: "Production agents with guardrails that hold in the real stack",
+        },
       ],
     },
   ];
 
   return (
-    <div className="fdm-tree" aria-label="Deal cycle tree">
-      <div className="fdm-tree-root">
-        <span>Where you are</span>
+    <section
+      className="fdm-sticky-pain fdm-sticky-pain--left fdm-deal-cycle"
+      aria-label="Help that matches where you are"
+    >
+      <div className="fdm-sticky-pain-head">
+        <h2>Help that matches where you are.</h2>
+        <p>
+          The same three offerings before and after close. What changes is the
+          question we answer — and how Strategy, Diligence, and Transformation
+          bridge the gap from your seat in the cycle.
+        </p>
       </div>
 
-      <div className="fdm-tree-trunk" aria-hidden="true">
-        <i className="fdm-tree-stem" />
-        <i className="fdm-tree-rail" />
-        <i className="fdm-tree-hub" />
-      </div>
-
-      <div className="fdm-tree-branches">
-        {branches.map((branch, i) => (
-          <div key={branch.phase} className="fdm-tree-branch">
-            <div className="fdm-tree-join" aria-hidden="true">
-              <i />
+      <ul className="fdm-sticky-pain-list">
+        {phases.map((phase) => (
+          <li key={phase.title} className="fdm-sticky-pain-row fdm-deal-cycle-row">
+            <span className="fdm-sticky-pain-icon" aria-hidden="true">
+              {phase.icon}
+            </span>
+            <div className="fdm-sticky-pain-copy">
+              <span className="fdm-deal-cycle-n">{phase.n}</span>
+              <strong>{phase.title}</strong>
+              <p>{phase.body}</p>
+              <ul className="fdm-deal-cycle-bullets">
+                {phase.bullets.map((b) => (
+                  <li key={b.site}>
+                    <button
+                      type="button"
+                      className="fdm-deal-cycle-bullet"
+                      data-site={b.site}
+                      onClick={() => onEnter(b.site)}
+                    >
+                      <span>{b.label}</span>
+                      <em>{b.text}</em>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="fdm-tree-phase">
-              <em>{String(i + 1).padStart(2, "0")}</em>
-              <span>{branch.phase}</span>
-            </div>
-            <div className="fdm-tree-twig" aria-hidden="true" />
-            <ul className="fdm-tree-leaves">
-              {branch.leaves.map((leaf) => (
-                <li key={`${branch.phase}-${leaf.site}`}>
-                  <button
-                    type="button"
-                    className="fdm-tree-leaf"
-                    data-site={leaf.site}
-                    onClick={() => onEnter(leaf.site)}
-                  >
-                    <span className="fdm-tree-leaf-site">{label(leaf.site)}</span>
-                    <strong>{leaf.text}</strong>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </section>
   );
 }
 
-/** Offering doors, large editorial rows, CDD “kinds of work” energy. */
-export function OfferingRow({
-  index,
+/** Quiet line icons for offering rows. */
+function OfferingIcon({
+  kind,
+}: {
+  kind: "strategy" | "diligence" | "transformation";
+}) {
+  const stroke = {
+    stroke: "currentColor",
+    strokeWidth: 1.5,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    fill: "none",
+  };
+
+  switch (kind) {
+    case "strategy":
+      // Value map: ascending bars to the P&L
+      return (
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M4 19H20" {...stroke} />
+          <path d="M7 19V14" {...stroke} />
+          <path d="M12 19V10" {...stroke} />
+          <path d="M17 19V5" {...stroke} />
+        </svg>
+      );
+    case "diligence":
+      // Evidence: clipboard with a measured check
+      return (
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path
+            d="M8 4.5H9.2C9.6 3.6 10.5 3 11.5 3H12.5C13.5 3 14.4 3.6 14.8 4.5H16C17.1 4.5 18 5.4 18 6.5V19C18 20.1 17.1 21 16 21H8C6.9 21 6 20.1 6 19V6.5C6 5.4 6.9 4.5 8 4.5Z"
+            {...stroke}
+          />
+          <path d="M9.5 12.2L11.2 13.9L14.8 10.2" {...stroke} />
+        </svg>
+      );
+    case "transformation":
+      // Agents in the stack: linked nodes
+      return (
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <circle cx="6.5" cy="7" r="2.25" {...stroke} />
+          <circle cx="17.5" cy="7" r="2.25" {...stroke} />
+          <circle cx="12" cy="17" r="2.25" {...stroke} />
+          <path d="M8.5 8.2L10.4 14.6" {...stroke} />
+          <path d="M15.5 8.2L13.6 14.6" {...stroke} />
+          <path d="M8.75 7H15.25" {...stroke} />
+        </svg>
+      );
+  }
+}
+
+/** Offering block for hub grid — title, lede, quiet visual panel. */
+export function OfferingBlock({
+  kind,
   title,
   body,
   stack,
   onClick,
 }: {
-  index: string;
+  kind: "strategy" | "diligence" | "transformation";
   title: string;
   body: string;
   stack: string;
   onClick: () => void;
 }) {
   return (
-    <button type="button" className="fdm-offer-row" onClick={onClick}>
-      <span className="fdm-offer-idx">{index}</span>
-      <div className="fdm-offer-copy">
+    <button type="button" className="fdm-offer-block" onClick={onClick}>
+      <div className="fdm-offer-block-copy">
         <strong>{title}</strong>
         <p>{body}</p>
         <em>{stack}</em>
       </div>
-      <span className="fdm-offer-go">Explore →</span>
+      <span className="fdm-offer-block-visual" aria-hidden="true">
+        <span className="fdm-offer-block-visual-glow" />
+        <span className="fdm-offer-block-visual-icon">
+          <OfferingIcon kind={kind} />
+        </span>
+      </span>
     </button>
   );
 }
@@ -268,7 +392,7 @@ export function StrategyHeroVisual() {
 /** Connecting orb, calm, sparse, depth via size + opacity (reference-like). */
 export function TransformHeroVisual() {
   const ref = useRef<HTMLCanvasElement | null>(null);
-  const size = 280;
+  const size = 440;
 
   useEffect(() => {
     const canvas = ref.current;
@@ -284,17 +408,16 @@ export function TransformHeroVisual() {
     if (!ctx) return;
 
     const { mode, speed: baseSpeed, opts } = resolvePreset("connecting", 64);
-    // Density/speed for a large calm hero, radii sized for ~280px canvas
-    // (engine radiusScale alone leaves dots too hairline at this size).
+    // Density/speed for a large calm hero; radii sized for ~440px canvas.
     const tuned = {
       ...opts,
-      nodeN: 24,
+      nodeN: 28,
       thr: 0.85,
       signals: 2,
-      nodeR: 2.6,
-      nodeRDepth: 4.4,
-      lineW: 1.05,
-      rMin: 0.9,
+      nodeR: 3.4,
+      nodeRDepth: 5.8,
+      lineW: 1.25,
+      rMin: 1.15,
       rsPow: 0.42,
     };
     const build = MODE_FRAMES[mode];
@@ -389,7 +512,6 @@ export function TransformHeroVisual() {
           className="fdm-tx-orb-canvas"
           width={size}
           height={size}
-          style={{ width: size, height: size }}
         />
       </div>
     </aside>

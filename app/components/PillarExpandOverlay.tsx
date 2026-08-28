@@ -52,18 +52,25 @@ export function PillarExpandOverlay() {
   const collapseStartRef = useRef<number | null>(null);
   const [viewport, setViewport] = useState({ w: 0, h: 0 });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const update = () =>
-      setViewport({ w: window.innerWidth, h: window.innerHeight });
+      setViewport({
+        w: window.innerWidth,
+        h: window.visualViewport?.height ?? window.innerHeight,
+      });
     update();
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    window.visualViewport?.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("resize", update);
+    };
   }, []);
 
   const target = useMemo(() => {
     if (!transition) return null;
-    void viewport;
-    return computePillarTargetRect(transition.mirror);
+    if (!viewport.w) return computePillarTargetRect(transition.mirror);
+    return computePillarTargetRect(transition.mirror, viewport.w, viewport.h);
   }, [transition, viewport]);
 
   useEffect(() => {
@@ -83,26 +90,36 @@ export function PillarExpandOverlay() {
     }
   }, [transition?.direction, transitionPhase]);
 
+  // Advance expand phase after the collapsed overlay has painted.
+  // Important: do not latch a ref before rAFs complete — React Strict Mode
+  // (dev) cleans up and re-runs effects; a premature latch freezes phase at 0.
   useLayoutEffect(() => {
     if (
       !transition ||
       transition.direction !== "forward" ||
-      transitionPhase !== 0 ||
-      expandPaintedRef.current
+      transitionPhase !== 0
     ) {
       return;
     }
 
-    expandPaintedRef.current = true;
-    overlayRef.current?.getBoundingClientRect();
+    let cancelled = false;
+    let outer = 0;
+    let inner = 0;
 
-    const id = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+    outer = requestAnimationFrame(() => {
+      overlayRef.current?.getBoundingClientRect();
+      inner = requestAnimationFrame(() => {
+        if (cancelled || expandPaintedRef.current) return;
+        expandPaintedRef.current = true;
         acknowledgeExpandReady();
       });
     });
 
-    return () => cancelAnimationFrame(id);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
   }, [transition, transitionPhase, acknowledgeExpandReady]);
 
   // Drive title position from live card height (expand) or timed lerp (collapse).
@@ -115,8 +132,6 @@ export function PillarExpandOverlay() {
     const toH = target.height;
     const toW = target.width;
     const heightSpan = toH - fromH || 1;
-
-    let raf = 0;
 
     const applyTitleLayout = () => {
       const card = cardRef.current;
@@ -178,11 +193,22 @@ export function PillarExpandOverlay() {
 
     applyTitleLayout();
 
+    // Only pump frames while a morph is in progress — never an infinite idle loop.
+    const needsContinuous =
+      (transition.direction === "forward" && transitionPhase === 1) ||
+      (transition.direction === "reverse" && transitionPhase === 0);
+
+    if (!needsContinuous) return;
+
+    let raf = 0;
+    const started = performance.now();
     const tick = () => {
       applyTitleLayout();
-      raf = requestAnimationFrame(tick);
+      // Safety stop in case a transition stalls
+      if (performance.now() - started < CARD_TRANSITION_MS + 200) {
+        raf = requestAnimationFrame(tick);
+      }
     };
-
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [transition, transitionPhase, target]);

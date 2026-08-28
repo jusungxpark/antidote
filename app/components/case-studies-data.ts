@@ -24,7 +24,7 @@ export const CASE_STUDIES: CaseStudy[] = [
   {
     id: 1,
     slug: "sales-copilot-cpg",
-    title: "AI-Driven Sales Copilot for PE-Backed CPG Company",
+    title: "Self-serve order answers for field sales, without the IT queue",
     image: "/case-studies/kkr.jpg",
     hue: "rgba(168, 196, 232, 0.28)",
     meta: {
@@ -44,7 +44,7 @@ export const CASE_STUDIES: CaseStudy[] = [
   {
     id: 2,
     slug: "airline-crew-recovery",
-    title: "AI-Driven Disruption Optimization Platform for U.S. Airline",
+    title: "Crew recovery that holds when day-of operations break",
     image: "/case-studies/comvest.jpg",
     hue: "rgba(176, 210, 198, 0.28)",
     meta: {
@@ -64,7 +64,7 @@ export const CASE_STUDIES: CaseStudy[] = [
   {
     id: 3,
     slug: "logistics-digital-launch",
-    title: "Digital Market Entry Strategy for Major Logistics Player",
+    title: "Standing up a digital product line from a logistics core",
     image: "/case-studies/vistria.jpg",
     hue: "rgba(164, 214, 186, 0.28)",
     meta: {
@@ -84,7 +84,7 @@ export const CASE_STUDIES: CaseStudy[] = [
   {
     id: 4,
     slug: "freight-process-mining",
-    title: "Process Mining & Automation for ~$60M EBITDA Freight Forwarder",
+    title: "Finding where freight labor accumulates before automating it",
     image: "/case-studies/new-atlas-capital.jpg",
     hue: "rgba(188, 196, 224, 0.28)",
     meta: {
@@ -104,7 +104,7 @@ export const CASE_STUDIES: CaseStudy[] = [
   {
     id: 5,
     slug: "3pl-quoting-automation",
-    title: "Autonomous Quoting System for ~$5M EBITDA 3PL",
+    title: "Transactional quote drafts in minutes, not multi-hour builds",
     image: "/case-studies/connection-capital.jpg",
     hue: "rgba(200, 184, 210, 0.28)",
     meta: {
@@ -124,7 +124,7 @@ export const CASE_STUDIES: CaseStudy[] = [
   {
     id: 6,
     slug: "industrial-distributor-assessment",
-    title: "Order-to-Cash Assessment for ~$28M EBITDA Industrial Distributor",
+    title: "Sizing order-to-cash automation before rebuilding the operating model",
     image: "/case-studies/graham.jpg",
     hue: "rgba(228, 196, 158, 0.28)",
     meta: {

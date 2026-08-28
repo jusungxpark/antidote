@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import {
-  CycleVisual,
-  OfferingRow,
+  DealCycleSticky,
+  OfferingBlock,
 } from "./media";
 import {
   StrategyCasesView,
@@ -12,12 +12,14 @@ import {
   TransformationCasesView,
   TransformationMethodView,
 } from "./SubsiteLanding";
+import { FdCaseStudyReport } from "./FdCaseStories";
 import {
   STRATEGY_CASES,
   TRANSFORMATION_CASES,
   caseMetaLine,
   caseSummary,
 } from "./cases";
+import { getCaseStudyBySlug } from "../../components/case-studies-data";
 
 const HubAsciiDeploy = dynamic(
   () => import("./HubAsciiDeploy").then((m) => m.HubAsciiDeploy),
@@ -234,16 +236,29 @@ function scrollShell(top = 0) {
 export default function ForwardDeployedMockPage() {
   const [site, setSite] = useState<Site>("hub");
   const [page, setPage] = useState("home");
+  const [studySlug, setStudySlug] = useState<string | null>(null);
 
   const enter = (next: Exclude<Site, "hub">, nextPage = "home") => {
     setSite(next);
     setPage(nextPage);
+    setStudySlug(null);
     scrollShell(0);
   };
 
   const goHub = () => {
     setSite("hub");
     setPage("home");
+    setStudySlug(null);
+    scrollShell(0);
+  };
+
+  const openStudy = (slug: string) => {
+    setStudySlug(slug);
+    scrollShell(0);
+  };
+
+  const closeStudy = () => {
+    setStudySlug(null);
     scrollShell(0);
   };
 
@@ -311,9 +326,14 @@ export default function ForwardDeployedMockPage() {
               <button
                 key={item.id}
                 type="button"
-                className={page === item.id ? "is-active" : undefined}
+                className={
+                  page === item.id || (item.id === "work" && studySlug)
+                    ? "is-active"
+                    : undefined
+                }
                 onClick={() => {
                   setPage(item.id);
+                  setStudySlug(null);
                   scrollShell(0);
                 }}
               >
@@ -337,7 +357,7 @@ export default function ForwardDeployedMockPage() {
                 <p>
                   Into diligence rooms, portfolio companies, and the workflows
                   that still run on people, so sponsors and operators get
-                  strategy, evidence, and shipped deliverables, not another deck.
+                  strategy, evidence, and shipped deliverables.
                 </p>
                 <div className="fdm-land-actions">
                   <button
@@ -367,63 +387,32 @@ export default function ForwardDeployedMockPage() {
               <HubAsciiDeploy />
             </section>
 
-            {/* 2. Problem, typography only */}
-            <section className="fdm-land-section">
-              <div className="fdm-land-split">
-                <h2>PE buyers don’t need another AI brochure.</h2>
-                <div>
-                  <p>
-                    They need a point of view before the check, evidence when the
-                    asset is AI-exposed, and a partner who can deliver after
-                    ownership.
-                  </p>
-                  <p>
-                    That is the work: Strategy, Diligence, and Transformation,
-                    matched to where you are in the deal cycle.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* 3. Deal cycle, quiet map */}
-            <section className="fdm-land-section" id="cycle">
-              <div className="fdm-section-head">
-                <h2>Help that matches where you are.</h2>
-                <p>
-                  The same three offerings before and after close. What changes is
-                  the question we answer.
-                </p>
-              </div>
-              <CycleVisual onEnter={enter} />
-            </section>
-
-            {/* 4. Offerings, editorial rows */}
+            {/* 2. Offerings — three shared-border blocks */}
             <section className="fdm-land-section" id="offerings">
-              <div className="fdm-section-head">
-                <h2>Three offerings.</h2>
+              <div className="fdm-section-head fdm-section-head--offer">
+                <h2>See how we engage across the full deal lifecycle.</h2>
                 <p>
-                  Strategy for where AI moves the economics. Diligence that
-                  produces evidence. Transformation that puts agents on the work,
-                  with guardrails that hold in production.
+                  Strategy, Diligence, and Transformation, matched to where you
+                  are before the check, around close, and under ownership.
                 </p>
               </div>
-              <div className="fdm-offer-list">
-                <OfferingRow
-                  index="01"
+              <div className="fdm-offer-grid">
+                <OfferingBlock
+                  kind="strategy"
                   title="Strategy"
                   body={SITE_TAGLINE.strategy}
                   stack="Case studies"
                   onClick={() => enter("strategy")}
                 />
-                <OfferingRow
-                  index="02"
+                <OfferingBlock
+                  kind="diligence"
                   title="Diligence"
                   body={SITE_TAGLINE.diligence}
                   stack="Live CDD · method · evals · software"
                   onClick={() => enter("diligence")}
                 />
-                <OfferingRow
-                  index="03"
+                <OfferingBlock
+                  kind="transformation"
                   title="Transformation"
                   body={SITE_TAGLINE.transformation}
                   stack="Method · Case studies"
@@ -432,7 +421,12 @@ export default function ForwardDeployedMockPage() {
               </div>
             </section>
 
-            {/* 5. CTA */}
+            {/* 3. Deal cycle — sticky phases */}
+            <div id="cycle">
+              <DealCycleSticky onEnter={enter} />
+            </div>
+
+            {/* 4. CTA */}
             <section className="fdm-land-cta">
               <div>
                 <h2>Tell us where you are in the cycle.</h2>
@@ -445,17 +439,24 @@ export default function ForwardDeployedMockPage() {
                 className="fdm-btn fdm-btn--primary"
                 href="mailto:founders@antidotetransform.com"
               >
-                founders@antidotetransform.com
+                Work with us
               </a>
             </section>
           </>
         ) : (
           <div className="fdm-site">
-            {page === "home" ? (
+            {studySlug && getCaseStudyBySlug(studySlug) ? (
+              <FdCaseStudyReport
+                study={getCaseStudyBySlug(studySlug)!}
+                crumbLabel="Case Studies"
+                onBack={closeStudy}
+              />
+            ) : page === "home" ? (
               <SubsiteLanding
                 site={site}
                 onNavigate={(next) => {
                   setPage(next);
+                  setStudySlug(null);
                   scrollShell(0);
                 }}
                 onEnterSibling={enter}
@@ -463,19 +464,9 @@ export default function ForwardDeployedMockPage() {
             ) : site === "transformation" && page === "method" ? (
               <TransformationMethodView />
             ) : site === "transformation" && page === "work" ? (
-              <TransformationCasesView
-                onNavigate={(next) => {
-                  setPage(next);
-                  scrollShell(0);
-                }}
-              />
+              <TransformationCasesView onOpenStudy={openStudy} />
             ) : site === "strategy" && page === "work" ? (
-              <StrategyCasesView
-                onNavigate={(next) => {
-                  setPage(next);
-                  scrollShell(0);
-                }}
-              />
+              <StrategyCasesView onOpenStudy={openStudy} />
             ) : (
               <div className="fdm-site-inner">
                 <div className="fdm-site-hero" data-site={site}>
@@ -539,10 +530,10 @@ export default function ForwardDeployedMockPage() {
         )}
 
         <footer className="fdm-footer">
-          <span>Antidote · Forward Deployed</span>
-          <button type="button" className="fdm-text-link" onClick={goHub}>
-            Back to landing
-          </button>
+          <nav className="fdm-footer-entities" aria-label="Antidote entities">
+            <a href="https://antidotetransform.com">Antidote</a>
+            <a href="https://fd.antidotetransform.com">Antidote Forward Deployed</a>
+          </nav>
         </footer>
       </div>
       )}

@@ -2,36 +2,74 @@
 
 import Link from "next/link";
 import { CASE_STUDIES_PATH } from "./case-studies-data";
+import { FD_OFFERINGS } from "./fd-offerings";
 import { PeFirmLogoCarousel } from "./PeFirmLogoCarousel";
 
 export function ForwardDeployedView() {
   return (
     <>
-      <p className="pillar-intro">
-        Partner with us. Most of what we know, we can teach. We bring the
-        philosophy, the playbook, and the engineering to rebuild how your
-        business runs – and make you the first AI-native operator in your field.
+      <p className="pillar-intro pillar-intro--lead">
+        Partner with us. We embed ourselves into the most important problems
+        surrounding private equity and AI.
       </p>
-      <p className="pillar-intro pillar-intro--last">
-        We provide strategy consulting, AI and{" "}
-        <a
-          href="https://cdd.antidotetransform.com"
-          className="pillar-inline-link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          commercial due diligence
-        </a>
-        , and AI transformation and automation for private equity firms and
-        their portfolio companies.
-      </p>
+
       <PeFirmLogoCarousel />
-      <Link href={CASE_STUDIES_PATH} className="pillar-case-link pillar-case-link--bold">
-        <span className="pillar-case-link-mark" aria-hidden="true">
-          ↳
-        </span>
-        See our Case Studies
-      </Link>
+
+      <p className="pillar-intro">
+        We sit at the forefront of AI: what it can do today, where it is going,
+        and which claims hold up under scrutiny.
+      </p>
+
+      <ul className="pillar-point-list">
+        <li>
+          <span className="pillar-point-label">Pre-close</span>
+          Diligence and strategy that separate real capability from theater, and
+          map where value actually accrues.
+        </li>
+        <li>
+          <span className="pillar-point-label">Post-close</span>
+          Technical implementation that creates durable advantage: workflows
+          rebuilt for agents, production systems that hold, and a clearer moat
+          as AI rewrites the competitive field.
+        </li>
+        <li>
+          <span className="pillar-point-label">Across both</span>
+          Help you capitalize on the biggest market shift in decades, and give
+          your companies defensibility against it.
+        </li>
+      </ul>
+
+      <div className="fd-offer-rail fd-offer-rail--in-panel" aria-label="Offerings">
+        {FD_OFFERINGS.map((offering) => (
+          <article key={offering.title} className="fd-offer-rail-card">
+            <h3 className="fd-offer-rail-title">{offering.title}</h3>
+            <ul className="fd-offer-rail-list">
+              {offering.bullets.map((bullet) => (
+                <li key={bullet}>{bullet}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+
+      <div className="pillar-engage-block">
+        <a
+          href="https://fd.antidotetransform.com"
+          className="pillar-engage-btn"
+        >
+          See how we engage
+          <span aria-hidden="true">→</span>
+        </a>
+        <Link
+          href={CASE_STUDIES_PATH}
+          className="pillar-case-link pillar-case-link--bold pillar-case-link--under-cta"
+        >
+          <span className="pillar-case-link-mark" aria-hidden="true">
+            ↓
+          </span>
+          See our Case Studies
+        </Link>
+      </div>
     </>
   );
 }
