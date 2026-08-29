@@ -27,6 +27,7 @@ import {
   parseFdRoute,
   type FdSite,
 } from "../fd-routing";
+import { FdOfferingSwitch } from "../FdOfferingSwitch";
 
 const HubAsciiDeploy = dynamic(
   () => import("../HubAsciiDeploy").then((m) => m.HubAsciiDeploy),
@@ -294,32 +295,10 @@ export default function ForwardDeployedMockPage() {
             Antidote, Forward Deployed<em>.</em>
           </button>
 
-          <div
-            className="fdm-offering-switch"
-            role="tablist"
-            aria-label="Offering"
-            data-active={site === "hub" ? undefined : site}
-          >
-            <span className="fdm-offering-switch-thumb" aria-hidden="true" />
-            {(
-              [
-                ["strategy", "Strategy"],
-                ["diligence", "Diligence"],
-                ["transformation", "Transformation"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                className={site === id ? "is-active" : undefined}
-                aria-selected={site === id}
-                onClick={() => enter(id)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <FdOfferingSwitch
+            active={site}
+            onSelect={(id) => enter(id)}
+          />
 
           <a className="fdm-layer1-cta" href="mailto:founders@antidotetransform.com">
             Work with us
