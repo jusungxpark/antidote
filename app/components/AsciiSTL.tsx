@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { AsciiEffect } from "three/examples/jsm/effects/AsciiEffect.js";
@@ -17,8 +17,29 @@ const LIGHT_Z = 0.5;
 const LIGHT_INTENSITY = 2.5;
 const ANIMATE_Y = true;
 
+/** Desktop: larger glyphs. Mobile: higher density / smaller glyphs for definition. */
+const DESKTOP_RESOLUTION = 0.15;
+const MOBILE_RESOLUTION = 0.28;
+const MOBILE_MQ = "(max-width: 768px)";
+
+function readAsciiResolution() {
+  if (typeof window === "undefined") return DESKTOP_RESOLUTION;
+  return window.matchMedia(MOBILE_MQ).matches
+    ? MOBILE_RESOLUTION
+    : DESKTOP_RESOLUTION;
+}
+
 export function AsciiSTL({ src = "/caduceo.stl" }: { src?: string }) {
   const cleanupRef = useRef<(() => void) | null>(null);
+  const [resolution, setResolution] = useState(DESKTOP_RESOLUTION);
+
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_MQ);
+    const apply = () => setResolution(readAsciiResolution());
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
 
   const containerRef = useCallback(
     (container: HTMLDivElement | null) => {
@@ -46,7 +67,7 @@ export function AsciiSTL({ src = "/caduceo.stl" }: { src?: string }) {
 
       const effect = new AsciiEffect(renderer, CHARSET, {
         invert: true,
-        resolution: 0.15,
+        resolution,
       });
       effect.setSize(container.clientWidth, container.clientHeight);
       effect.domElement.style.color = "#fff";
@@ -140,12 +161,13 @@ export function AsciiSTL({ src = "/caduceo.stl" }: { src?: string }) {
         }
       };
     },
-    [src],
+    [src, resolution],
   );
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div
+        key={resolution}
         ref={containerRef}
         style={{ width: "100%", height: "100%", overflow: "hidden" }}
       />

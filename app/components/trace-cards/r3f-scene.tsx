@@ -276,12 +276,17 @@ export function TraceCardsScene() {
   // so destination cards don't sit in the end spot while the overlay is still collapsing.
   const showCards = isHome;
 
-  const [cardPx, setCardPx] = useState(CARD_PX);
+  const [cardPx, setCardPx] = useState(() => {
+    if (typeof window === "undefined") return CARD_PX;
+    const vw = window.innerWidth;
+    // Match mobile container padding (clamp 14–20px each side)
+    return vw <= 768 ? Math.max(260, Math.floor(vw - 40)) : CARD_PX;
+  });
 
   useEffect(() => {
     const update = () => {
       const vw = window.innerWidth;
-      setCardPx(vw <= 768 ? Math.floor(vw - 48) : CARD_PX);
+      setCardPx(vw <= 768 ? Math.max(260, Math.floor(vw - 40)) : CARD_PX);
     };
     update();
     window.addEventListener("resize", update);

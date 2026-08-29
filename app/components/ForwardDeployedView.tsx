@@ -39,11 +39,11 @@ export function ForwardDeployedView() {
         </li>
       </ul>
 
-      <div className="fd-offer-rail fd-offer-rail--in-panel" aria-label="Offerings">
+      <div className="fd-offer-stack" aria-label="Offerings">
         {FD_OFFERINGS.map((offering) => (
-          <article key={offering.title} className="fd-offer-rail-card">
-            <h3 className="fd-offer-rail-title">{offering.title}</h3>
-            <ul className="fd-offer-rail-list">
+          <article key={offering.title} className="fd-offer-stack-card">
+            <h3 className="fd-offer-stack-title">{offering.title}</h3>
+            <ul className="fd-offer-stack-list">
               {offering.bullets.map((bullet) => (
                 <li key={bullet}>{bullet}</li>
               ))}
