@@ -1842,7 +1842,7 @@
   .fdm-layer1-inner {
     height: auto;
     min-height: 64px;
-    padding: 12px 0;
+    padding: 12px var(--fdm-gutter);
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       "brand cta"
@@ -5691,6 +5691,18 @@
   .fdm-hub-ascii {
     justify-self: stretch;
     max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .fdm-root {
+    /* Phone: keep copy and chrome clear of the screen edge */
+    --fdm-gutter: clamp(22px, 6.2vw, 28px);
+  }
+
+  .fdm-banner {
+    padding-left: var(--fdm-gutter);
+    padding-right: var(--fdm-gutter);
   }
 }
 
