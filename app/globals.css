@@ -138,6 +138,21 @@ a {
   white-space: nowrap;
 }
 
+.scene-top-nav {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.scene-top-nav > * {
+  pointer-events: auto;
+}
+
+.scene-top-nav-spacer {
+  display: none;
+}
+
 .scene-logo {
   position: absolute;
   top: clamp(18px, 2.5vh, 28px);
@@ -175,6 +190,10 @@ a {
 .scene-shell--blog-open .scene-nav-link:hover,
 .scene-shell--blog-open .scene-nav-link.is-active {
   color: rgba(11, 10, 9, 0.95);
+}
+
+.scene-shell--blog-open .scene-top-nav {
+  background: var(--overlay-light);
 }
 
 .scene-nav-overlay--blog {
@@ -2235,6 +2254,7 @@ a {
   :root {
     --text-body-size: clamp(14px, 3.8vw, 16px);
     --text-body-size-secondary: clamp(13px, 3.4vw, 15px);
+    --mobile-header-h: 76px;
   }
 
   html,
@@ -2256,20 +2276,28 @@ a {
     min-height: 100vh;
   }
 
-  .scene-frame-tl,
-  .scene-frame-tr {
+  /* Real mobile nav bar — solid so page content never ghosts through chrome */
+  .scene-top-nav {
     position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: start;
+    column-gap: 10px;
+    height: var(--mobile-header-h);
+    padding: 12px;
+    box-sizing: border-box;
+    background: var(--page-bg);
+    pointer-events: none;
   }
 
-  .scene-frame-tl {
-    top: clamp(12px, 1.8vh, 18px);
-    left: clamp(12px, 3vw, 16px);
-    max-width: min(42vw, 150px);
+  .scene-top-nav > * {
+    pointer-events: auto;
   }
 
-  .scene-frame-tr {
-    top: clamp(12px, 1.8vh, 18px);
-    right: clamp(12px, 3vw, 16px);
+  .scene-top-nav-spacer {
+    display: block;
   }
 
   .scene-frame-bl,
@@ -2277,14 +2305,51 @@ a {
     display: none;
   }
 
-  .scene-email {
-    display: block;
+  .scene-top-nav .scene-frame-tl,
+  .scene-top-nav .scene-email {
+    position: static;
+    top: auto;
+    left: auto;
+    right: auto;
+    z-index: auto;
+    justify-self: start;
+    align-self: center;
+    width: auto;
+    max-width: min(100%, 104px);
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 100%;
     font-size: 9px;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
+  }
+
+  .scene-top-nav .scene-logo {
+    position: static;
+    top: auto;
+    left: auto;
+    transform: none;
+    z-index: auto;
+    justify-self: center;
+    align-self: center;
+    max-width: none;
+    margin: 0 6px;
+    padding: 2px 4px;
+    font-size: clamp(16px, 4.4vw, 19px);
+    text-align: center;
+    background: transparent;
+  }
+
+  .scene-top-nav .scene-frame-tr,
+  .scene-top-nav .scene-nav {
+    position: static;
+    top: auto;
+    right: auto;
+    left: auto;
+    z-index: auto;
+    justify-self: end;
+    align-self: start;
+    max-width: 100%;
   }
 
   .scene-nav {
@@ -2296,22 +2361,13 @@ a {
     padding: 2px 0;
   }
 
-  .scene-logo {
-    position: fixed;
-    top: clamp(10px, 1.6vh, 16px);
-    font-size: clamp(16px, 4.6vw, 20px);
-    /* Keep clear of fixed email + nav on narrow phones */
-    max-width: min(46vw, 180px);
-    text-align: center;
-  }
-
   .scene-caduceus {
     position: relative !important;
     top: auto !important;
     left: auto !important;
     margin: 0 auto;
-    /* Clear fixed header chrome */
-    padding-top: clamp(52px, 10vw, 68px);
+    /* Clear the fixed mobile nav bar */
+    padding-top: var(--mobile-header-h);
   }
 
   .scene-caduceus--home {
@@ -2339,6 +2395,7 @@ a {
     bottom: auto;
     left: auto !important;
     right: auto !important;
+    z-index: 1;
     /* width + horizontal margin was overflowing the viewport */
     box-sizing: border-box;
     display: flex;
@@ -2495,12 +2552,6 @@ a {
 
   .trace-card-title {
     font-size: clamp(22px, 6vw, 26px) !important;
-  }
-
-  @media (max-width: 420px) {
-    .scene-email {
-      display: none;
-    }
   }
 
   /* Home: stacked cards exceed one screen — let the page scroll */

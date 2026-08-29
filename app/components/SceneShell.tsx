@@ -744,6 +744,23 @@ export function SceneShell({ children }: { children: ReactNode }) {
     </Link>
   );
 
+  const siteTopNav = (
+    <header className="scene-top-nav">
+      {!blogOpen ? (
+        <a
+          href="mailto:founders@antidotetransform.com"
+          className="scene-frame scene-frame-tl scene-email"
+        >
+          founders@antidotetransform.com
+        </a>
+      ) : (
+        <span className="scene-top-nav-spacer" aria-hidden="true" />
+      )}
+      {siteLogo}
+      {siteNav}
+    </header>
+  );
+
   const detailStudy =
     activeCaseStudy ?? caseStudyTransition?.study ?? closingStudy ?? undefined;
 
@@ -801,18 +818,10 @@ export function SceneShell({ children }: { children: ReactNode }) {
             className={`scene-viewport-track${caseStudiesOpen ? " is-advanced" : ""}`}
           >
             <div className="scene-viewport-pane">
-        {siteNav}
-        {siteLogo}
+        {siteTopNav}
 
         {!blogOpen ? (
           <>
-            <a
-              href="mailto:founders@antidotetransform.com"
-              className="scene-frame scene-frame-tl scene-email"
-            >
-              founders@antidotetransform.com
-            </a>
-
             <p className="scene-frame scene-frame-bl scene-tagline">
               Transforming service businesses to become AI-native.
             </p>
