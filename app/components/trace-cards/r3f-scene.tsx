@@ -279,14 +279,14 @@ export function TraceCardsScene() {
   const [cardPx, setCardPx] = useState(() => {
     if (typeof window === "undefined") return CARD_PX;
     const vw = window.innerWidth;
-    // Match mobile --mobile-edge inset (~22–28px each side)
-    return vw <= 768 ? Math.max(240, Math.floor(vw - 56)) : CARD_PX;
+    // Match mobile container padding (clamp 14–20px each side)
+    return vw <= 768 ? Math.max(260, Math.floor(vw - 40)) : CARD_PX;
   });
 
   useEffect(() => {
     const update = () => {
       const vw = window.innerWidth;
-      setCardPx(vw <= 768 ? Math.max(240, Math.floor(vw - 56)) : CARD_PX);
+      setCardPx(vw <= 768 ? Math.max(260, Math.floor(vw - 40)) : CARD_PX);
     };
     update();
     window.addEventListener("resize", update);

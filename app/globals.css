@@ -2255,8 +2255,6 @@ a {
     --text-body-size: clamp(14px, 3.8vw, 16px);
     --text-body-size-secondary: clamp(13px, 3.4vw, 15px);
     --mobile-header-h: 76px;
-    /* Consistent inset from the phone screen edge */
-    --mobile-edge: clamp(22px, 6vw, 28px);
   }
 
   html,
@@ -2288,7 +2286,7 @@ a {
     align-items: start;
     column-gap: 10px;
     height: var(--mobile-header-h);
-    padding: 12px var(--mobile-edge);
+    padding: 12px;
     box-sizing: border-box;
     background: var(--page-bg);
     pointer-events: none;
@@ -2406,7 +2404,7 @@ a {
     width: auto;
     max-width: 100%;
     min-width: 0;
-    margin: 0 var(--mobile-edge) clamp(20px, 5vw, 28px);
+    margin: 0 clamp(14px, 4vw, 20px) clamp(20px, 5vw, 28px);
     opacity: 1;
     pointer-events: auto;
   }
@@ -2425,7 +2423,7 @@ a {
   }
 
   .pillar-panel-title {
-    padding: clamp(22px, 5vw, 32px) clamp(18px, 5vw, 26px) 0;
+    padding: clamp(22px, 5vw, 32px) clamp(16px, 4vw, 24px) 0;
     font-size: clamp(22px, 6.2vw, 28px);
   }
 
@@ -2434,7 +2432,7 @@ a {
     overflow-y: visible;
     min-width: 0;
     max-width: 100%;
-    padding: clamp(18px, 4.5vw, 28px) clamp(18px, 5vw, 26px) clamp(28px, 6vw, 40px);
+    padding: clamp(18px, 4.5vw, 28px) clamp(16px, 4vw, 24px) clamp(28px, 6vw, 40px);
     font-size: var(--text-body-size);
     line-height: 1.65;
   }
@@ -2519,7 +2517,7 @@ a {
     margin-left: 0 !important;
     margin-right: 0 !important;
     max-width: none !important;
-    padding: 0 var(--mobile-edge);
+    padding: 0 clamp(14px, 4vw, 20px);
   }
 
   .trace-cards-container {
@@ -2531,7 +2529,7 @@ a {
     flex-direction: column !important;
     align-items: center !important;
     gap: 14px;
-    padding: 0 var(--mobile-edge) 28px;
+    padding: 0 clamp(14px, 4vw, 20px) 28px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
