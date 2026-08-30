@@ -2,6 +2,11 @@
 
 import type { CaseStudy } from "../../components/case-studies-data";
 
+function prefetchCaseStudyReport() {
+  void import("./FdCaseStudyDetailBySlug");
+  void import("../../components/case-studies-data");
+}
+
 /** Rogo-style listing: gray media tile + title row. */
 export function FdCaseStoryCards({
   studies,
@@ -18,10 +23,12 @@ export function FdCaseStoryCards({
           type="button"
           className="fdm-story-card"
           onClick={() => onOpen(study.slug)}
+          onMouseEnter={prefetchCaseStudyReport}
+          onFocus={prefetchCaseStudyReport}
         >
           <span className="fdm-story-card-title">{study.title}</span>
           <span className="fdm-story-card-media" aria-hidden="true">
-            <img src={study.image} alt="" />
+            <img src={study.image} alt="" loading="lazy" decoding="async" />
           </span>
         </button>
       ))}
@@ -52,7 +59,7 @@ export function FdCaseStudyReport({
       <header className="fdm-story-report-hero">
         <h1>{study.title}</h1>
         <div className="fdm-story-report-banner">
-          <img src={study.image} alt="" />
+          <img src={study.image} alt="" decoding="async" />
         </div>
       </header>
 

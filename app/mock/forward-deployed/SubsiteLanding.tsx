@@ -1,15 +1,22 @@
 "use client";
 
 import type { CaseStudy } from "../../components/case-studies-data";
+import dynamic from "next/dynamic";
 import {
   STRATEGY_CASES,
   TRANSFORMATION_CASES,
 } from "./cases";
 import { FdCaseStoryCards } from "./FdCaseStories";
-import {
-  StrategyHeroVisual,
-  TransformHeroVisual,
-} from "./media";
+
+const StrategyHeroVisual = dynamic(
+  () => import("./media-heroes").then((m) => m.StrategyHeroVisual),
+  { ssr: false },
+);
+
+const TransformHeroVisual = dynamic(
+  () => import("./media-heroes").then((m) => m.TransformHeroVisual),
+  { ssr: false },
+);
 
 type Site = "strategy" | "transformation";
 
@@ -583,9 +590,9 @@ function TransformationLanding({
             <button
               type="button"
               className="fdm-btn fdm-btn--ghost"
-              onClick={() => onNavigate("work")}
+              onClick={() => onNavigate("resources")}
             >
-              See proof
+              Browse use cases
             </button>
           </div>
         </div>
@@ -691,7 +698,16 @@ function TransformationLanding({
         <button
           type="button"
           className="fdm-work-banner"
+          onClick={() => onNavigate("resources")}
+        >
+          <span>Browse use cases</span>
+          <span aria-hidden="true">→</span>
+        </button>
+        <button
+          type="button"
+          className="fdm-work-banner"
           onClick={() => onNavigate("work")}
+          style={{ marginTop: 10 }}
         >
           <span>See our work</span>
           <span aria-hidden="true">→</span>

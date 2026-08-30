@@ -24,7 +24,7 @@ const PAGES: Record<Exclude<FdSite, "hub">, Set<string>> = {
     "automation",
     "reports",
   ]),
-  transformation: new Set(["home", "method", "work"]),
+  transformation: new Set(["home", "method", "work", "resources"]),
 };
 
 /** Strip mock prefix so FD host (`/strategy`) and mock (`/mock/forward-deployed/strategy`) share one parser. */
@@ -84,7 +84,10 @@ export function parseFdRoute(pathname: string): FdRoute {
   }
 
   if (allowed.has(second)) {
-    const studySlug = second === "work" && parts[2] ? parts[2] : null;
+    const studySlug =
+      (second === "work" || second === "resources") && parts[2]
+        ? parts[2]
+        : null;
     return { site, page: second, studySlug, cddPath: null };
   }
 

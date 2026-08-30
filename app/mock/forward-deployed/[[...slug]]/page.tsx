@@ -4,24 +4,6 @@ import { useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  DealCycleSticky,
-  OfferingBlock,
-} from "../media";
-import {
-  StrategyCasesView,
-  SubsiteLanding,
-  TransformationCasesView,
-  TransformationMethodView,
-} from "../SubsiteLanding";
-import { FdCaseStudyReport } from "../FdCaseStories";
-import {
-  STRATEGY_CASES,
-  TRANSFORMATION_CASES,
-  caseMetaLine,
-  caseSummary,
-} from "../cases";
-import { getCaseStudyBySlug } from "../../../components/case-studies-data";
-import {
   buildFdHref,
   fdBaseFromPathname,
   parseFdRoute,
@@ -29,12 +11,82 @@ import {
 } from "../fd-routing";
 import { FdOfferingSwitch } from "../FdOfferingSwitch";
 
+const routeFallback = (
+  <div className="fdm-site-inner">
+    <p className="fdm-uc-loading">Loading…</p>
+  </div>
+);
+
 const HubAsciiDeploy = dynamic(
   () => import("../HubAsciiDeploy").then((m) => m.HubAsciiDeploy),
   { ssr: false },
 );
 
+const OfferingBlock = dynamic(
+  () => import("../media-offerings").then((m) => m.OfferingBlock),
+);
+
+const DealCycleSticky = dynamic(
+  () => import("../media-offerings").then((m) => m.DealCycleSticky),
+);
+
+const SubsiteLanding = dynamic(
+  () => import("../SubsiteLanding").then((m) => m.SubsiteLanding),
+  { loading: () => routeFallback },
+);
+
+const TransformationMethodView = dynamic(
+  () => import("../SubsiteLanding").then((m) => m.TransformationMethodView),
+  { loading: () => routeFallback },
+);
+
+const TransformationCasesView = dynamic(
+  () => import("../SubsiteLanding").then((m) => m.TransformationCasesView),
+  { loading: () => routeFallback },
+);
+
+const StrategyCasesView = dynamic(
+  () => import("../SubsiteLanding").then((m) => m.StrategyCasesView),
+  { loading: () => routeFallback },
+);
+
+const FdUseCasesView = dynamic(
+  () => import("../FdUseCases").then((m) => m.FdUseCasesView),
+  {
+    loading: () => (
+      <div className="fdm-uc">
+        <p className="fdm-uc-loading">Loading use cases…</p>
+      </div>
+    ),
+  },
+);
+
+const FdUseCaseDetailBySlug = dynamic(
+  () =>
+    import("../FdUseCaseDetailBySlug").then((m) => m.FdUseCaseDetailBySlug),
+  {
+    loading: () => (
+      <article className="fdm-uc-detail fdm-uc-detail--loading" aria-busy="true">
+        <p className="fdm-uc-loading">Loading report…</p>
+      </article>
+    ),
+  },
+);
+
+const FdCaseStudyDetailBySlug = dynamic(
+  () =>
+    import("../FdCaseStudyDetailBySlug").then((m) => m.FdCaseStudyDetailBySlug),
+  {
+    loading: () => (
+      <article className="fdm-story-report fdm-uc-detail--loading" aria-busy="true">
+        <p className="fdm-uc-loading">Loading case study…</p>
+      </article>
+    ),
+  },
+);
+
 type Site = FdSite;
+
 
 type NavItem = {
   id: string;
@@ -59,6 +111,7 @@ const SUBSITE_NAV: Record<Exclude<Site, "hub">, NavItem[]> = {
     { id: "home", label: "Overview" },
     { id: "method", label: "Method" },
     { id: "work", label: "Case Studies" },
+    { id: "resources", label: "Resources" },
   ],
 };
 
@@ -157,6 +210,10 @@ const PAGE_COPY: Record<
       body: "Transformation delivery, process mining, automation, and production agents inside operators.",
       post: "Weighted to owned outcomes after close.",
     },
+    resources: {
+      title: "Use cases",
+      body: "Workflows redesigned for agents that do the work: baseline, agent-operated path, harness, and human gates.",
+    },
   },
 };
 
@@ -191,24 +248,6 @@ const WORK_SAMPLES: Record<
   transformation: [],
 };
 
-function casesForSite(site: Exclude<Site, "hub">) {
-  if (site === "strategy") {
-    return STRATEGY_CASES.map((s) => ({
-      meta: caseMetaLine(s),
-      title: s.title,
-      summary: caseSummary(s),
-    }));
-  }
-  if (site === "transformation") {
-    return TRANSFORMATION_CASES.map((s) => ({
-      meta: caseMetaLine(s),
-      title: s.title,
-      summary: caseSummary(s),
-    }));
-  }
-  return WORK_SAMPLES.diligence;
-}
-
 
 const CDD_ORIGIN = "https://cdd.antidotetransform.com";
 
@@ -233,9 +272,9 @@ function DiligenceCddFrame({ cddPath }: { cddPath: string }) {
 function scrollShell(top = 0) {
   const root = document.querySelector(".fdm-root");
   if (!root) return;
-  // Avoid a smooth-scroll jolt when already at the top (felt like the nav shifting)
+  // Instant jump on route change; smooth scroll is reserved for in-page anchors
   if (Math.abs(root.scrollTop - top) < 2) return;
-  root.scrollTo({ top, behavior: "smooth" });
+  root.scrollTo({ top, behavior: "auto" });
 }
 
 export default function ForwardDeployedMockPage() {
@@ -270,6 +309,14 @@ export default function ForwardDeployedMockPage() {
     go(site, "work", null);
   };
 
+  const openUseCase = (slug: string) => {
+    go("transformation", "resources", slug);
+  };
+
+  const closeUseCase = () => {
+    go("transformation", "resources", null);
+  };
+
   useEffect(() => {
     scrollShell(0);
   }, [pathname]);
@@ -280,12 +327,7 @@ export default function ForwardDeployedMockPage() {
     return PAGE_COPY[site][page] ?? PAGE_COPY[site].home;
   }, [site, page]);
 
-  const samples =
-    site === "hub"
-      ? []
-      : page === "work" && (site === "strategy" || site === "transformation")
-        ? casesForSite(site)
-        : WORK_SAMPLES[site];
+  const samples = site === "hub" ? [] : WORK_SAMPLES[site];
 
   return (
     <>
@@ -318,7 +360,10 @@ export default function ForwardDeployedMockPage() {
                 type="button"
                 className={
                   page === item.id ||
-                  (item.id === "work" && studySlug) ||
+                  (item.id === "work" && page === "work" && studySlug) ||
+                  (item.id === "resources" &&
+                    page === "resources" &&
+                    Boolean(studySlug)) ||
                   (site === "diligence" &&
                     item.id === page &&
                     Boolean(studySlug))
@@ -438,9 +483,18 @@ export default function ForwardDeployedMockPage() {
           </>
         ) : (
           <div className="fdm-site">
-            {studySlug && getCaseStudyBySlug(studySlug) ? (
-              <FdCaseStudyReport
-                study={getCaseStudyBySlug(studySlug)!}
+            {site === "transformation" &&
+            page === "resources" &&
+            studySlug ? (
+              <FdUseCaseDetailBySlug
+                slug={studySlug}
+                onBack={closeUseCase}
+              />
+            ) : site === "transformation" && page === "resources" ? (
+              <FdUseCasesView onOpen={openUseCase} />
+            ) : studySlug && page === "work" ? (
+              <FdCaseStudyDetailBySlug
+                slug={studySlug}
                 crumbLabel="Case Studies"
                 onBack={closeStudy}
               />
