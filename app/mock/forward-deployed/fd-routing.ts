@@ -5,11 +5,16 @@ export type FdRoute = {
   page: string;
   /** Case-study slug (strategy/transformation) or diligence nested slug. */
   studySlug: string | null;
+  /** Learn module slug under /transformation/resources/learn/[slug]. */
+  nestedSlug: string | null;
   /** Full CDD iframe path when site is diligence (e.g. /evals/finqa). */
   cddPath: string | null;
 };
 
 const MOCK_BASE = "/mock/forward-deployed";
+
+/** Reserved under /transformation/resources so library indexes never collide with a use-case slug. */
+const RESOURCE_LIBRARIES = new Set(["learn", "use-cases"]);
 
 const OFFERINGS = new Set(["strategy", "diligence", "transformation"]);
 
@@ -50,12 +55,24 @@ export function parseFdRoute(pathname: string): FdRoute {
   const parts = normalizeFdPathname(pathname).split("/").filter(Boolean);
 
   if (parts.length === 0) {
-    return { site: "hub", page: "home", studySlug: null, cddPath: null };
+    return {
+      site: "hub",
+      page: "home",
+      studySlug: null,
+      nestedSlug: null,
+      cddPath: null,
+    };
   }
 
   const siteCandidate = parts[0];
   if (!OFFERINGS.has(siteCandidate)) {
-    return { site: "hub", page: "home", studySlug: null, cddPath: null };
+    return {
+      site: "hub",
+      page: "home",
+      studySlug: null,
+      nestedSlug: null,
+      cddPath: null,
+    };
   }
 
   const site = siteCandidate as Exclude<FdSite, "hub">;
@@ -67,6 +84,7 @@ export function parseFdRoute(pathname: string): FdRoute {
       site,
       page: "home",
       studySlug: null,
+      nestedSlug: null,
       cddPath: site === "diligence" ? "/" : null,
     };
   }
@@ -79,22 +97,46 @@ export function parseFdRoute(pathname: string): FdRoute {
       site,
       page,
       studySlug: rest[0] ?? null,
+      nestedSlug: rest[1] ?? null,
       cddPath: diligenceCddPath(page, rest),
     };
   }
 
   if (allowed.has(second)) {
-    const studySlug =
-      (second === "work" || second === "resources") && parts[2]
-        ? parts[2]
-        : null;
-    return { site, page: second, studySlug, cddPath: null };
+    if (site === "transformation" && second === "resources" && parts[2]) {
+      const library = parts[2];
+      if (RESOURCE_LIBRARIES.has(library)) {
+        return {
+          site,
+          page: "resources",
+          studySlug: library,
+          nestedSlug: parts[3] ?? null,
+          cddPath: null,
+        };
+      }
+      return {
+        site,
+        page: "resources",
+        studySlug: library,
+        nestedSlug: null,
+        cddPath: null,
+      };
+    }
+    const studySlug = second === "work" && parts[2] ? parts[2] : null;
+    return {
+      site,
+      page: second,
+      studySlug,
+      nestedSlug: null,
+      cddPath: null,
+    };
   }
 
   return {
     site,
     page: "home",
     studySlug: null,
+    nestedSlug: null,
     cddPath: null,
   };
 }
@@ -104,6 +146,7 @@ export function buildFdHref(
   site: FdSite,
   page = "home",
   studySlug?: string | null,
+  nestedSlug?: string | null,
 ): string {
   if (site === "hub") return base || "/";
 
@@ -114,6 +157,7 @@ export function buildFdHref(
       segments.push(site === "diligence" ? "evals" : "work");
     }
     segments.push(studySlug);
+    if (nestedSlug) segments.push(nestedSlug);
   }
 
   return `${base}/${segments.join("/")}`;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -10,6 +10,7 @@ import {
   type FdSite,
 } from "../fd-routing";
 import { FdOfferingSwitch } from "../FdOfferingSwitch";
+import { FdLearnPage } from "../FdLearn";
 
 const routeFallback = (
   <div className="fdm-site-inner">
@@ -61,6 +62,17 @@ const FdUseCasesView = dynamic(
   },
 );
 
+const FdResourcesHub = dynamic(
+  () => import("../FdResourcesHub").then((m) => m.FdResourcesHub),
+  {
+    loading: () => (
+      <div className="fdm-uc">
+        <p className="fdm-uc-loading">Loading resources…</p>
+      </div>
+    ),
+  },
+);
+
 const FdUseCaseDetailBySlug = dynamic(
   () =>
     import("../FdUseCaseDetailBySlug").then((m) => m.FdUseCaseDetailBySlug),
@@ -84,6 +96,7 @@ const FdCaseStudyDetailBySlug = dynamic(
     ),
   },
 );
+
 
 type Site = FdSite;
 
@@ -211,8 +224,8 @@ const PAGE_COPY: Record<
       post: "Weighted to owned outcomes after close.",
     },
     resources: {
-      title: "Use cases",
-      body: "Workflows redesigned for agents that do the work: baseline, agent-operated path, harness, and human gates.",
+      title: "Resources",
+      body: "Use cases, Learn, and room to add more libraries. Separate pages, not a toggle.",
     },
   },
 };
@@ -281,14 +294,17 @@ export default function ForwardDeployedMockPage() {
   const pathname = usePathname() || "/";
   const router = useRouter();
   const base = fdBaseFromPathname(pathname);
-  const { site, page, studySlug, cddPath } = parseFdRoute(pathname);
+  const { site, page, studySlug, nestedSlug, cddPath } = parseFdRoute(pathname);
 
   const go = (
     next: Site,
     nextPage = "home",
     nextStudy: string | null = null,
+    nextNested: string | null = null,
   ) => {
-    router.push(buildFdHref(base, next, nextPage, nextStudy));
+    router.push(buildFdHref(base, next, nextPage, nextStudy, nextNested), {
+      scroll: false,
+    });
   };
 
   const enter = (next: Exclude<Site, "hub">, nextPage = "home") => {
@@ -314,12 +330,75 @@ export default function ForwardDeployedMockPage() {
   };
 
   const closeUseCase = () => {
+    go("transformation", "resources", "use-cases");
+  };
+
+  const openResourcesHub = () => {
     go("transformation", "resources", null);
+  };
+
+  const onLearn =
+    site === "transformation" && page === "resources" && studySlug === "learn";
+  const [learnSlug, setLearnSlug] = useState<string | null>(() =>
+    onLearn ? nestedSlug : null,
+  );
+
+  useEffect(() => {
+    if (!onLearn) return;
+    const parsed = parseFdRoute(window.location.pathname);
+    if (parsed.studySlug === "learn") setLearnSlug(parsed.nestedSlug);
+  }, [onLearn, nestedSlug]);
+
+  const openLearnModule = (slug: string) => {
+    const href = buildFdHref(
+      base,
+      "transformation",
+      "resources",
+      "learn",
+      slug,
+    );
+    if (onLearn) {
+      window.history.pushState({ fdLearn: slug }, "", href);
+      setLearnSlug(slug);
+      return;
+    }
+    go("transformation", "resources", "learn", slug);
+  };
+
+  const closeLearn = () => {
+    const href = buildFdHref(base, "transformation", "resources", "learn");
+    if (onLearn) {
+      window.history.pushState({ fdLearn: null }, "", href);
+      setLearnSlug(null);
+      return;
+    }
+    go("transformation", "resources", "learn");
+  };
+
+  const openResourceLibrary = (slug: "use-cases" | "learn") => {
+    go("transformation", "resources", slug);
   };
 
   useEffect(() => {
     scrollShell(0);
   }, [pathname]);
+
+  useEffect(() => {
+    const onPop = () => {
+      const parsed = parseFdRoute(window.location.pathname);
+      if (
+        parsed.site === "transformation" &&
+        parsed.page === "resources" &&
+        parsed.studySlug === "learn"
+      ) {
+        setLearnSlug(parsed.nestedSlug);
+        return;
+      }
+      router.replace(window.location.pathname);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [router]);
 
   const nav = site === "hub" ? [] : SUBSITE_NAV[site];
   const copy = useMemo(() => {
@@ -485,13 +564,27 @@ export default function ForwardDeployedMockPage() {
           <div className="fdm-site">
             {site === "transformation" &&
             page === "resources" &&
-            studySlug ? (
+            studySlug === "learn" ? (
+              <FdLearnPage
+                slug={learnSlug}
+                onHub={openResourcesHub}
+                onHome={closeLearn}
+                onOpen={openLearnModule}
+                onUseCase={openUseCase}
+              />
+            ) : site === "transformation" &&
+              page === "resources" &&
+              studySlug === "use-cases" ? (
+              <FdUseCasesView onOpen={openUseCase} onHub={openResourcesHub} />
+            ) : site === "transformation" &&
+              page === "resources" &&
+              studySlug ? (
               <FdUseCaseDetailBySlug
                 slug={studySlug}
                 onBack={closeUseCase}
               />
             ) : site === "transformation" && page === "resources" ? (
-              <FdUseCasesView onOpen={openUseCase} />
+              <FdResourcesHub onOpen={openResourceLibrary} />
             ) : studySlug && page === "work" ? (
               <FdCaseStudyDetailBySlug
                 slug={studySlug}
@@ -503,6 +596,14 @@ export default function ForwardDeployedMockPage() {
               <SubsiteLanding
                 site={site}
                 onNavigate={(next) => {
+                  if (next === "learn") {
+                    go(site, "resources", "learn");
+                    return;
+                  }
+                  if (next === "use-cases") {
+                    go(site, "resources", "use-cases");
+                    return;
+                  }
                   go(site, next, null);
                 }}
                 onEnterSibling={(next) => enter(next)}
