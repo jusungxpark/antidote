@@ -10,6 +10,7 @@ import {
   type FdSite,
 } from "../fd-routing";
 import { FdOfferingSwitch } from "../FdOfferingSwitch";
+import { FdDiligenceFrame } from "../FdDiligenceFrame";
 
 const routeFallback = (
   <div className="fdm-site-inner">
@@ -249,26 +250,6 @@ const WORK_SAMPLES: Record<
 };
 
 
-const CDD_ORIGIN = "https://cdd.antidotetransform.com";
-
-function DiligenceCddFrame({ cddPath }: { cddPath: string }) {
-  const path = cddPath.startsWith("/") ? cddPath : `/${cddPath}`;
-
-  return (
-    <div className="fdm-cdd-embed">
-      {/* Masks CDD wordmark + Work with us / Login; layer2 is the shared nav */}
-      <div className="fdm-cdd-chrome-mask" aria-hidden="true" />
-      <iframe
-        key={path}
-        className="fdm-cdd-frame"
-        title="Antidote Diligence"
-        src={`${CDD_ORIGIN}${path}`}
-        referrerPolicy="no-referrer-when-downgrade"
-      />
-    </div>
-  );
-}
-
 function scrollShell(top = 0) {
   const root = document.querySelector(".fdm-root");
   if (!root) return;
@@ -383,7 +364,7 @@ export default function ForwardDeployedMockPage() {
       </div>
 
       {site === "diligence" ? (
-        <DiligenceCddFrame cddPath={cddPath || "/"} />
+        <FdDiligenceFrame cddPath={cddPath || "/"} />
       ) : (
       <div className="fdm-shell">
         {site === "hub" ? (
