@@ -484,7 +484,7 @@ export default function ForwardDeployedMockPage() {
                 onBack={closeUseCase}
               />
             ) : site === "transformation" && page === "resources" ? (
-              <FdUseCasesView onOpen={openUseCase} />
+              <FdUseCasesView onOpen={openUseCase} onHub={goHub} />
             ) : studySlug && page === "work" ? (
               <FdCaseStudyDetailBySlug
                 slug={studySlug}
