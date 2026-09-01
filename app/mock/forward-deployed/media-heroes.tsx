@@ -200,17 +200,17 @@ export function HubHeroDeploy({
 export function StrategyHeroVisual() {
   const steps = [
     {
-      kind: "01 Fund",
+      kind: "Fund",
       title: "Investment",
       body: "Where a PE firm puts capital in the AI era",
     },
     {
-      kind: "02 Deal",
+      kind: "Deal",
       title: "Asset",
       body: "How defensible a named company still is",
     },
     {
-      kind: "03 Own",
+      kind: "Own",
       title: "Portco",
       body: "What to rebuild AI-native under ownership",
     },
@@ -224,7 +224,7 @@ export function StrategyHeroVisual() {
         <header className="fdm-strat-report-meta">
           <span>Exhibit A</span>
           <span>Altitude map</span>
-          <span>03 / 18</span>
+          <span>3 / 18</span>
         </header>
 
         <p className="fdm-strat-report-eyebrow">Governing question</p>

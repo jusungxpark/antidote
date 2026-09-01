@@ -107,7 +107,7 @@ function OfferStrategyVisual() {
       <div className="fdm-offer-strat-sheet">
         <header>
           <span>Exhibit A</span>
-          <span>03 / 18</span>
+          <span>3 / 18</span>
         </header>
         <p className="fdm-offer-strat-eyebrow">Governing question</p>
         <strong>What decision is this?</strong>

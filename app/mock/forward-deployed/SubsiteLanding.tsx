@@ -88,7 +88,7 @@ function PainIcon({ kind }: { kind: PainIconKind }) {
 
   switch (kind) {
     case "margin":
-      // Ascending value → P&L is the tallest bar
+      // Ascending value ? P&L is the tallest bar
       return (
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d="M4 19H20" {...stroke} />
@@ -244,20 +244,11 @@ function LevelSection({
     >
       <div className="fdm-level-name">
         <p className="fdm-section-prefix">Strategy for</p>
-        <h2>
-          {id === "investment" ? (
-            <>
-              Invest
-              <span className="fdm-level-break">ment</span>
-            </>
-          ) : (
-            title
-          )}
-        </h2>
+        <h2>{title}</h2>
         <ol className="fdm-level-index" aria-label={`${title} questions`}>
           {items.map((item, i) => (
             <li key={item.title}>
-              <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+              <span aria-hidden="true">{i + 1}</span>
               {item.title}
             </li>
           ))}
@@ -309,7 +300,7 @@ type FeatureKind =
   | "handoff"
   | "thinpath";
 
-/** Enterprise mini-panels for What you get — not icon placeholders. */
+/** Enterprise mini-panels for What you get: not icon placeholders. */
 function FeatureVisual({ kind }: { kind: FeatureKind }) {
   switch (kind) {
     case "value":
@@ -790,7 +781,7 @@ function StrategyLanding({
               className="fdm-btn fdm-btn--primary"
               href="mailto:founders@antidotetransform.com"
             >
-              Talk strategy →
+              Talk strategy ?
             </a>
             <button
               type="button"
@@ -938,7 +929,7 @@ function StrategyLanding({
           onClick={() => onNavigate("work")}
         >
           <span>See our work</span>
-          <span aria-hidden="true">→</span>
+          <span aria-hidden="true">?</span>
         </button>
       </div>
     </div>
@@ -969,7 +960,7 @@ function TransformationLanding({
               className="fdm-btn fdm-btn--primary"
               href="mailto:founders@antidotetransform.com"
             >
-              Talk transformation →
+              Talk transformation ?
             </a>
             <button
               type="button"
@@ -986,7 +977,7 @@ function TransformationLanding({
       <StickyPain
         side="right"
         title="Why this fails without us"
-        lede="Programs stall for the same reasons. None of them are “the model wasn’t smart enough.”"
+        lede="Programs stall for the same reasons. None of them are that the model was not smart enough."
         items={[
           {
             icon: "process",
@@ -1074,7 +1065,7 @@ function TransformationLanding({
           style={{ marginTop: 28 }}
           onClick={() => onNavigate("method")}
         >
-          Full method detail →
+          Full method detail ?
         </button>
       </section>
 
@@ -1085,7 +1076,7 @@ function TransformationLanding({
           onClick={() => onNavigate("work")}
         >
           <span>See our work</span>
-          <span aria-hidden="true">→</span>
+          <span aria-hidden="true">?</span>
         </button>
       </div>
     </div>
@@ -1102,7 +1093,7 @@ export function TransformationMethodView() {
         />
         <div className="fdm-method-blocks">
           <article>
-            <strong>01 · See the work as it really runs</strong>
+            <strong>See the work as it really runs</strong>
             <p>
               Process mining and workflow mapping across CRM, ERP, TMS, finance,
               and the inboxes people actually live in. We surface bottlenecks,
@@ -1111,7 +1102,7 @@ export function TransformationMethodView() {
             </p>
           </article>
           <article>
-            <strong>02 · Data hygiene before agents</strong>
+            <strong>Data hygiene before agents</strong>
             <p>
               Agents fail on dirty substrates. We clean and structure the data
               paths they need: sources of truth, field definitions, lineage,
@@ -1120,7 +1111,7 @@ export function TransformationMethodView() {
             </p>
           </article>
           <article>
-            <strong>03 · Redesign the human job</strong>
+            <strong>Redesign the human job</strong>
             <p>
               Move people off time-consuming manual work, data entry, hounding
               customers for missing info, reconciliation, copy-paste between
@@ -1130,7 +1121,7 @@ export function TransformationMethodView() {
             </p>
           </article>
           <article>
-            <strong>04 · Bolt agents into the stack you have</strong>
+            <strong>Bolt agents into the stack you have</strong>
             <p>
               Autonomous background agents sit on the existing tech stack
               (Dynamics, Teams, ERP, shared inboxes) so change management stays
@@ -1139,7 +1130,7 @@ export function TransformationMethodView() {
             </p>
           </article>
           <article>
-            <strong>05 · Guardrails, then harden</strong>
+            <strong>Guardrails, then harden</strong>
             <p>
               Safety first: permissions, sandboxed tool calls, human-in-the-loop
               approval on customer-facing actions, evals and escalation when
@@ -1148,7 +1139,7 @@ export function TransformationMethodView() {
             </p>
           </article>
           <article>
-            <strong>06 · Margin uplift through to the P&amp;L</strong>
+            <strong>Margin uplift through to the P&amp;L</strong>
             <p>
               Admin hours returned to billable or commercial capacity, faster
               cycle times, fewer handoff errors, recoverable leakage on
