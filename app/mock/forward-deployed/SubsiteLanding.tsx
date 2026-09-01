@@ -233,18 +233,27 @@ function LevelSection({
   title,
   items,
 }: {
-  id: string;
+  id: "investment" | "asset" | "portco";
   title: string;
   items: { title: string; body: string; mark: FeatureKind }[];
 }) {
   return (
     <section
-      className="fdm-land-section fdm-land-section--level fdm-level"
+      className={`fdm-land-section fdm-land-section--level fdm-level fdm-level--${id}`}
       id={id}
     >
       <div className="fdm-level-name">
         <p className="fdm-section-prefix">Strategy for</p>
-        <h2>{title}</h2>
+        <h2>
+          {id === "investment" ? (
+            <>
+              Invest
+              <span className="fdm-level-break">ment</span>
+            </>
+          ) : (
+            title
+          )}
+        </h2>
         <ol className="fdm-level-index" aria-label={`${title} questions`}>
           {items.map((item, i) => (
             <li key={item.title}>

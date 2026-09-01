@@ -21,21 +21,8 @@ import {
   getBlogSlugFromPath,
   isBlogPath,
 } from "./blog-posts-data";
-import { CaseStudiesScreen } from "./CaseStudiesScreen";
-import { CaseStudyDetailScreen } from "./CaseStudyDetailScreen";
-import { CaseStudyExpandOverlay } from "./CaseStudyExpandOverlay";
-import {
-  CASE_STUDIES_PATH,
-  CASE_STUDIES_SLIDE_MS,
-  getCaseStudyBySlug,
-  getCaseStudySlugFromPath,
-  type CaseStudy,
-} from "./case-studies-data";
 import { CARDS } from "./trace-cards/config";
 import { computeHomeCardRect, type LayoutRect } from "./trace-cards/card-layout";
-import {
-  measureCaseStudyCardTarget,
-} from "./case-study-layout";
 
 const AsciiSTL = dynamic(
   () => import("./AsciiSTL").then((m) => m.AsciiSTL),
@@ -49,7 +36,6 @@ const TraceCardsScene = dynamic(
 );
 
 const TRANSITION_MS = 680;
-const CASE_STUDY_CLOSE_MS = 380;
 
 interface TransitionRequest {
   href: string;
@@ -63,13 +49,6 @@ interface TransitionRequest {
   direction: "forward" | "reverse";
 }
 
-export interface CaseStudyTransitionRequest {
-  study: CaseStudy;
-  href: string;
-  cardRect: { top: number; left: number; width: number; height: number };
-  direction: "forward";
-}
-
 interface SceneContextValue {
   startTransition: (req: TransitionRequest) => void;
   startReturnTransition: () => void;
@@ -80,18 +59,6 @@ interface SceneContextValue {
   transition: TransitionRequest | null;
   transitionPhase: number;
   cardsIntroDone: boolean;
-  caseStudiesOpen: boolean;
-  openCaseStudies: () => void;
-  closeCaseStudies: () => void;
-  caseStudyTransition: CaseStudyTransitionRequest | null;
-  caseStudyTransitionPhase: number;
-  caseStudyTransitionLock: boolean;
-  startCaseStudyTransition: (req: CaseStudyTransitionRequest) => void;
-  closeCaseStudyDetail: () => void;
-  acknowledgeCaseStudyExpandReady: () => void;
-  caseStudyHandoff: boolean;
-  caseStudyClosing: boolean;
-  onCaseStudyMorphEnd: () => void;
 }
 
 const SceneContext = createContext<SceneContextValue>({
@@ -104,18 +71,6 @@ const SceneContext = createContext<SceneContextValue>({
   transition: null,
   transitionPhase: 0,
   cardsIntroDone: false,
-  caseStudiesOpen: false,
-  openCaseStudies: () => {},
-  closeCaseStudies: () => {},
-  caseStudyTransition: null,
-  caseStudyTransitionPhase: 0,
-  caseStudyTransitionLock: false,
-  startCaseStudyTransition: () => {},
-  closeCaseStudyDetail: () => {},
-  acknowledgeCaseStudyExpandReady: () => {},
-  caseStudyHandoff: false,
-  caseStudyClosing: false,
-  onCaseStudyMorphEnd: () => {},
 });
 
 export function useScene() {
@@ -292,9 +247,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isSite =
     !isMockPath &&
     pathname != null &&
-    (SITE_PATHS.has(pathname) ||
-      pathname.startsWith(CASE_STUDIES_PATH) ||
-      pathname.startsWith(`${BLOG_PATH}/`));
+    (SITE_PATHS.has(pathname) || pathname.startsWith(`${BLOG_PATH}/`));
   if (!isSite) return <>{children}</>;
   return <SceneShell>{children}</SceneShell>;
 }
@@ -321,32 +274,8 @@ export function SceneShell({ children }: { children: ReactNode }) {
     isBlogPath(pathname) ? "blog" : null
   );
   const [navOverlayLeaving, setNavOverlayLeaving] = useState(false);
-  const [caseStudiesOpen, setCaseStudiesOpen] = useState(
-    () =>
-      pathname === CASE_STUDIES_PATH ||
-      getCaseStudySlugFromPath(pathname) !== null
-  );
-  const caseStudiesClosingRef = useRef(false);
   const navReturnHomeRef = useRef(false);
-  const [caseStudyTransition, setCaseStudyTransition] =
-    useState<CaseStudyTransitionRequest | null>(null);
-  const [caseStudyTransitionPhase, setCaseStudyTransitionPhase] = useState(0);
-  const [caseStudyHandoff, setCaseStudyHandoff] = useState(false);
-  const [caseStudyClosing, setCaseStudyClosing] = useState(false);
-  const [closingStudy, setClosingStudy] = useState<CaseStudy | null>(null);
-  const [caseStudyGridEnterKey, setCaseStudyGridEnterKey] = useState(0);
-  const caseStudyTransitionLock = useRef(false);
-  const caseStudyClosePendingRef = useRef(false);
-  const caseStudyOriginRectRef = useRef<LayoutRect | null>(null);
-  const caseStudyExpandReadyRef = useRef(false);
 
-  const caseStudySlug = getCaseStudySlugFromPath(pathname);
-  const activeCaseStudy = caseStudySlug
-    ? getCaseStudyBySlug(caseStudySlug)
-    : undefined;
-  const isCaseStudiesListRoute = pathname === CASE_STUDIES_PATH;
-  const isCaseStudiesRoute =
-    isCaseStudiesListRoute || activeCaseStudy !== undefined;
   const isBlogRoute = isBlogPath(pathname);
   const blogSlug = getBlogSlugFromPath(pathname);
 
@@ -361,140 +290,9 @@ export function SceneShell({ children }: { children: ReactNode }) {
     }
   }, [isBlogRoute]); // eslint-disable-line react-hooks/exhaustive-deps -- only follow route
 
-  useEffect(() => {
-    if (caseStudiesClosingRef.current) return;
-    setCaseStudiesOpen(isCaseStudiesRoute);
-  }, [isCaseStudiesRoute]);
-
-  const openCaseStudies = useCallback(() => {
-    router.push(CASE_STUDIES_PATH);
-  }, [router]);
-
-  const closeCaseStudies = useCallback(() => {
-    if (caseStudiesClosingRef.current) return;
-    caseStudiesClosingRef.current = true;
-    setCaseStudiesOpen(false);
-    setCaseStudyTransition(null);
-    setCaseStudyTransitionPhase(0);
-    setCaseStudyHandoff(false);
-    setCaseStudyClosing(false);
-    setClosingStudy(null);
-    caseStudyClosePendingRef.current = false;
-    caseStudyTransitionLock.current = false;
-    caseStudyExpandReadyRef.current = false;
-    window.setTimeout(() => {
-      if (pathname.startsWith(CASE_STUDIES_PATH)) {
-        router.push("/forward-deployed");
-      }
-      caseStudiesClosingRef.current = false;
-    }, CASE_STUDIES_SLIDE_MS);
-  }, [pathname, router]);
-
-  const startCaseStudyTransition = useCallback(
-    (req: CaseStudyTransitionRequest) => {
-      if (caseStudyTransitionLock.current) return;
-      caseStudyTransitionLock.current = true;
-      caseStudyExpandReadyRef.current = false;
-      caseStudyOriginRectRef.current = req.cardRect;
-      setCaseStudyHandoff(false);
-      setCaseStudyClosing(false);
-      setCaseStudyTransition(req);
-      setCaseStudyTransitionPhase(0);
-    },
-    []
-  );
-
-  const acknowledgeCaseStudyExpandReady = useCallback(() => {
-    if (caseStudyExpandReadyRef.current) return;
-    caseStudyExpandReadyRef.current = true;
-    setCaseStudyTransitionPhase(1);
-  }, []);
-
-  const onCaseStudyMorphEnd = useCallback(() => {
-    if (!caseStudyTransition || caseStudyTransition.direction !== "forward") return;
-    router.push(caseStudyTransition.href);
-  }, [caseStudyTransition, router]);
-
-  const closeCaseStudyDetail = useCallback(() => {
-    if (caseStudyTransitionLock.current || !activeCaseStudy) return;
-
-    caseStudyTransitionLock.current = true;
-    caseStudyClosePendingRef.current = true;
-    setClosingStudy(activeCaseStudy);
-    setCaseStudyClosing(true);
-
-    window.setTimeout(() => {
-      router.push(CASE_STUDIES_PATH);
-    }, CASE_STUDY_CLOSE_MS);
-  }, [activeCaseStudy, router]);
-
-  useEffect(() => {
-    if (
-      !caseStudyClosePendingRef.current ||
-      !caseStudyClosing ||
-      pathname !== CASE_STUDIES_PATH
-    ) {
-      return;
-    }
-
-    caseStudyClosePendingRef.current = false;
-    const id = requestAnimationFrame(() => {
-      setCaseStudyClosing(false);
-      setClosingStudy(null);
-      caseStudyTransitionLock.current = false;
-    });
-    return () => cancelAnimationFrame(id);
-  }, [pathname, caseStudyClosing]);
-
-  useEffect(() => {
-    if (
-      caseStudyTransition?.direction !== "forward" ||
-      caseStudyTransitionPhase !== 0
-    ) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      acknowledgeCaseStudyExpandReady();
-    }, 64);
-
-    return () => window.clearTimeout(timer);
-  }, [caseStudyTransition, caseStudyTransitionPhase, acknowledgeCaseStudyExpandReady]);
-
-  useEffect(() => {
-    if (
-      caseStudyTransition?.direction === "forward" &&
-      pathname === caseStudyTransition.href
-    ) {
-      setCaseStudyHandoff(true);
-
-      const id = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setCaseStudyTransition(null);
-          setCaseStudyTransitionPhase(0);
-          setCaseStudyHandoff(false);
-          caseStudyTransitionLock.current = false;
-          caseStudyExpandReadyRef.current = false;
-        });
-      });
-      return () => cancelAnimationFrame(id);
-    }
-  }, [pathname, caseStudyTransition]);
-
   const isHome = pathname === "/";
   const isForwardDeployed = pathname.startsWith("/forward-deployed");
   const pageInfo = getPageInfo(pathname);
-
-  useEffect(() => {
-    if (
-      !isForwardDeployed &&
-      !isCaseStudiesRoute &&
-      !isBlogRoute &&
-      !caseStudiesClosingRef.current
-    ) {
-      setCaseStudiesOpen(false);
-    }
-  }, [isForwardDeployed, isCaseStudiesRoute, isBlogRoute]);
 
   const mirror = transition?.mirror ?? pageInfo?.mirror ?? false;
 
@@ -673,11 +471,6 @@ export function SceneShell({ children }: { children: ReactNode }) {
   // Handle return-to-home navigation
   const handleReturnHome = useCallback(
     (e: React.MouseEvent) => {
-      if (caseStudiesOpen || isCaseStudiesRoute) {
-        e.preventDefault();
-        closeCaseStudies();
-        return;
-      }
       if (navOverlay) {
         e.preventDefault();
         navReturnHomeRef.current = pathname !== "/";
@@ -688,27 +481,14 @@ export function SceneShell({ children }: { children: ReactNode }) {
       e.preventDefault();
       startReturnTransition();
     },
-    [
-      isHome,
-      returningHome,
-      navOverlay,
-      caseStudiesOpen,
-      isCaseStudiesRoute,
-      pathname,
-      closeCaseStudies,
-      startReturnTransition,
-    ]
+    [isHome, returningHome, navOverlay, pathname, startReturnTransition]
   );
 
   // Caduceus: subpage layout during forward expand or while on subpage (before reverse)
   const atSubpage =
     (transition?.direction === "forward" && transition !== null && phase === 1) ||
     (transition?.direction === "reverse" && transition !== null && phase === 1) ||
-    (!isHome &&
-      !isBlogRoute &&
-      !isCaseStudiesRoute &&
-      transition === null &&
-      !returningHome);
+    (!isHome && !isBlogRoute && transition === null && !returningHome);
 
   let caduceusClass = "scene-caduceus";
   if (atSubpage) {
@@ -761,22 +541,6 @@ export function SceneShell({ children }: { children: ReactNode }) {
     </header>
   );
 
-  const detailStudy =
-    activeCaseStudy ?? caseStudyTransition?.study ?? closingStudy ?? undefined;
-
-  let detailPhase: "hidden" | "underlay" | "visible" = "hidden";
-  if (detailStudy) {
-    if (
-      caseStudyTransition?.direction === "forward" &&
-      !caseStudyHandoff &&
-      !caseStudyClosing
-    ) {
-      detailPhase = "underlay";
-    } else {
-      detailPhase = "visible";
-    }
-  }
-
   return (
     <SceneContext.Provider
       value={{
@@ -789,22 +553,10 @@ export function SceneShell({ children }: { children: ReactNode }) {
         transition,
         transitionPhase: phase,
         cardsIntroDone,
-        caseStudiesOpen,
-        openCaseStudies,
-        closeCaseStudies,
-        caseStudyTransition,
-        caseStudyTransitionPhase,
-        caseStudyTransitionLock: caseStudyTransition !== null,
-        startCaseStudyTransition,
-        closeCaseStudyDetail,
-        acknowledgeCaseStudyExpandReady,
-        caseStudyHandoff,
-        caseStudyClosing,
-        onCaseStudyMorphEnd,
       }}
     >
       <div
-        className={`scene-shell${!isHome && !isCaseStudiesRoute && !isBlogRoute && transition === null ? " scene-shell--subpage" : ""}${navOverlay === "blog" ? " scene-shell--blog-open" : ""}${caseStudiesOpen ? " scene-shell--case-studies-open" : ""}`}
+        className={`scene-shell${!isHome && !isBlogRoute && transition === null ? " scene-shell--subpage" : ""}${navOverlay === "blog" ? " scene-shell--blog-open" : ""}`}
         style={{
           position: "relative",
           width: "100%",
@@ -814,9 +566,7 @@ export function SceneShell({ children }: { children: ReactNode }) {
         }}
       >
         <div className="scene-viewport-stage">
-          <div
-            className={`scene-viewport-track${caseStudiesOpen ? " is-advanced" : ""}`}
-          >
+          <div className="scene-viewport-track">
             <div className="scene-viewport-pane">
         {siteTopNav}
 
@@ -885,33 +635,8 @@ export function SceneShell({ children }: { children: ReactNode }) {
           </div>
         )}
             </div>
-
-            <div className="scene-viewport-pane scene-case-studies-pane">
-              <CaseStudiesScreen
-                onBack={closeCaseStudies}
-                hidden={
-                  Boolean(activeCaseStudy || caseStudyTransition) &&
-                  !caseStudyClosing
-                }
-                gridEnterKey={caseStudyGridEnterKey}
-              />
-              {detailStudy ? (
-                <CaseStudyDetailScreen
-                  study={detailStudy}
-                  onBack={closeCaseStudyDetail}
-                  phase={detailPhase}
-                  closing={caseStudyClosing}
-                  animateFields={
-                    !caseStudyClosing &&
-                    (caseStudyHandoff ||
-                      (Boolean(activeCaseStudy) && !caseStudyTransition))
-                  }
-                />
-              ) : null}
-            </div>
           </div>
         </div>
-        {caseStudyTransition ? <CaseStudyExpandOverlay /> : null}
       </div>
     </SceneContext.Provider>
   );

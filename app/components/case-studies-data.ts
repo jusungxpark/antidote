@@ -143,28 +143,10 @@ export const CASE_STUDIES: CaseStudy[] = [
   },
 ];
 
-export const CASE_STUDIES_PATH = "/case-studies";
-export const CASE_STUDIES_SLIDE_MS = 900;
-
 export function formatCaseStudyMeta(meta: CaseStudyMeta): string {
-  return [
-    meta.timeline,
-    meta.scale,
-    meta.industry,
-  ].join(" · ");
+  return [meta.timeline, meta.scale, meta.industry].join(" · ");
 }
 
 export function getCaseStudyBySlug(slug: string): CaseStudy | undefined {
   return CASE_STUDIES.find((study) => study.slug === slug);
-}
-
-export function getCaseStudySlugFromPath(pathname: string): string | null {
-  if (!pathname.startsWith(`${CASE_STUDIES_PATH}/`)) return null;
-  const slug = pathname.slice(CASE_STUDIES_PATH.length + 1).split("/")[0];
-  if (!slug) return null;
-  return getCaseStudyBySlug(slug) ? slug : null;
-}
-
-export function getCaseStudyPath(slug: string): string {
-  return `${CASE_STUDIES_PATH}/${slug}`;
 }

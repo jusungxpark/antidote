@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { CASE_STUDIES_PATH } from "./case-studies-data";
 import { FD_OFFERINGS } from "./fd-offerings";
 import { PeFirmLogoCarousel } from "./PeFirmLogoCarousel";
 
@@ -60,15 +58,6 @@ export function ForwardDeployedView() {
           See how we engage
           <span aria-hidden="true">→</span>
         </a>
-        <Link
-          href={CASE_STUDIES_PATH}
-          className="pillar-case-link pillar-case-link--bold pillar-case-link--under-cta"
-        >
-          <span className="pillar-case-link-mark" aria-hidden="true">
-            ↓
-          </span>
-          See our Case Studies
-        </Link>
       </div>
     </>
   );

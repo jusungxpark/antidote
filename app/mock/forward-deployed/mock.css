@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@500;600&family=Big+Shoulders+Display:wght@800&display=swap");
+
 /* Forward Deployed site, CDD design schema (tokens from cdd.antidotetransform.com) */
 
 /* Marketing site locks body overflow; this root is its own scroll surface
@@ -30,6 +32,9 @@
   --radius-large: 10px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
     sans-serif;
+  --font-level-fund: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --font-level-portco: "Azeret Mono", ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
   /* Full-bleed content column: wide like Rogo, still with gutters */
   --fdm-gutter: clamp(16px, 4.2vw, 72px);
   --fdm-content-max: 1680px;
@@ -1282,12 +1287,18 @@
 }
 
 .fdm-level-name {
+  display: grid;
+  grid-template-areas:
+    "prefix"
+    "title"
+    "index";
   position: sticky;
   top: calc(var(--why-nav) + 24px);
   padding-top: 6px;
 }
 
 .fdm-level-name .fdm-section-prefix {
+  grid-area: prefix;
   display: block;
   margin: 0 0 8px;
   font-size: 13px;
@@ -1298,6 +1309,7 @@
 }
 
 .fdm-level-name h2 {
+  grid-area: title;
   margin: 0;
   font-size: clamp(36px, 3.8vw, 52px);
   font-weight: 650;
@@ -1306,7 +1318,117 @@
   text-wrap: balance;
 }
 
+.fdm-level-break {
+  display: block;
+}
+
+.fdm-level--investment {
+  grid-template-columns: minmax(14rem, 0.4fr) minmax(0, 1fr);
+}
+
+.fdm-level--investment .fdm-section-prefix {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--antidote);
+}
+
+.fdm-level--investment .fdm-level-name h2 {
+  font-family: var(--font-level-fund);
+  font-weight: 800;
+  font-size: clamp(64px, 8vw, 118px);
+  line-height: 0.74;
+  letter-spacing: -0.07em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.fdm-level--asset .fdm-level-name {
+  grid-template-areas:
+    "title"
+    "prefix"
+    "index";
+  justify-items: end;
+  text-align: right;
+}
+
+.fdm-level--asset .fdm-section-prefix {
+  margin: 10px 0 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--antidote);
+}
+
+.fdm-level--asset .fdm-level-name h2 {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-style: italic;
+  font-synthesis: none;
+  font-weight: 400;
+  font-size: clamp(72px, 9vw, 128px);
+  line-height: 0.78;
+  letter-spacing: -0.04em;
+  color: var(--antidote);
+}
+
+.fdm-level--asset .fdm-level-name h2::after {
+  content: "";
+  display: block;
+  width: 2.6em;
+  height: 2px;
+  margin: 14px 0 0 auto;
+  background: var(--antidote);
+}
+
+.fdm-level--asset .fdm-level-index {
+  width: 100%;
+  text-align: left;
+  justify-items: stretch;
+}
+
+.fdm-level--portco .fdm-level-name {
+  grid-template-areas:
+    "title prefix"
+    "title index";
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 18px;
+  align-items: start;
+}
+
+.fdm-level--portco .fdm-section-prefix {
+  margin: 0 0 12px;
+  font-family: var(--font-level-portco);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.fdm-level--portco .fdm-level-name h2 {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  align-self: stretch;
+  font-family: var(--font-level-portco);
+  font-weight: 500;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+  padding: 0 10px 0 0;
+  border-right: 1px solid var(--ink);
+}
+
+.fdm-level--portco .fdm-level-index {
+  margin-top: 10px;
+}
+
 .fdm-level-index {
+  grid-area: index;
   list-style: none;
   margin: 28px 0 0;
   padding: 4px 0 0;
@@ -4396,6 +4518,43 @@
     position: static;
     top: auto;
     padding-top: 0;
+  }
+
+  .fdm-level--investment,
+  .fdm-level--asset,
+  .fdm-level--portco {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fdm-level--asset .fdm-level-name {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .fdm-level--asset .fdm-level-name h2::after {
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  .fdm-level--portco .fdm-level-name {
+    grid-template-areas:
+      "prefix"
+      "title"
+      "index";
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+  }
+
+  .fdm-level--portco .fdm-level-name h2 {
+    writing-mode: horizontal-tb;
+    transform: none;
+    align-self: auto;
+    font-size: clamp(26px, 7vw, 36px);
+    letter-spacing: 0.2em;
+    padding: 10px 14px;
+    border-left: 0;
+    border: 1px solid var(--line);
+    background: var(--paper-deep);
   }
 
   .fdm-level-index {
