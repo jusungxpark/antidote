@@ -2,6 +2,7 @@
 
 import type { CaseStudy } from "../../components/case-studies-data";
 import dynamic from "next/dynamic";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import {
   STRATEGY_CASES,
   TRANSFORMATION_CASES,
@@ -228,33 +229,131 @@ function SellWhat({
   );
 }
 
-function LevelSection({
-  id,
-  title,
-  items,
-}: {
+const LEVEL_CYCLE_MS = 5500;
+
+type StrategyLevel = {
   id: "investment" | "asset" | "portco";
   title: string;
   items: { title: string; body: string; mark: FeatureKind }[];
-}) {
+};
+
+function LevelFolder({ levels }: { levels: StrategyLevel[] }) {
+  const rootRef = useRef<HTMLElement>(null);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [inView, setInView] = useState(false);
+  const cycling = !paused && inView;
+
+  const pauseAt = (index: number) => {
+    setPaused(true);
+    setActive(index);
+  };
+
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    const idx = levels.findIndex((level) => level.id === hash);
+    if (idx >= 0) {
+      setActive(idx);
+      setPaused(true);
+    }
+    // Initial hash only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.2 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!cycling) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduce.matches) return;
+    const id = window.setInterval(() => {
+      setActive((i) => (i + 1) % levels.length);
+    }, LEVEL_CYCLE_MS);
+    return () => window.clearInterval(id);
+  }, [cycling, levels.length]);
+
+  const onTabsKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const last = levels.length - 1;
+    let next = active;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      next = active === last ? 0 : active + 1;
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      next = active === 0 ? last : active - 1;
+    } else if (event.key === "Home") {
+      next = 0;
+    } else if (event.key === "End") {
+      next = last;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    pauseAt(next);
+    requestAnimationFrame(() => {
+      document.getElementById(`tab-${levels[next].id}`)?.focus();
+    });
+  };
+
   return (
     <section
-      className={`fdm-land-section fdm-land-section--level fdm-level fdm-level--${id}`}
-      id={id}
+      ref={rootRef}
+      className={`fdm-land-section fdm-level-folder${paused ? " is-paused" : ""}`}
+      aria-label="Strategy for"
     >
-      <div className="fdm-level-name">
-        <p className="fdm-section-prefix">Strategy for</p>
-        <h2>{title}</h2>
-        <ol className="fdm-level-index" aria-label={`${title} questions`}>
-          {items.map((item, i) => (
-            <li key={item.title}>
-              <span aria-hidden="true">{i + 1}</span>
-              {item.title}
-            </li>
+      <p className="fdm-section-prefix">Strategy for</p>
+      <div
+        className="fdm-level-folder-shell"
+        onPointerDown={() => setPaused(true)}
+      >
+        <div
+          className="fdm-level-tabs"
+          role="tablist"
+          aria-label="Strategy altitude"
+          onKeyDown={onTabsKeyDown}
+        >
+          {levels.map((level, i) => (
+            <button
+              key={level.id}
+              id={`tab-${level.id}`}
+              type="button"
+              role="tab"
+              aria-selected={active === i}
+              aria-controls={level.id}
+              tabIndex={active === i ? 0 : -1}
+              className={`fdm-level-tab${active === i ? " is-active" : ""}`}
+              onClick={() => pauseAt(i)}
+            >
+              {level.title}
+              {active === i && cycling ? (
+                <span className="fdm-level-tab-fill" aria-hidden="true" />
+              ) : null}
+            </button>
           ))}
-        </ol>
+        </div>
+        <div className="fdm-level-panels">
+          {levels.map((level, i) => (
+            <div
+              key={level.id}
+              id={level.id}
+              role="tabpanel"
+              aria-labelledby={`tab-${level.id}`}
+              aria-hidden={active !== i}
+              inert={active !== i}
+              className={`fdm-level-panel${active === i ? " is-active" : ""}`}
+            >
+              <SellWhat items={level.items} />
+            </div>
+          ))}
+        </div>
       </div>
-      <SellWhat items={items} />
     </section>
   );
 }
@@ -818,83 +917,85 @@ function StrategyLanding({
         ]}
       />
 
-      <LevelSection
-        id="investment"
-        title="Investment"
-        items={[
+      <LevelFolder
+        levels={[
           {
-            mark: "value",
-            title: "Where value accrues",
-            body: "When the task gets cheap, margin moves to whoever owns the outcome, not to the model. Which commercial surfaces hold, and which ones are theater.",
+            id: "investment",
+            title: "Investment",
+            items: [
+              {
+                mark: "value",
+                title: "Where value accrues",
+                body: "When the task gets cheap, margin moves to whoever owns the outcome, not to the model. Which commercial surfaces hold, and which ones are theater.",
+              },
+              {
+                mark: "exposure",
+                title: "Doing-friction vs owning-friction",
+                body: "Labor, expertise, and tooling get abolished. Trust, license, liability, and blame-offload do not. The screen is which reason is load-bearing in the sector.",
+              },
+              {
+                mark: "allocation",
+                title: "Where the check goes",
+                body: "Enter where incumbency is the moat. Pass labor-only businesses. Watch anything that still needs a named buyer before it is a fund bet.",
+              },
+              {
+                mark: "sector",
+                title: "What must be true of the sector",
+                body: "Owning-friction has to be load-bearing. License, liability, and a buyer who still pays for outcome ownership after the task is cheap.",
+              },
+            ],
           },
           {
-            mark: "exposure",
-            title: "Doing-friction vs owning-friction",
-            body: "Labor, expertise, and tooling get abolished. Trust, license, liability, and blame-offload do not. The screen is which reason is load-bearing in the sector.",
+            id: "asset",
+            title: "Asset",
+            items: [
+              {
+                mark: "moat",
+                title: "What still defends it",
+                body: "Customer relationships, license, liability, and the system of record. Separate those from workflows that a well-run newcomer can replicate.",
+              },
+              {
+                mark: "threat",
+                title: "What AI actually threatens",
+                body: "Split the P&L into work that was hard to do and work that was hard to own. Only the second still prices like a durable service.",
+              },
+              {
+                mark: "replicate",
+                title: "Who can capture it",
+                body: "Startups stall without the client and the licensed humans. Incumbents already have both. The strategic question is whether this asset is the one to buy.",
+              },
+              {
+                mark: "ic",
+                title: "What IC still needs answered",
+                body: "Open questions stay on their own plane: data owned, exceptions named, what must stay human, and what is still unproven. Not buried in a capability slide.",
+              },
+            ],
           },
           {
-            mark: "allocation",
-            title: "Where the check goes",
-            body: "Enter where incumbency is the moat. Pass labor-only businesses. Watch anything that still needs a named buyer before it is a fund bet.",
-          },
-          {
-            mark: "sector",
-            title: "What must be true of the sector",
-            body: "Owning-friction has to be load-bearing. License, liability, and a buyer who still pays for outcome ownership after the task is cheap.",
-          },
-        ]}
-      />
-
-      <LevelSection
-        id="asset"
-        title="Asset"
-        items={[
-          {
-            mark: "moat",
-            title: "What still defends it",
-            body: "Customer relationships, license, liability, and the system of record. Separate those from workflows that a well-run newcomer can replicate.",
-          },
-          {
-            mark: "threat",
-            title: "What AI actually threatens",
-            body: "Split the P&L into work that was hard to do and work that was hard to own. Only the second still prices like a durable service.",
-          },
-          {
-            mark: "replicate",
-            title: "Who can capture it",
-            body: "Startups stall without the client and the licensed humans. Incumbents already have both. The strategic question is whether this asset is the one to buy.",
-          },
-          {
-            mark: "ic",
-            title: "What IC still needs answered",
-            body: "Open questions stay on their own plane: data owned, exceptions named, what must stay human, and what is still unproven. Not buried in a capability slide.",
-          },
-        ]}
-      />
-
-      <LevelSection
-        id="portco"
-        title="Portfolio"
-        items={[
-          {
-            mark: "mix",
-            title: "What is automatable",
-            body: "Chase work, reconciliation, and copy-paste leave the human job. Exceptions, customers, and outcome ownership stay. Name the split before a single seat is bought.",
-          },
-          {
-            mark: "rebuild",
-            title: "How to rebuild AI-native",
-            body: "Overlaying models on a broken system of record plateaus. The strategy is a clean rebuild on owned infrastructure, not a copilot next to the mess.",
-          },
-          {
-            mark: "handoff",
-            title: "An operating model that holds",
-            body: "Who owns outcomes versus volume, how humans and agents hand off, and how success is measured after the first operating review.",
-          },
-          {
-            mark: "thinpath",
-            title: "What to sequence first",
-            body: "A thin path with kill criteria. Transformation inherits the sequence. Everything else stays refused until the economics of the first path are real.",
+            id: "portco",
+            title: "Portfolio",
+            items: [
+              {
+                mark: "mix",
+                title: "What is automatable",
+                body: "Chase work, reconciliation, and copy-paste leave the human job. Exceptions, customers, and outcome ownership stay. Name the split before a single seat is bought.",
+              },
+              {
+                mark: "rebuild",
+                title: "How to rebuild AI-native",
+                body: "Overlaying models on a broken system of record plateaus. The strategy is a clean rebuild on owned infrastructure, not a copilot next to the mess.",
+              },
+              {
+                mark: "handoff",
+                title: "An operating model that holds",
+                body: "Who owns outcomes versus volume, how humans and agents hand off, and how success is measured after the first operating review.",
+              },
+              {
+                mark: "thinpath",
+                title: "What to sequence first",
+                body: "A thin path with kill criteria. Transformation inherits the sequence. Everything else stays refused until the economics of the first path are real.",
+              },
+            ],
           },
         ]}
       />
