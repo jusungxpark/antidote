@@ -611,21 +611,8 @@
   line-height: 1.05;
 }
 
-.fdm-work-banner span:last-child {
-  font-size: clamp(26px, 3.2vw, 42px);
-  font-weight: 500;
-  line-height: 1;
-  transition-property: transform;
-  transition-duration: 160ms;
-  transition-timing-function: var(--ease-out);
-}
-
 .fdm-work-banner:hover {
   background: color-mix(in srgb, var(--ink) 88%, #fff);
-}
-
-.fdm-work-banner:hover span:last-child {
-  transform: translateX(4px);
 }
 
 .fdm-work-banner:active {

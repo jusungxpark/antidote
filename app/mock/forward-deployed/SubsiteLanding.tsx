@@ -880,7 +880,7 @@ function StrategyLanding({
               className="fdm-btn fdm-btn--primary"
               href="mailto:founders@antidotetransform.com"
             >
-              Talk strategy ?
+              Talk strategy
             </a>
             <button
               type="button"
@@ -1030,7 +1030,6 @@ function StrategyLanding({
           onClick={() => onNavigate("work")}
         >
           <span>See our work</span>
-          <span aria-hidden="true">?</span>
         </button>
       </div>
     </div>
@@ -1061,7 +1060,7 @@ function TransformationLanding({
               className="fdm-btn fdm-btn--primary"
               href="mailto:founders@antidotetransform.com"
             >
-              Talk transformation ?
+              Talk transformation
             </a>
             <button
               type="button"
@@ -1177,7 +1176,6 @@ function TransformationLanding({
           onClick={() => onNavigate("work")}
         >
           <span>See our work</span>
-          <span aria-hidden="true">?</span>
         </button>
       </div>
     </div>
