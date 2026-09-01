@@ -443,13 +443,25 @@ a {
   text-align: center;
 }
 
+.pe-firm-carousel-block {
+  width: 100%;
+  margin-top: calc(var(--text-body-leading) * 1.75em);
+  margin-bottom: calc(var(--text-body-leading) * 2.4em);
+}
+
+.pe-firm-carousel-kicker {
+  margin: 0 0 0.65em;
+  font-family: var(--font-sans);
+  font-size: var(--text-body-size-secondary);
+  line-height: var(--text-body-leading);
+  color: var(--text-dim);
+  text-align: center;
+}
+
 .pe-firm-carousel {
   position: relative;
   width: 100%;
-  max-width: 688px;
   overflow: hidden;
-  margin-top: calc(var(--text-body-leading) * 1.75em);
-  margin-bottom: calc(var(--text-body-leading) * 2.4em);
   -webkit-mask-image: linear-gradient(
     90deg,
     transparent 0%,
@@ -472,7 +484,6 @@ a {
   gap: clamp(32px, 5vw, 56px);
   width: max-content;
   animation: pe-firm-carousel-scroll 38s linear infinite;
-  will-change: transform;
 }
 
 .pe-firm-carousel-item {
@@ -483,10 +494,9 @@ a {
   display: block;
   height: clamp(28px, 3.2vw, 36px);
   width: auto;
-  max-width: clamp(120px, 16vw, 220px);
+  max-width: clamp(140px, 22vw, 280px);
   object-fit: contain;
-  opacity: 0.48;
-  filter: brightness(0) invert(1);
+  opacity: 0.55;
 }
 
 @keyframes pe-firm-carousel-scroll {
@@ -1892,12 +1902,18 @@ a {
     font-size: clamp(15px, 4.2vw, 17px);
   }
 
-  .pe-firm-carousel {
+  .pe-firm-carousel-block {
     max-width: 100%;
     width: 100%;
     min-width: 0;
     margin-top: 1.2em;
     margin-bottom: 1.6em;
+  }
+
+  .pe-firm-carousel {
+    max-width: 100%;
+    width: 100%;
+    min-width: 0;
     overflow: hidden;
   }
 

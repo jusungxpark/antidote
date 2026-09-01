@@ -7,26 +7,24 @@ export type PeFirmLogo = {
 };
 
 export const PE_FIRM_LOGOS: PeFirmLogo[] = [
-  { id: "kkr", name: "KKR", src: "/logos/pe-firms/kkr.png" },
-  { id: "comvest", name: "Comvest Partners", src: "/logos/pe-firms/comvest.png" },
-  { id: "vistria", name: "Vistria Group", src: "/logos/pe-firms/vistria.png" },
+  { id: "kkr", name: "KKR", src: "/logos/pe-firms/kkr.svg" },
+  { id: "comvest", name: "Comvest Partners", src: "/logos/pe-firms/comvest.svg" },
+  { id: "vistria", name: "Vistria Group", src: "/logos/pe-firms/vistria.svg" },
   {
     id: "partners-group",
     name: "Partners Group",
-    src: "/logos/pe-firms/partners-group.png",
+    src: "/logos/pe-firms/partners-group.svg",
   },
   {
     id: "grain-management",
     name: "Grain Management",
-    src: "/logos/pe-firms/grain-management.png",
+    src: "/logos/pe-firms/grain-management.svg",
   },
-  { id: "new-atlas", name: "New Atlas Capital", src: "/logos/pe-firms/new-atlas.png" },
-  // Kept for later — omit from carousel until ready to show again.
+  { id: "new-atlas", name: "New Atlas Capital", src: "/logos/pe-firms/new-atlas.svg" },
   {
     id: "graham",
     name: "Graham Partners",
-    src: "/logos/pe-firms/graham.png",
-    carousel: false,
+    src: "/logos/pe-firms/graham.svg",
   },
 ];
 

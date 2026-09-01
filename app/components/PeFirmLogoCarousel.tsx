@@ -6,22 +6,26 @@ export function PeFirmLogoCarousel() {
   const track = [...PE_FIRM_CAROUSEL_LOGOS, ...PE_FIRM_CAROUSEL_LOGOS];
 
   return (
-    <div
-      className="pe-firm-carousel"
-      aria-label="Private equity firms we have worked with"
-    >
-      <div className="pe-firm-carousel-track">
-        {track.map((firm, index) => (
-          <div className="pe-firm-carousel-item" key={`${firm.id}-${index}`}>
-            <img
-              src={firm.src}
-              alt={firm.name}
-              className="pe-firm-carousel-logo"
-              draggable={false}
-              loading="lazy"
-            />
-          </div>
-        ))}
+    <div className="pe-firm-carousel-block">
+      <p className="pe-firm-carousel-kicker" id="pe-firm-carousel-label">
+        Our past clients include
+      </p>
+      <div
+        className="pe-firm-carousel"
+        aria-labelledby="pe-firm-carousel-label"
+      >
+        <div className="pe-firm-carousel-track">
+          {track.map((firm, index) => (
+            <div className="pe-firm-carousel-item" key={`${firm.id}-${index}`}>
+              <img
+                src={firm.src}
+                alt={firm.name}
+                className="pe-firm-carousel-logo"
+                draggable={false}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
