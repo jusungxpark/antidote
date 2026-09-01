@@ -22,7 +22,7 @@ export function DealCycleSticky() {
         </svg>
       ),
       bullets: [
-        "Where value accrues, what must be true, and what to fund or refuse",
+        "Where a PE firm should invest, and how defensible a named asset is",
         "Evidence on capability, cost, defensibility, and unknowns, unmixed",
         "Readiness and the first thin path agents can own on day one",
       ],
@@ -55,7 +55,7 @@ export function DealCycleSticky() {
         </svg>
       ),
       bullets: [
-        "Roadmap, change, and an operating model that survives contact",
+        "What is automatable, how to rebuild AI-native, and an operating model that holds",
         "Re-underwrite when the facts move under ownership",
         "Production agents with guardrails that hold in the real stack",
       ],
@@ -107,22 +107,22 @@ function OfferStrategyVisual() {
       <div className="fdm-offer-strat-sheet">
         <header>
           <span>Exhibit A</span>
-          <span>04 / 18</span>
+          <span>03 / 18</span>
         </header>
         <p className="fdm-offer-strat-eyebrow">Governing question</p>
-        <strong>Where does value accrue?</strong>
+        <strong>What decision is this?</strong>
         <ul>
           <li>
-            <span>Exposed</span>
-            <em>Friction layer</em>
+            <span>Investment</span>
+            <em>Where the fund puts capital</em>
           </li>
           <li>
-            <span>Protected</span>
-            <em>Outcome ownership</em>
+            <span>Asset</span>
+            <em>How defensible it is</em>
           </li>
           <li className="is-accent">
-            <span>Fund</span>
-            <em>What to ship first</em>
+            <span>Portco</span>
+            <em>How to rebuild AI-native</em>
           </li>
         </ul>
       </div>

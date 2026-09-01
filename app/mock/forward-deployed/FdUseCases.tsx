@@ -22,8 +22,10 @@ function prefetchUseCaseReport() {
 
 export function FdUseCasesView({
   onOpen,
+  onHub,
 }: {
   onOpen: (slug: string) => void;
+  onHub: () => void;
 }) {
   const [industry, setIndustry] = useState<string>("All");
   const [family, setFamily] = useState<string>("All");
@@ -41,7 +43,11 @@ export function FdUseCasesView({
   return (
     <div className="fdm-uc">
       <header className="fdm-uc-hero">
-        <p className="fdm-kicker">Transformation · Resources</p>
+        <p className="fdm-kicker">
+          <button type="button" className="fdm-kicker-link" onClick={onHub}>
+            Transformation · Resources
+          </button>
+        </p>
         <h1>Use cases</h1>
         <p>
           Workflows where autonomous agents own volume work inside the systems

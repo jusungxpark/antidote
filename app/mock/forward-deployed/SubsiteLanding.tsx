@@ -41,10 +41,26 @@ type PainItem = {
   icon: PainIconKind;
 };
 
-function SectionHead({ title, lede }: { title: string; lede?: string }) {
+function SectionHead({
+  prefix,
+  kicker,
+  title,
+  lede,
+}: {
+  prefix?: string;
+  kicker?: string;
+  title: string;
+  lede?: string;
+}) {
   return (
     <div className={`fdm-section-head${lede ? "" : " fdm-section-head--solo"}`}>
-      <h2>{title}</h2>
+      <div>
+        {kicker ? <p className="fdm-kicker">{kicker}</p> : null}
+        <h2>
+          {prefix ? <span className="fdm-section-prefix">{prefix}</span> : null}
+          {title}
+        </h2>
+      </div>
       {lede ? <p>{lede}</p> : null}
     </div>
   );
@@ -212,6 +228,37 @@ function SellWhat({
   );
 }
 
+function LevelSection({
+  id,
+  title,
+  items,
+}: {
+  id: string;
+  title: string;
+  items: { title: string; body: string; mark: FeatureKind }[];
+}) {
+  return (
+    <section
+      className="fdm-land-section fdm-land-section--level fdm-level"
+      id={id}
+    >
+      <div className="fdm-level-name">
+        <p className="fdm-section-prefix">Strategy for</p>
+        <h2>{title}</h2>
+        <ol className="fdm-level-index" aria-label={`${title} questions`}>
+          {items.map((item, i) => (
+            <li key={item.title}>
+              <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+              {item.title}
+            </li>
+          ))}
+        </ol>
+      </div>
+      <SellWhat items={items} />
+    </section>
+  );
+}
+
 function SellHow({
   steps,
 }: {
@@ -240,7 +287,18 @@ type FeatureKind =
   | "process"
   | "data"
   | "jobs"
-  | "agents";
+  | "agents"
+  | "allocation"
+  | "moat"
+  | "exposure"
+  | "replicate"
+  | "rebuild"
+  | "sector"
+  | "threat"
+  | "ic"
+  | "mix"
+  | "handoff"
+  | "thinpath";
 
 /** Enterprise mini-panels for What you get — not icon placeholders. */
 function FeatureVisual({ kind }: { kind: FeatureKind }) {
@@ -249,23 +307,23 @@ function FeatureVisual({ kind }: { kind: FeatureKind }) {
       return (
         <div className="fdm-feat-panel fdm-feat-panel--value" aria-hidden="true">
           <header>
-            <span>Value map</span>
+            <span>Value barbell</span>
             <span>Exhibit</span>
           </header>
-          <ul className="fdm-feat-bars">
-            <li>
-              <em>Friction</em>
-              <i style={{ ["--bar" as string]: "34%" }} />
-            </li>
-            <li>
-              <em>Ownership</em>
-              <i style={{ ["--bar" as string]: "68%" }} />
-            </li>
-            <li className="is-accent">
-              <em>Margin</em>
-              <i style={{ ["--bar" as string]: "92%" }} />
-            </li>
-          </ul>
+          <div className="fdm-feat-barbell">
+            <div>
+              <strong>Infra</strong>
+              <em>Compute</em>
+            </div>
+            <div className="is-squeeze">
+              <strong>Tools</strong>
+              <em>Squeezed</em>
+            </div>
+            <div className="is-hold">
+              <strong>Outcomes</strong>
+              <em>The client</em>
+            </div>
+          </div>
         </div>
       );
     case "truth":
@@ -429,6 +487,273 @@ function FeatureVisual({ kind }: { kind: FeatureKind }) {
           </ul>
         </div>
       );
+    case "allocation":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--allocation" aria-hidden="true">
+          <header>
+            <span>Check allocation</span>
+            <span>Fund</span>
+          </header>
+          <div className="fdm-feat-capstack">
+            <div className="is-enter" style={{ ["--h" as string]: "92%" }}>
+              <i />
+              <strong>Enter</strong>
+              <em>Incumbent</em>
+            </div>
+            <div style={{ ["--h" as string]: "54%" }}>
+              <i />
+              <strong>Watch</strong>
+              <em>Named buyer</em>
+            </div>
+            <div className="is-pass" style={{ ["--h" as string]: "28%" }}>
+              <i />
+              <strong>Pass</strong>
+              <em>Labor only</em>
+            </div>
+          </div>
+        </div>
+      );
+    case "moat":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--moat" aria-hidden="true">
+          <header>
+            <span>Defensibility</span>
+            <span>Asset</span>
+          </header>
+          <div className="fdm-feat-rings">
+            <svg viewBox="0 0 220 118" aria-hidden="true">
+              <ellipse className="is-out" cx="110" cy="60" rx="96" ry="46" />
+              <ellipse className="is-mid" cx="110" cy="60" rx="62" ry="30" />
+              <ellipse className="is-in" cx="110" cy="60" rx="30" ry="15" />
+            </svg>
+            <ul>
+              <li data-ring="out">Replicable workflow</li>
+              <li data-ring="mid">System of record</li>
+              <li data-ring="in">Relationships · license</li>
+            </ul>
+          </div>
+        </div>
+      );
+    case "exposure":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--exposure" aria-hidden="true">
+          <header>
+            <span>Friction screen</span>
+            <span>Sector</span>
+          </header>
+          <div className="fdm-feat-spectrum">
+            <div className="fdm-feat-spectrum-labels">
+              <span>Doing</span>
+              <span>Owning</span>
+            </div>
+            <div className="fdm-feat-spectrum-track">
+              <b />
+            </div>
+            <p>Load-bearing: owning-friction</p>
+          </div>
+        </div>
+      );
+    case "replicate":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--replicate" aria-hidden="true">
+          <header>
+            <span>Who can capture it</span>
+            <span>M&A</span>
+          </header>
+          <table className="fdm-feat-matrix">
+            <thead>
+              <tr>
+                <th />
+                <th>Startup</th>
+                <th>Incumbent</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Client</th>
+                <td data-cell="no" />
+                <td data-cell="yes" />
+              </tr>
+              <tr>
+                <th>Humans</th>
+                <td data-cell="no" />
+                <td data-cell="yes" />
+              </tr>
+              <tr>
+                <th>Workflow</th>
+                <td data-cell="yes" />
+                <td data-cell="yes" />
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      );
+    case "rebuild":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--rebuild" aria-hidden="true">
+          <header>
+            <span>Rebuild path</span>
+            <span>Gen 2</span>
+          </header>
+          <div className="fdm-feat-layers">
+            <div>
+              <span>Bolt on</span>
+              <b>Agent overlay</b>
+              <b className="is-mess">Legacy ERP</b>
+              <b className="is-mess">Workarounds</b>
+            </div>
+            <div className="is-native">
+              <span>Rebuild</span>
+              <b>Agents</b>
+              <b>Owned system of record</b>
+              <b>Clean data</b>
+            </div>
+          </div>
+        </div>
+      );
+    case "sector":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--sector" aria-hidden="true">
+          <header>
+            <span>Sector test</span>
+            <span>Must hold</span>
+          </header>
+          <ul className="fdm-feat-stamps">
+            <li data-stamp="hold">
+              <span>Hold</span>
+              <strong>License</strong>
+            </li>
+            <li data-stamp="hold">
+              <span>Hold</span>
+              <strong>Liability</strong>
+            </li>
+            <li data-stamp="shut">
+              <span>Shut</span>
+              <strong>Labor only</strong>
+            </li>
+          </ul>
+        </div>
+      );
+    case "threat":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--threat" aria-hidden="true">
+          <header>
+            <span>P&L split</span>
+            <span>Exposure</span>
+          </header>
+          <div className="fdm-feat-pnl">
+            <div>
+              <span>Doing</span>
+              <div className="fdm-feat-pnl-col">
+                <i className="is-fade" />
+              </div>
+              <em>Threatened</em>
+            </div>
+            <div>
+              <span>Owning</span>
+              <div className="fdm-feat-pnl-col">
+                <i className="is-hold" />
+              </div>
+              <em>Holds</em>
+            </div>
+          </div>
+        </div>
+      );
+    case "ic":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--ic" aria-hidden="true">
+          <header>
+            <span>Open questions</span>
+            <span>IC</span>
+          </header>
+          <ul className="fdm-feat-claims">
+            <li>
+              <strong>Data owned</strong>
+              <span data-tone="ok">Proven</span>
+            </li>
+            <li>
+              <strong>Exceptions named</strong>
+              <span data-tone="ok">Named</span>
+            </li>
+            <li>
+              <strong>Still human</strong>
+              <span data-tone="open">Open</span>
+            </li>
+            <li>
+              <strong>Moat</strong>
+              <span data-tone="flag">Unproven</span>
+            </li>
+          </ul>
+        </div>
+      );
+    case "mix":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--mix" aria-hidden="true">
+          <header>
+            <span>Work mix</span>
+            <span>Job</span>
+          </header>
+          <div className="fdm-feat-mix">
+            <div className="fdm-feat-mix-bar">
+              <i className="is-chase">Chase</i>
+              <i className="is-judge">Judgment</i>
+            </div>
+            <div className="fdm-feat-mix-key">
+              <span>Leaves the job</span>
+              <span>Stays human</span>
+            </div>
+          </div>
+        </div>
+      );
+    case "handoff":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--handoff" aria-hidden="true">
+          <header>
+            <span>Operating model</span>
+            <span>Holds</span>
+          </header>
+          <ol className="fdm-feat-handoff">
+            <li>
+              <strong>Agents</strong>
+              <em>Volume</em>
+            </li>
+            <li className="is-gate">
+              <strong>Gate</strong>
+              <em>Permission</em>
+            </li>
+            <li>
+              <strong>Humans</strong>
+              <em>Outcomes</em>
+            </li>
+          </ol>
+        </div>
+      );
+    case "thinpath":
+      return (
+        <div className="fdm-feat-panel fdm-feat-panel--thinpath" aria-hidden="true">
+          <header>
+            <span>Sequence</span>
+            <span>Thin path</span>
+          </header>
+          <ol className="fdm-feat-path">
+            <li className="is-now">
+              <b />
+              <strong>Ship</strong>
+              <em>First path</em>
+            </li>
+            <li>
+              <b />
+              <strong>Prove</strong>
+              <em>Holds under load</em>
+            </li>
+            <li className="is-off">
+              <b />
+              <strong>Refuse</strong>
+              <em>Until economics</em>
+            </li>
+          </ol>
+        </div>
+      );
   }
 }
 
@@ -442,14 +767,14 @@ function StrategyLanding({
       <section className="fdm-subland-hero fdm-subland-hero--strat">
         <div className="fdm-subland-hero-copy">
           <h1>
-            Know where AI
+            Strategy for the fund,
             <br />
-            actually moves margin.
+            the asset, and the company.
           </h1>
           <p>
-            In the AI era, capability is cheap and everywhere. What is scarce is a
-            clear answer: where value accrues, who owns the outcome, and what your
-            operating model becomes when the work stops needing as many people.
+            Capability is cheap. What is scarce is matching the artifact to the
+            decision: where a PE firm puts capital in the AI era, whether a
+            named asset holds, and how an owned company rebuilds AI-native.
           </p>
           <div className="fdm-land-actions">
             <a
@@ -463,7 +788,7 @@ function StrategyLanding({
               className="fdm-btn fdm-btn--ghost"
               onClick={() => onNavigate("work")}
             >
-              See proof
+              See our work
             </button>
           </div>
         </div>
@@ -473,75 +798,125 @@ function StrategyLanding({
       <StickyPain
         side="left"
         title="Why this matters now"
-        lede="Bet on AI before the economics are settled, and you inherit another program that never touches the P&L."
+        lede="Three different decisions get flattened into one AI memo. The fund, the named asset, and the company already owned need different artifacts."
         items={[
           {
             icon: "margin",
-            title: "Demos everywhere. Margin nowhere.",
-            body: "Benchmarks pass. Workflows fail. Nobody names which jobs, exceptions, and dollars move when intelligence gets cheap.",
+            title: "The fund is treated like a sector tag.",
+            body: "A list of verticals is not an allocation. It does not say where value accrues when intelligence is cheap, what to enter, or what to pass.",
           },
           {
-            icon: "org",
-            title: "The org pushes back first.",
-            body: "Ignore incentives, exception ownership, and headcount metrics, and the thesis dies in the first operating review.",
+            icon: "safety",
+            title: "A demo is treated as defensibility.",
+            body: "Capability is not a moat. On a named asset the question is whether relationships, license, and liability still hold when the workflow is replicable.",
           },
           {
-            icon: "usecases",
-            title: "Use-case lists are not strategy.",
-            body: "Catalogs feel busy and safe. They do not say where value accrues, what stays human, or what to refuse this year.",
+            icon: "change",
+            title: "Copilot seats are treated as a rebuild.",
+            body: "A use-case catalog is not a plan for an owned company. It does not say what is automatable, what stays human, or how to rebuild AI-native.",
+          },
+        ]}
+      />
+
+      <LevelSection
+        id="investment"
+        title="Investment"
+        items={[
+          {
+            mark: "value",
+            title: "Where value accrues",
+            body: "When the task gets cheap, margin moves to whoever owns the outcome, not to the model. Which commercial surfaces hold, and which ones are theater.",
+          },
+          {
+            mark: "exposure",
+            title: "Doing-friction vs owning-friction",
+            body: "Labor, expertise, and tooling get abolished. Trust, license, liability, and blame-offload do not. The screen is which reason is load-bearing in the sector.",
+          },
+          {
+            mark: "allocation",
+            title: "Where the check goes",
+            body: "Enter where incumbency is the moat. Pass labor-only businesses. Watch anything that still needs a named buyer before it is a fund bet.",
+          },
+          {
+            mark: "sector",
+            title: "What must be true of the sector",
+            body: "Owning-friction has to be load-bearing. License, liability, and a buyer who still pays for outcome ownership after the task is cheap.",
+          },
+        ]}
+      />
+
+      <LevelSection
+        id="asset"
+        title="Asset"
+        items={[
+          {
+            mark: "moat",
+            title: "What still defends it",
+            body: "Customer relationships, license, liability, and the system of record. Separate those from workflows that a well-run newcomer can replicate.",
+          },
+          {
+            mark: "threat",
+            title: "What AI actually threatens",
+            body: "Split the P&L into work that was hard to do and work that was hard to own. Only the second still prices like a durable service.",
+          },
+          {
+            mark: "replicate",
+            title: "Who can capture it",
+            body: "Startups stall without the client and the licensed humans. Incumbents already have both. The strategic question is whether this asset is the one to buy.",
+          },
+          {
+            mark: "ic",
+            title: "What IC still needs answered",
+            body: "Open questions stay on their own plane: data owned, exceptions named, what must stay human, and what is still unproven. Not buried in a capability slide.",
+          },
+        ]}
+      />
+
+      <LevelSection
+        id="portco"
+        title="Portfolio"
+        items={[
+          {
+            mark: "mix",
+            title: "What is automatable",
+            body: "Chase work, reconciliation, and copy-paste leave the human job. Exceptions, customers, and outcome ownership stay. Name the split before a single seat is bought.",
+          },
+          {
+            mark: "rebuild",
+            title: "How to rebuild AI-native",
+            body: "Overlaying models on a broken system of record plateaus. The strategy is a clean rebuild on owned infrastructure, not a copilot next to the mess.",
+          },
+          {
+            mark: "handoff",
+            title: "An operating model that holds",
+            body: "Who owns outcomes versus volume, how humans and agents hand off, and how success is measured after the first operating review.",
+          },
+          {
+            mark: "thinpath",
+            title: "What to sequence first",
+            body: "A thin path with kill criteria. Transformation inherits the sequence. Everything else stays refused until the economics of the first path are real.",
           },
         ]}
       />
 
       <section className="fdm-land-section">
-        <div className="fdm-land-split fdm-land-split--solo">
-          <h2>What you get</h2>
-        </div>
-        <SellWhat
-          items={[
-            {
-              mark: "value",
-              title: "Where value accrues",
-              body: "Which workflows and commercial surfaces move when the task gets cheap, and which ones are theater.",
-            },
-            {
-              mark: "truth",
-              title: "What must be true",
-              body: "Data, ownership, and exceptions that make the thesis real, and what still cannot be automated away.",
-            },
-            {
-              mark: "fund",
-              title: "What to fund, and refuse",
-              body: "A sequenced roadmap with kill criteria, so capital goes to the few bets that change the economics.",
-            },
-            {
-              mark: "model",
-              title: "An operating model that holds",
-              body: "Who owns outcomes vs. volume, how humans and agents hand off, and how success is measured after pushback.",
-            },
-          ]}
+        <SectionHead
+          title="How we work"
+          lede="The artifact matches the altitude. Diligence and Transformation pick up from a decision, not from a use-case list."
         />
-      </section>
-
-      <section className="fdm-land-section">
-        <SectionHead title="How we work" />
         <SellHow
           steps={[
             {
-              title: "Map the economics",
-              body: "Margin, cycle time, leakage, and who actually does the work, including the workarounds that never make the process deck.",
+              title: "Set the fund altitude",
+              body: "Where value accrues in the sector, what to enter or pass, and where a check should actually go.",
             },
             {
-              title: "Separate capability from ownership",
-              body: "What a model can do is not what you should let it own. Feasibility, risk, and P&L stay on separate planes.",
+              title: "Underwrite the named asset",
+              body: "Defensibility, AI exposure, and who can capture it. Open IC questions stay visible, not folded into a demo.",
             },
             {
-              title: "Design the model that holds",
-              body: "Roles, exceptions, incentives, and sequencing that survive the first operating review, not just IC.",
-            },
-            {
-              title: "Hand off a decision",
-              body: "Clear next moves for diligence or transformation to ship first, with kill criteria for everything else.",
+              title: "Design the rebuild",
+              body: "For the company under ownership: what is automatable, the operating model that holds, and the first thin path to rebuild AI-native.",
             },
           ]}
         />

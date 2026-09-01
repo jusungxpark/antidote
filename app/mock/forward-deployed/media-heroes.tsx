@@ -140,7 +140,7 @@ export function HubHeroDeploy({
     {
       site: "strategy" as const,
       title: "Strategy",
-      body: "Where margin moves",
+      body: "Fund, asset, company",
       kind: "Point of view",
     },
     {
@@ -200,19 +200,19 @@ export function HubHeroDeploy({
 export function StrategyHeroVisual() {
   const steps = [
     {
-      kind: "Exposed",
-      title: "Friction layer",
-      body: "Commoditizes when intelligence is cheap",
+      kind: "01 Fund",
+      title: "Investment",
+      body: "Where a PE firm puts capital in the AI era",
     },
     {
-      kind: "Protected",
-      title: "Outcome ownership",
-      body: "Structural work that still holds the margin",
+      kind: "02 Deal",
+      title: "Asset",
+      body: "How defensible a named company still is",
     },
     {
-      kind: "Compounding",
-      title: "Agent delivery",
-      body: "Where transformation turns POV into P&L",
+      kind: "03 Own",
+      title: "Portco",
+      body: "What to rebuild AI-native under ownership",
     },
   ];
 
@@ -223,15 +223,15 @@ export function StrategyHeroVisual() {
       <div className="fdm-strat-report-sheet">
         <header className="fdm-strat-report-meta">
           <span>Exhibit A</span>
-          <span>Value map</span>
-          <span>04 / 18</span>
+          <span>Altitude map</span>
+          <span>03 / 18</span>
         </header>
 
         <p className="fdm-strat-report-eyebrow">Governing question</p>
-        <h3 className="fdm-strat-report-title">Where does value accrue?</h3>
+        <h3 className="fdm-strat-report-title">What decision is this?</h3>
         <p className="fdm-strat-report-lede">
-          When the model can already do the task, margin moves to ownership of
-          outcomes, not to the capability itself.
+          Strategy is not one memo. It is the altitude of the capital, the
+          named asset, or the company already owned.
         </p>
 
         <div className="fdm-strat-report-rule" />
@@ -245,9 +245,9 @@ export function StrategyHeroVisual() {
             </li>
           ))}
           <li className="is-ghost" aria-hidden="true">
-            <span className="kind">Sequenced</span>
-            <strong>What to fund next</strong>
-            <em>Kill criteria and the first Transformation thin path</em>
+            <span className="kind">Hand-off</span>
+            <strong>Diligence or rebuild</strong>
+            <em>The next offering inherits a decision, not a catalog</em>
           </li>
         </ol>
       </div>

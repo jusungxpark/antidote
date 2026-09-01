@@ -106,7 +106,6 @@ const SUBSITE_NAV: Record<Exclude<Site, "hub">, NavItem[]> = {
     { id: "software", label: "Software" },
     { id: "advisory", label: "Advisory" },
     { id: "automation", label: "Automation" },
-    { id: "reports", label: "Reports" },
   ],
   transformation: [
     { id: "home", label: "Overview" },
@@ -123,7 +122,7 @@ const SITE_LABEL: Record<Exclude<Site, "hub">, string> = {
 };
 
 const SITE_TAGLINE: Record<Exclude<Site, "hub">, string> = {
-  strategy: "Know where AI moves margin, and what the operating model becomes.",
+  strategy: "Strategy for the fund, the asset, and the company you own.",
   diligence: "Empirical AI diligence, evidence before the check.",
   transformation: "Workflows redesigned for agents that do the work, with guardrails that hold in production.",
 };
@@ -143,10 +142,10 @@ const PAGE_COPY: Record<
 > = {
   strategy: {
     home: {
-      title: "Know where AI actually moves margin.",
-      body: "Capability is cheap. What is scarce is where value accrues, who owns the outcome, and an operating model that survives the org.",
-      pre: "investment thesis, what must be true, which diligence questions are worth paying for.",
-      post: "roadmap, change sequencing, what Transformation should ship first.",
+      title: "Strategy for the fund, the asset, and the company.",
+      body: "Capability is cheap. The scarce work is matching the artifact to the altitude: where a PE firm puts capital, whether a named asset holds, and how an owned company rebuilds AI-native.",
+      pre: "fund allocation, sector screens, what to enter and pass.",
+      post: "asset defensibility, rebuild sequencing for an owned operator.",
     },
     work: {
       title: "Case Studies",
@@ -323,9 +322,22 @@ export default function ForwardDeployedMockPage() {
             onSelect={(id) => enter(id)}
           />
 
-          <a className="fdm-layer1-cta" href="mailto:founders@antidotetransform.com">
-            Work with us
-          </a>
+          <div className="fdm-layer1-actions">
+            <a className="fdm-layer1-cta" href="mailto:founders@antidotetransform.com">
+              Work with us
+            </a>
+            <a
+              className={
+                site === "diligence" &&
+                (page === "login" || page === "reports")
+                  ? "fdm-layer1-login is-active"
+                  : "fdm-layer1-login"
+              }
+              href={buildFdHref(base, "diligence", "login")}
+            >
+              Login
+            </a>
+          </div>
         </div>
       </header>
 
@@ -411,7 +423,7 @@ export default function ForwardDeployedMockPage() {
               <div className="fdm-section-head fdm-section-head--offer">
                 <h2>See how we engage across the full deal lifecycle.</h2>
                 <p>
-                  Strategy, Diligence, and Transformation, matched to where you
+                  Strategy, Tech Diligence, and Transformation, matched to where you
                   are before the check, around close, and under ownership.
                 </p>
               </div>
@@ -425,7 +437,7 @@ export default function ForwardDeployedMockPage() {
                 />
                 <OfferingBlock
                   kind="diligence"
-                  title="Diligence"
+                  title="Tech Diligence"
                   body={SITE_TAGLINE.diligence}
                   stack="Live CDD · method · evals · software"
                   onClick={() => enter("diligence")}
