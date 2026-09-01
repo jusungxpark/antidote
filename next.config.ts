@@ -12,7 +12,8 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
-        source: "/case-studies/:slug*",
+        // HTML slugs only. public/case-studies/*.jpg must not match.
+        source: "/case-studies/:slug([^/.]+)",
         destination: "/forward-deployed",
         permanent: false,
       },
