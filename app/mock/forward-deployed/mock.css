@@ -6308,6 +6308,71 @@
   margin-top: 8px;
 }
 
+.fdm-docs-prompt {
+  margin-top: 16px;
+  font-weight: 650;
+}
+
+.fdm-docs-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.fdm-docs-option {
+  appearance: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 12px 14px;
+  border-radius: var(--radius-small);
+  border: 0;
+  background: color-mix(in srgb, var(--antidote) 6%, var(--paper));
+}
+
+.fdm-docs-option:hover {
+  background: color-mix(in srgb, var(--antidote) 11%, var(--paper));
+}
+
+.fdm-docs-option.is-on,
+.fdm-docs-option.is-right {
+  background: color-mix(in srgb, var(--antidote) 16%, var(--paper));
+}
+
+.fdm-docs-option.is-wrong {
+  background: color-mix(in srgb, #8a3a2a 12%, var(--paper));
+}
+
+.fdm-docs-reveal {
+  margin-top: 14px;
+}
+
+.fdm-docs-sowhat {
+  margin-top: 28px;
+  font-size: 17px;
+}
+
+.fdm-docs-table-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.fdm-docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.fdm-docs-table th,
+.fdm-docs-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 12px 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
 .fdm-docs-example {
   margin-top: 16px;
   padding: 14px 16px 16px;

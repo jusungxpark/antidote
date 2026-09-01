@@ -590,9 +590,9 @@ function TransformationLanding({
             <button
               type="button"
               className="fdm-btn fdm-btn--ghost"
-              onClick={() => onNavigate("use-cases")}
+              onClick={() => onNavigate("work")}
             >
-              Browse use cases
+              See our work
             </button>
           </div>
         </div>
@@ -698,25 +698,7 @@ function TransformationLanding({
         <button
           type="button"
           className="fdm-work-banner"
-          onClick={() => onNavigate("resources")}
-        >
-          <span>Browse resources</span>
-          <span aria-hidden="true">→</span>
-        </button>
-        <button
-          type="button"
-          className="fdm-work-banner"
-          onClick={() => onNavigate("learn")}
-          style={{ marginTop: 10 }}
-        >
-          <span>Open Learn</span>
-          <span aria-hidden="true">→</span>
-        </button>
-        <button
-          type="button"
-          className="fdm-work-banner"
           onClick={() => onNavigate("work")}
-          style={{ marginTop: 10 }}
         >
           <span>See our work</span>
           <span aria-hidden="true">→</span>

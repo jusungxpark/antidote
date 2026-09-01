@@ -18,10 +18,10 @@ export const RESOURCE_LIBRARIES: ResourceLibrary[] = [
   },
   {
     slug: "learn",
-    kicker: "How the stack works",
+    kicker: "The stack",
     title: "Learn",
     blurb:
-      "Twenty-two units from first principles: history, tokens, windows, tools, agents, tracing, guardrails, evals, cost. Not a lab.",
+      "Lessons from first principles: history, tokens, windows, tools, agents, tracing, guardrails, evals, cost. Not a lab.",
     enter: "Open Learn",
   },
 ];

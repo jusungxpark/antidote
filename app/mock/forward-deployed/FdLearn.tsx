@@ -2,12 +2,14 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
-  LEARN_MODULES,
-  LEARN_PARTS,
-  getLearnModuleBySlug,
-  type LearnModule,
-  type LearnPartId,
-} from "./learn-modules";
+  FIRST_LEARN_SLUG,
+  LEARN_LESSONS,
+  LEARN_MODULES_NAV,
+  getLearnLessonBySlug,
+  lessonsInModule,
+} from "./learn-catalog";
+import { FdLearnWidget } from "./FdLearnWidgets";
+import type { LearnLesson, LearnModuleId } from "./learn-types";
 
 function slugify(title: string): string {
   return title
@@ -16,17 +18,17 @@ function slugify(title: string): string {
     .replace(/^-|-$/g, "");
 }
 
-function defaultPartOpen(
-  currentPart: LearnPartId | undefined,
-): Record<LearnPartId, boolean> {
-  const init = {} as Record<LearnPartId, boolean>;
-  for (const p of LEARN_PARTS) {
-    init[p.id] = currentPart ? p.id === currentPart : p.id === LEARN_PARTS[0].id;
+function defaultModuleOpen(
+  current: LearnModuleId | undefined,
+): Record<string, boolean> {
+  const init: Record<string, boolean> = {};
+  for (const m of LEARN_MODULES_NAV) {
+    init[m.id] = current ? m.id === current : m.id === LEARN_MODULES_NAV[0]?.id;
   }
   return init;
 }
 
-let persistedPartOpen: Record<LearnPartId, boolean> | null = null;
+let persistedPartOpen: Record<string, boolean> | null = null;
 let persistedNavScroll = 0;
 
 function rememberLearnNavScroll() {
@@ -37,7 +39,6 @@ function rememberLearnNavScroll() {
 export function FdLearnPage({
   slug,
   onHub,
-  onHome,
   onOpen,
   onUseCase,
 }: {
@@ -47,8 +48,12 @@ export function FdLearnPage({
   onOpen: (next: string) => void;
   onUseCase: (slug: string) => void;
 }) {
-  const mod = slug ? getLearnModuleBySlug(slug) : undefined;
-  const missing = Boolean(slug) && !mod;
+  const resolved = slug ? getLearnLessonBySlug(slug) : undefined;
+  const missing = Boolean(slug) && !resolved;
+
+  useEffect(() => {
+    if (!slug && !missing) onOpen(FIRST_LEARN_SLUG);
+  }, [slug, missing, onOpen]);
 
   const openUnit = (next: string) => {
     rememberLearnNavScroll();
@@ -73,32 +78,35 @@ export function FdLearnPage({
     root.scrollTo({ top: Math.max(0, nextTop), behavior: "auto" });
   }, [slug]);
 
+  const lesson = resolved ?? (!slug ? getLearnLessonBySlug(FIRST_LEARN_SLUG) : undefined);
+
   return (
     <div className="fdm-uc fdm-uc--docs fdm-docs">
       <FdLearnNav
-        current={mod?.slug ?? null}
+        current={lesson?.slug ?? null}
         onHub={onHub}
-        onHome={onHome}
+        onHome={() => openUnit(FIRST_LEARN_SLUG)}
         onOpen={openUnit}
       />
       <div className="fdm-docs-main">
         {missing ? (
           <div className="fdm-docs-article">
-            <p className="fdm-uc-empty">Unit not found.</p>
-            <button type="button" className="fdm-text-link" onClick={onHome}>
+            <p className="fdm-uc-empty">Lesson not found.</p>
+            <button
+              type="button"
+              className="fdm-text-link"
+              onClick={() => openUnit(FIRST_LEARN_SLUG)}
+            >
               Back to Learn
             </button>
           </div>
-        ) : mod ? (
+        ) : lesson ? (
           <FdLearnArticle
-            mod={mod}
+            lesson={lesson}
             onOpen={openUnit}
             onUseCase={onUseCase}
-            onHome={onHome}
           />
-        ) : (
-          <FdLearnHome onOpen={openUnit} />
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -116,20 +124,20 @@ function FdLearnNav({
   onOpen: (slug: string) => void;
 }) {
   const grouped = useMemo(() => {
-    return LEARN_PARTS.map((part) => ({
-      part,
-      items: LEARN_MODULES.filter((m) => m.part === part.id),
+    return LEARN_MODULES_NAV.map((mod) => ({
+      mod,
+      items: lessonsInModule(mod.id),
     }));
   }, []);
 
-  const currentPart = LEARN_MODULES.find((m) => m.slug === current)?.part;
+  const currentModule = LEARN_LESSONS.find((m) => m.slug === current)?.module;
   const sideRef = useRef<HTMLElement>(null);
 
-  const [open, setOpen] = useState<Record<LearnPartId, boolean>>(() => {
+  const [open, setOpen] = useState<Record<string, boolean>>(() => {
     const init = persistedPartOpen
       ? { ...persistedPartOpen }
-      : defaultPartOpen(currentPart);
-    if (currentPart) init[currentPart] = true;
+      : defaultModuleOpen(currentModule);
+    if (currentModule) init[currentModule] = true;
     return init;
   });
 
@@ -138,11 +146,11 @@ function FdLearnNav({
   }, [open]);
 
   useEffect(() => {
-    if (!currentPart) return;
+    if (!currentModule) return;
     setOpen((prev) =>
-      prev[currentPart] ? prev : { ...prev, [currentPart]: true },
+      prev[currentModule] ? prev : { ...prev, [currentModule]: true },
     );
-  }, [currentPart]);
+  }, [currentModule]);
 
   useLayoutEffect(() => {
     const el = sideRef.current;
@@ -172,32 +180,32 @@ function FdLearnNav({
         </button>
         <button
           type="button"
-          className={`fdm-docs-home${current === null ? " is-current" : ""}`}
+          className={`fdm-docs-home${current === FIRST_LEARN_SLUG ? " is-current" : ""}`}
           onClick={onHome}
         >
           Learn
         </button>
       </div>
 
-      <nav className="fdm-docs-tree" aria-label="Learn units">
-        {grouped.map(({ part, items }) => {
-          const expanded = open[part.id];
-          const panelId = `learn-part-${part.id.toLowerCase()}`;
+      <nav className="fdm-docs-tree" aria-label="Learn lessons">
+        {grouped.map(({ mod, items }) => {
+          const expanded = open[mod.id];
+          const panelId = `learn-mod-${mod.id.toLowerCase()}`;
           return (
-            <div key={part.id} className="fdm-docs-branch">
+            <div key={mod.id} className="fdm-docs-branch">
               <button
                 type="button"
                 className={`fdm-docs-branch-toggle${
-                  currentPart === part.id ? " is-active" : ""
+                  currentModule === mod.id ? " is-active" : ""
                 }`}
                 aria-expanded={expanded}
                 aria-controls={panelId}
                 onClick={() =>
-                  setOpen((prev) => ({ ...prev, [part.id]: !prev[part.id] }))
+                  setOpen((prev) => ({ ...prev, [mod.id]: !prev[mod.id] }))
                 }
               >
                 <span className="fdm-docs-chevron" aria-hidden="true" />
-                {part.label}
+                {mod.label}
               </button>
               {expanded ? (
                 <ul id={panelId}>
@@ -208,7 +216,7 @@ function FdLearnNav({
                         className={m.slug === current ? "is-current" : undefined}
                         onClick={() => openUnit(m.slug)}
                       >
-                        <span className="fdm-docs-num">{m.order}</span>
+                        <span className="fdm-docs-num">{m.n}</span>
                         <span>{m.title}</span>
                       </button>
                     </li>
@@ -223,121 +231,39 @@ function FdLearnNav({
   );
 }
 
-function FdLearnHome({ onOpen }: { onOpen: (slug: string) => void }) {
-  const first = LEARN_MODULES[0];
-  const totalMin = LEARN_MODULES.reduce((sum, m) => sum + m.minutes, 0);
-  return (
-    <article className="fdm-docs-article">
-      <p className="fdm-kicker">Transformation · Resources · Learn</p>
-      <h1>How the stack actually works</h1>
-      <p className="fdm-docs-standfirst">
-        Twenty-two units, six parts. History and the four jobs, then the
-        primitive (next-token), then every layer that has to wrap it: windows,
-        tools, agents, tracing, guardrails, sandboxes, evals, cost. No lab.
-        You should leave able to explain the mechanism, not able to train a
-        model.
-      </p>
-
-      <section>
-        <h2>How to read this</h2>
-        <p>
-          A straight read is about {Math.round(totalMin / 60)} hours. Take one
-          part, then a use case. Units are numbered because they stack: unit 3
-          is unit 2 seen from the error; agents are a model in a loop; a
-          copilot is not a queue. Invoice 8812 runs through the course so the
-          same case can carry a new principle. Collapse a part you do not need.
-          Previous and next are always available.
-        </p>
-      </section>
-
-      <section>
-        <h2>Syllabus</h2>
-        {LEARN_PARTS.map((part) => {
-          const items = LEARN_MODULES.filter((m) => m.part === part.id);
-          return (
-            <div key={part.id} className="fdm-docs-syllabus">
-              <h3>{part.label}</h3>
-              <p className="fdm-docs-syllabus-blurb">{part.blurb}</p>
-              <ol>
-                {items.map((m) => (
-                  <li key={m.slug}>
-                    <button
-                      type="button"
-                      className="fdm-learn-inline"
-                      onClick={() => onOpen(m.slug)}
-                    >
-                      {m.order}. {m.title}
-                    </button>
-                    <span className="fdm-docs-syllabus-meta">
-                      {m.minutes} min
-                    </span>
-                    <p>{m.blurb}</p>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          );
-        })}
-      </section>
-
-      {first ? (
-        <p className="fdm-docs-start">
-          <button
-            type="button"
-            className="fdm-btn fdm-btn--primary"
-            onClick={() => onOpen(first.slug)}
-          >
-            Start with unit {first.order} · {first.title}
-          </button>
-        </p>
-      ) : null}
-    </article>
-  );
-}
-
 function FdLearnArticle({
-  mod,
+  lesson,
   onOpen,
   onUseCase,
-  onHome,
 }: {
-  mod: LearnModule;
+  lesson: LearnLesson;
   onOpen: (slug: string) => void;
   onUseCase: (slug: string) => void;
-  onHome: () => void;
 }) {
-  const next = mod.next ? getLearnModuleBySlug(mod.next) : undefined;
-  const prev = LEARN_MODULES.find((m) => m.next === mod.slug);
-  const part = LEARN_PARTS.find((p) => p.id === mod.part);
+  const idx = LEARN_LESSONS.findIndex((m) => m.slug === lesson.slug);
+  const prev = idx > 0 ? LEARN_LESSONS[idx - 1] : undefined;
+  const next = lesson.next ? getLearnLessonBySlug(lesson.next) : undefined;
+  const part = LEARN_MODULES_NAV.find((p) => p.id === lesson.module);
+  const check = lesson.checks[0];
   const toc = [
-    { id: "in-this-unit", title: "In this unit" },
-    ...mod.sections.map((s) => ({ id: slugify(s.title), title: s.title })),
-    { id: "a-common-mix-up", title: "A common mix-up" },
-    { id: "check", title: "Check" },
+    { id: "before-you-read", title: "Before you read" },
+    ...lesson.sections.map((s) => ({ id: slugify(s.title), title: s.title })),
+    { id: "try-it", title: "Try it" },
+    ...(check ? [{ id: "check", title: "Check" }] : []),
   ];
 
   return (
     <article className="fdm-docs-article">
       <header className="fdm-docs-hero">
         <p className="fdm-docs-meta">
-          <button type="button" onClick={onHome}>
-            Learn
-          </button>
-          <span aria-hidden="true">/</span>
-          <span>{part?.label ?? mod.part}</span>
+          <span>{part?.label ?? lesson.module}</span>
           <span className="fdm-docs-meta-dot" aria-hidden="true">
             ·
           </span>
-          <span>
-            Unit {mod.order} of {LEARN_MODULES.length}
-          </span>
-          <span className="fdm-docs-meta-dot" aria-hidden="true">
-            ·
-          </span>
-          <span>{mod.minutes} min</span>
+          <span>{lesson.n}</span>
         </p>
-        <h1>{mod.title}</h1>
-        <p className="fdm-docs-standfirst">{mod.lede}</p>
+        <h1>{lesson.title}</h1>
+        <p className="fdm-docs-standfirst">{lesson.lede}</p>
       </header>
 
       <nav className="fdm-docs-onthepage" aria-label="On this page">
@@ -362,17 +288,20 @@ function FdLearnArticle({
       </nav>
 
       <div className="fdm-docs-prose">
-        <section id="in-this-unit">
-          <h2>In this unit</h2>
-          <p>After this unit you should be able to:</p>
-          <ol className="fdm-docs-goals">
-            {mod.youWill.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ol>
-        </section>
+        <SituationBlock lesson={lesson} />
 
-        {mod.sections.map((s) => (
+        {lesson.youWill.length > 0 ? (
+          <section>
+            <h2>In this lesson</h2>
+            <ul className="fdm-docs-goals">
+              {lesson.youWill.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {lesson.sections.map((s) => (
           <section key={s.title} id={slugify(s.title)}>
             <h2>{s.title}</h2>
             {s.paragraphs.map((p) => (
@@ -380,19 +309,31 @@ function FdLearnArticle({
             ))}
             {s.example ? (
               <aside className="fdm-docs-example">
-                <p className="fdm-docs-example-kicker">{s.example.title}</p>
+                {s.example.title ? (
+                  <p className="fdm-docs-example-kicker">{s.example.title}</p>
+                ) : null}
                 <p>{s.example.body}</p>
               </aside>
             ) : null}
-            {s.rows && s.rows.length > 0 ? (
-              <dl className="fdm-uc-deflist">
-                {s.rows.map((row) => (
-                  <div key={row.label}>
-                    <dt>{row.label}</dt>
-                    <dd>{row.body}</dd>
-                  </div>
-                ))}
-              </dl>
+            {s.table ? (
+              <div className="fdm-docs-table-wrap">
+                <table className="fdm-docs-table">
+                  <thead>
+                    <tr>
+                      <th>{s.table.head[0]}</th>
+                      <th>{s.table.head[1]}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {s.table.rows.map((row) => (
+                      <tr key={row.label}>
+                        <th>{row.label}</th>
+                        <td>{row.body}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             ) : null}
             {s.split && s.split.length > 0 ? (
               <div className="fdm-docs-split">
@@ -414,41 +355,46 @@ function FdLearnArticle({
           </section>
         ))}
 
-        <section id="a-common-mix-up">
-          <h2>A common mix-up</h2>
-          <div className="fdm-docs-split">
-            <div>
-              <h3>The mix-up</h3>
-              <p>{mod.mixup.wrong}</p>
-            </div>
-            <div>
-              <h3>The principle</h3>
-              <p>{mod.mixup.right}</p>
-            </div>
-          </div>
-        </section>
-
-        <section id="check">
-          <h2>Check</h2>
-          <p>
-            If these are obvious, the unit landed. If they are not, the
-            mechanism is in the sections above, not in a slogan.
-          </p>
-          <dl className="fdm-docs-check">
-            {mod.check.map((item) => (
-              <div key={item.q}>
-                <dt>{item.q}</dt>
-                <dd>{item.a}</dd>
+        {lesson.misconception ? (
+          <section>
+            <h2>A common mix-up</h2>
+            <div className="fdm-docs-split">
+              <div>
+                <h3>The mix-up</h3>
+                <p>{lesson.misconception.says}</p>
               </div>
-            ))}
-          </dl>
+              <div>
+                <h3>The principle</h3>
+                <p>{lesson.misconception.why}</p>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        <section id="try-it">
+          <h2>Try it</h2>
+          <FdLearnWidget spec={lesson.widget} />
         </section>
 
-        {mod.relatedUseCases.length > 0 ? (
-          <section id="seen-in-operations">
+        <section>
+          <h2>{lesson.instrument.name}</h2>
+          <p>{lesson.instrument.body}</p>
+          <ul className="fdm-docs-goals">
+            {lesson.instrument.items.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </section>
+
+        <p className="fdm-docs-sowhat">{lesson.soWhat}</p>
+
+        {check ? <CheckBlock check={check} /> : null}
+
+        {lesson.relatedUseCases.length > 0 ? (
+          <section>
             <h2>Seen in operations</h2>
             <ul className="fdm-docs-related">
-              {mod.relatedUseCases.map((uc) => (
+              {lesson.relatedUseCases.map((uc) => (
                 <li key={uc}>
                   <button
                     type="button"
@@ -464,31 +410,95 @@ function FdLearnArticle({
         ) : null}
       </div>
 
-      <nav className="fdm-learn-pager" aria-label="Adjacent units">
+      <nav className="fdm-learn-pager" aria-label="Adjacent lessons">
         {prev ? (
           <button type="button" onClick={() => onOpen(prev.slug)}>
             <span>Previous</span>
-            {prev.title}
+            {prev.n} {prev.title}
           </button>
         ) : (
-          <button type="button" onClick={onHome}>
-            <span>Previous</span>
-            Learn home
-          </button>
+          <span />
         )}
         {next ? (
           <button type="button" onClick={() => onOpen(next.slug)}>
             <span>Next</span>
-            {next.title}
+            {next.n} {next.title}
           </button>
         ) : (
-          <button type="button" onClick={onHome}>
-            <span>Done</span>
-            Back to Learn
-          </button>
+          <span />
         )}
       </nav>
     </article>
+  );
+}
+
+function SituationBlock({ lesson }: { lesson: LearnLesson }) {
+  const sit = lesson.situation;
+  const [picked, setPicked] = useState<number | null>(null);
+  useEffect(() => {
+    setPicked(null);
+  }, [lesson.slug]);
+
+  return (
+    <section id="before-you-read">
+      <h2>Before you read</h2>
+      <p>{sit.artifact}</p>
+      {sit.artifactItems && sit.artifactItems.length > 0 ? (
+        <ul className="fdm-docs-goals">
+          {sit.artifactItems.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      ) : null}
+      <p className="fdm-docs-prompt">{sit.prompt}</p>
+      <div className="fdm-docs-options">
+        {sit.options.map((opt, i) => (
+          <button
+            key={opt}
+            type="button"
+            className={`fdm-docs-option${picked === i ? " is-on" : ""}`}
+            onClick={() => setPicked(i)}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+      {picked !== null ? <p className="fdm-docs-reveal">{sit.reveal}</p> : null}
+    </section>
+  );
+}
+
+function CheckBlock({
+  check,
+}: {
+  check: LearnLesson["checks"][number];
+}) {
+  const [picked, setPicked] = useState<number | null>(null);
+  useEffect(() => {
+    setPicked(null);
+  }, [check.q]);
+  const choice = picked !== null ? check.options[picked] : undefined;
+
+  return (
+    <section id="check">
+      <h2>Check</h2>
+      <p>{check.q}</p>
+      <div className="fdm-docs-options">
+        {check.options.map((opt, i) => (
+          <button
+            key={opt.text}
+            type="button"
+            className={`fdm-docs-option${
+              picked === i ? (opt.correct ? " is-right" : " is-wrong") : ""
+            }`}
+            onClick={() => setPicked(i)}
+          >
+            {opt.text}
+          </button>
+        ))}
+      </div>
+      {choice ? <p className="fdm-docs-reveal">{choice.feedback}</p> : null}
+    </section>
   );
 }
 
@@ -517,5 +527,3 @@ function labelUseCase(slug: string): string {
   };
   return labels[slug] ?? slug;
 }
-
-export type { LearnModule };
